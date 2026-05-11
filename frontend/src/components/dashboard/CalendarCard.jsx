@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { ChevronLeft, ChevronRight, FileText, Calendar, Clock, User, Building, RefreshCw, Layers } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Clock, User, Building, RefreshCw, Layers } from "lucide-react";
 import { useCalendarData } from "../../hooks/useDashboard";
 import api from "../../services/api";
 
@@ -9,7 +9,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-export function CalendarCard({ selectedDate, onDateSelect }) {
+export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatraksChange }) {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -111,7 +111,12 @@ export function CalendarCard({ selectedDate, onDateSelect }) {
     });
   }, [selectedDate, dbEntries]);
 
-  const activeEntry = currentSelectedEntries[entryIndex];
+  const activeEntry = currentSelectedEntries[Math.min(entryIndex, currentSelectedEntries.length - 1)];
+  const showSelectedPatrakDetails = Boolean(selectedDate && currentSelectedEntries.length > 0);
+
+  useEffect(() => {
+    onSelectedDateHasPatraksChange?.(showSelectedPatrakDetails);
+  }, [onSelectedDateHasPatraksChange, showSelectedPatrakDetails]);
 
   // Formatting helpers
   const formatTimeStr = (isoString) => {
@@ -147,7 +152,7 @@ export function CalendarCard({ selectedDate, onDateSelect }) {
   }, [selectedDate]);
 
   return (
-    <div className="glass-strong rounded-2xl p-5 flex flex-col h-full gap-4 justify-between">
+    <div className={`glass-strong rounded-2xl p-5 flex flex-col h-full gap-4 ${showSelectedPatrakDetails ? "justify-between" : "justify-start"}`}>
       {/* 1. Header Bar matching reference layout */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-neutral-800/40">
         <div className="flex items-center gap-3">
@@ -215,7 +220,7 @@ export function CalendarCard({ selectedDate, onDateSelect }) {
           {DAYS.map(d => <div key={d} className="py-1">{d}</div>)}
         </div>
 
-        <div className={`grid grid-cols-7 gap-1.5 text-center text-xs transition-opacity ${inwardLoading || outwardLoading ? "opacity-50" : "opacity-100"}`}>
+        <div className={`grid grid-cols-7 gap-1 text-center text-xs transition-opacity ${inwardLoading || outwardLoading ? "opacity-50" : "opacity-100"}`}>
           {cells.map((c, i) => {
             const hasData = !c.muted && c.count > 0;
             return (
@@ -229,7 +234,7 @@ export function CalendarCard({ selectedDate, onDateSelect }) {
                 }}
               >
                 <span
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-all cursor-pointer relative font-bold text-[11px] ${c.isSelected
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-all cursor-pointer relative font-bold text-[10.5px] ${c.isSelected
                       ? "bg-indigo-600 text-white font-black shadow-[0_4px_12px_-3px_rgba(79,70,229,0.5)] scale-105"
                       : c.isToday
                         ? "border-2 border-indigo-600 text-indigo-600 font-extrabold hover:bg-slate-100/50 dark:hover:bg-neutral-800/40"
@@ -249,110 +254,107 @@ export function CalendarCard({ selectedDate, onDateSelect }) {
         </div>
       </div>
 
-      {/* Separator Line */}
-      <div className="h-[1px] w-full bg-slate-100 dark:bg-neutral-800/40" />
+      {showSelectedPatrakDetails && (
+        <>
+          {/* Separator Line */}
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-neutral-800/40" />
 
-      {/* 3. Patrak Event Details / Swiper Block (Replaces Product Demo and falling back to real date logs) */}
-      <div className="flex-1 flex flex-col justify-between min-h-[220px]">
-        {/* Header Summary Indicator */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/90 flex items-center gap-1.5">
-            <Layers className="h-3 w-3 text-indigo-500" />
-            Selected Date Patrak
-          </span>
-          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md">
-            {formattedSelectedDate}
-          </span>
-        </div>
+          {/* 3. Patrak Event Details / Swiper Block */}
+          <div className="flex-1 flex flex-col justify-between min-h-[220px]">
+            {/* Header Summary Indicator */}
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/90 flex items-center gap-1.5">
+                <Layers className="h-3 w-3 text-indigo-500" />
+                Selected Date Patrak
+              </span>
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md">
+                {formattedSelectedDate}
+              </span>
+            </div>
 
-        {/* Dynamic Card Display */}
-        {entriesLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-            <RefreshCw className="h-5 w-5 animate-spin text-indigo-500" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Syncing Data...</span>
-          </div>
-        ) : currentSelectedEntries.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center h-full border border-dashed border-slate-200/60 dark:border-neutral-800/50 rounded-2xl p-6 bg-slate-50/10 dark:bg-neutral-900/10">
-            <FileText className="h-7 w-7 text-slate-300 dark:text-neutral-700 mb-1" />
-            <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider text-center">
-              No entries found for this date
-            </span>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col justify-between border border-slate-200/40 dark:border-neutral-800/50 rounded-2xl p-4 bg-slate-50/30 dark:bg-neutral-900/15">
-            <div className="flex flex-col gap-3">
-              {/* Carousel Item Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
-                    {activeEntry.unique_id}
-                  </span>
-                  <h4
-                    className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
-                    title={activeEntry.subject}
-                  >
-                    {activeEntry.subject}
-                  </h4>
-                </div>
+            {/* Dynamic Card Display */}
+            {entriesLoading ? (
+              <div className="flex-1 flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+                <RefreshCw className="h-5 w-5 animate-spin text-indigo-500" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">Syncing Data...</span>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col justify-between border border-slate-200/40 dark:border-neutral-800/50 rounded-2xl p-4 bg-slate-50/30 dark:bg-neutral-900/15">
+                <div className="flex flex-col gap-3">
+                  {/* Carousel Item Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
+                        {activeEntry.unique_id}
+                      </span>
+                      <h4
+                        className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
+                        title={activeEntry.subject}
+                      >
+                        {activeEntry.subject}
+                      </h4>
+                    </div>
 
-                {/* Swiper Arrow buttons for Multi-Entry Swipe */}
-                {currentSelectedEntries.length > 1 && (
-                  <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700/50 px-1.5 py-0.5 rounded-lg shadow-sm select-none">
-                    <button
-                      onClick={() => setEntryIndex((prev) => (prev === 0 ? currentSelectedEntries.length - 1 : prev - 1))}
-                      className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                    <span className="text-[9px] font-black text-slate-500 tracking-wider">
-                      {entryIndex + 1}/{currentSelectedEntries.length}
-                    </span>
-                    <button
-                      onClick={() => setEntryIndex((prev) => (prev === currentSelectedEntries.length - 1 ? 0 : prev + 1))}
-                      className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
+                    {/* Swiper Arrow buttons for Multi-Entry Swipe */}
+                    {currentSelectedEntries.length > 1 && (
+                      <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700/50 px-1.5 py-0.5 rounded-lg shadow-sm select-none">
+                        <button
+                          onClick={() => setEntryIndex((prev) => (prev === 0 ? currentSelectedEntries.length - 1 : prev - 1))}
+                          className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                        >
+                          <ChevronLeft className="h-3 w-3" />
+                        </button>
+                        <span className="text-[9px] font-black text-slate-500 tracking-wider">
+                          {entryIndex + 1}/{currentSelectedEntries.length}
+                        </span>
+                        <button
+                          onClick={() => setEntryIndex((prev) => (prev === currentSelectedEntries.length - 1 ? 0 : prev + 1))}
+                          className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                        >
+                          <ChevronRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Icon Info Rows */}
-              <div className="space-y-2 text-[11px] font-bold text-slate-600 dark:text-neutral-300">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                  <span>{formatDateStrFull(activeEntry.received_date)}</span>
+                  {/* Icon Info Rows */}
+                  <div className="space-y-2 text-[11px] font-bold text-slate-600 dark:text-neutral-300">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                      <span>{formatDateStrFull(activeEntry.received_date)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                      <span>{formatTimeStr(activeEntry.received_date)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <User className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                      <span className="truncate">{activeEntry.sender_name} ({activeEntry.sender_designation || "Officer"})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Building className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                      <span className="uppercase tracking-widest text-[8px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
+                        {activeEntry.current_department}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                  <span>{formatTimeStr(activeEntry.received_date)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                  <span className="truncate">{activeEntry.sender_name} ({activeEntry.sender_designation || "Officer"})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Building className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                  <span className="uppercase tracking-widest text-[8px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
-                    {activeEntry.current_department}
-                  </span>
+
+                {/* About / Description Block */}
+                <div className="mt-3 border-t border-slate-100 dark:border-neutral-800/40 pt-2.5">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/90">About this patrak</span>
+                  <p
+                    className="text-[11px] font-semibold text-slate-500 dark:text-neutral-400 leading-snug mt-1.5 line-clamp-2"
+                    title={activeEntry.description || "No description provided."}
+                  >
+                    {activeEntry.description || "No official description provided for this tracking correspondence."}
+                  </p>
                 </div>
               </div>
-            </div>
-
-            {/* About / Description Block */}
-            <div className="mt-3 border-t border-slate-100 dark:border-neutral-800/40 pt-2.5">
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/90">About this patrak</span>
-              <p
-                className="text-[11px] font-semibold text-slate-500 dark:text-neutral-400 leading-snug mt-1.5 line-clamp-2"
-                title={activeEntry.description || "No description provided."}
-              >
-                {activeEntry.description || "No official description provided for this tracking correspondence."}
-              </p>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
