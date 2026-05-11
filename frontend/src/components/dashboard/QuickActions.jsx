@@ -87,7 +87,7 @@ export function QuickActions() {
               <button
                 key={a.id}
                 onClick={() => setActiveTab(a.id)}
-                className={`snap-start shrink-0 rounded-full px-5 py-2 text-[13px] sm:text-[14px] font-bold tracking-tight transition-all duration-200 border border-transparent cursor-pointer flex items-center gap-2 ${
+                className={`snap-start shrink-0 rounded-xl px-5 py-2 text-[13px] sm:text-[14px] font-bold tracking-tight transition-all duration-200 border border-transparent cursor-pointer flex items-center gap-2 ${
                   isActive
                     ? "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-black shadow-sm hover:bg-slate-800 dark:hover:bg-neutral-200"
                     : "bg-slate-100/90 hover:bg-slate-200/90 text-slate-800 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/60 dark:text-neutral-200"

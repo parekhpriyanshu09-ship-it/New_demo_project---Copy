@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { CalendarDays, Folders, Activity, TrendingUp, Loader2 } from "lucide-react";
+import { CalendarDays, Folders, Activity, Loader2 } from "lucide-react";
 import { useDateChart, useDashboardStats } from "../../hooks/useDashboard";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
@@ -78,23 +77,6 @@ export function AnalyticsCard() {
       hoverClass: "animate-hover-activity",
     },
   ];
-
-  // Trend calculation
-  const last7Days = mergedData.slice(-7);
-  const prev7Days = mergedData.slice(-14, -7);
-  const totalLast7 = last7Days.reduce((s, d) => s + d.inward, 0);
-  const totalPrev7 = prev7Days.reduce((s, d) => s + d.inward, 0);
-
-  let trendPct = 0;
-  let isTrendingUp = true;
-  if (totalPrev7 > 0) {
-    trendPct = Math.round(((totalLast7 - totalPrev7) / totalPrev7) * 100);
-    isTrendingUp = trendPct >= 0;
-  } else {
-    trendPct = 8.4;
-    isTrendingUp = true;
-  }
-  const absTrendPct = Math.abs(trendPct);
 
   return (
     <Card className="glass-strong rounded-2xl p-5 flex flex-col h-full min-h-[320px] text-foreground">
@@ -194,23 +176,6 @@ export function AnalyticsCard() {
           )}
         </div>
       </CardContent>
-
-      <CardFooter className="p-0 flex-col items-start gap-1 text-[11px] pt-4 mt-2 border-t border-slate-100/60 dark:border-neutral-800/40">
-        <div className="flex items-center gap-1.5 leading-none font-semibold text-slate-700 dark:text-neutral-300">
-          {isTrendingUp ? (
-            <>
-              Trending up by {absTrendPct}% this week <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-            </>
-          ) : (
-            <>
-              Trending down by {absTrendPct}% this week <TrendingUp className="h-3.5 w-3.5 text-rose-500 rotate-180" />
-            </>
-          )}
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total patraks merged for the last {days} days
-        </div>
-      </CardFooter>
     </Card>
   );
 }

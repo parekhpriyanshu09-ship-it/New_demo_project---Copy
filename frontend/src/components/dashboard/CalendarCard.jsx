@@ -281,61 +281,63 @@ export function CalendarCard() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col justify-between border border-slate-200/40 dark:border-neutral-800/50 rounded-2xl p-4 bg-slate-50/30 dark:bg-neutral-900/15">
-            {/* Carousel Item Header */}
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
-                  {activeEntry.unique_id}
-                </span>
-                <h4
-                  className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
-                  title={activeEntry.subject}
-                >
-                  {activeEntry.subject}
-                </h4>
-              </div>
-
-              {/* Swiper Arrow buttons for Multi-Entry Swipe */}
-              {currentSelectedEntries.length > 1 && (
-                <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700/50 px-1.5 py-0.5 rounded-lg shadow-sm select-none">
-                  <button
-                    onClick={() => setEntryIndex((prev) => (prev === 0 ? currentSelectedEntries.length - 1 : prev - 1))}
-                    className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </button>
-                  <span className="text-[9px] font-black text-slate-500 tracking-wider">
-                    {entryIndex + 1}/{currentSelectedEntries.length}
+            <div className="flex flex-col gap-3">
+              {/* Carousel Item Header */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
+                    {activeEntry.unique_id}
                   </span>
-                  <button
-                    onClick={() => setEntryIndex((prev) => (prev === currentSelectedEntries.length - 1 ? 0 : prev + 1))}
-                    className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                  <h4
+                    className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
+                    title={activeEntry.subject}
                   >
-                    <ChevronRight className="h-3 w-3" />
-                  </button>
+                    {activeEntry.subject}
+                  </h4>
                 </div>
-              )}
-            </div>
 
-            {/* Icon Info Rows */}
-            <div className="space-y-2 text-[11px] font-bold text-slate-600 dark:text-neutral-300">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>{formatDateStrFull(activeEntry.received_date)}</span>
+                {/* Swiper Arrow buttons for Multi-Entry Swipe */}
+                {currentSelectedEntries.length > 1 && (
+                  <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700/50 px-1.5 py-0.5 rounded-lg shadow-sm select-none">
+                    <button
+                      onClick={() => setEntryIndex((prev) => (prev === 0 ? currentSelectedEntries.length - 1 : prev - 1))}
+                      className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                    >
+                      <ChevronLeft className="h-3 w-3" />
+                    </button>
+                    <span className="text-[9px] font-black text-slate-500 tracking-wider">
+                      {entryIndex + 1}/{currentSelectedEntries.length}
+                    </span>
+                    <button
+                      onClick={() => setEntryIndex((prev) => (prev === currentSelectedEntries.length - 1 ? 0 : prev + 1))}
+                      className="p-1 hover:bg-slate-50 dark:hover:bg-neutral-700 rounded text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                    >
+                      <ChevronRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>{formatTimeStr(activeEntry.received_date)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <User className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span className="truncate">{activeEntry.sender_name} ({activeEntry.sender_designation || "Officer"})</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Building className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span className="uppercase tracking-widest text-[8px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
-                  {activeEntry.current_department}
-                </span>
+
+              {/* Icon Info Rows */}
+              <div className="space-y-2 text-[11px] font-bold text-slate-600 dark:text-neutral-300">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                  <span>{formatDateStrFull(activeEntry.received_date)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                  <span>{formatTimeStr(activeEntry.received_date)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <User className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                  <span className="truncate">{activeEntry.sender_name} ({activeEntry.sender_designation || "Officer"})</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Building className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                  <span className="uppercase tracking-widest text-[8px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
+                    {activeEntry.current_department}
+                  </span>
+                </div>
               </div>
             </div>
 
