@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Clock, User, Building, RefreshCw, Layers } from "lucide-react";
 import { useCalendarData } from "../../hooks/useDashboard";
-import api from "../../services/api";
+import { mockDashboardEntries } from "../../data/dashboardMockData";
 
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTHS = [
@@ -15,7 +15,6 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
   // selectedDate and onDateSelect are now controlled by the parent (Dashboard)
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const [dbEntries, setDbEntries] = useState([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
 
   // Carousel swipe state for navigating multiple entries on the same date
@@ -28,19 +27,13 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
   const { dates: calInward, loading: inwardLoading } = useCalendarData(month, year, "inward");
   const { dates: calOutward, loading: outwardLoading } = useCalendarData(month, year, "outward");
 
-  // Fetch real database patraks
-  const fetchDbEntries = () => {
+  const refreshMockEntries = () => {
     setEntriesLoading(true);
-    api.get("/api/entries", { params: { per_page: 100 } })
-      .then(res => {
-        setDbEntries(res.data.items || []);
-      })
-      .catch(err => console.error("Failed to load db entries inside calendar:", err))
-      .finally(() => setEntriesLoading(false));
+    window.setTimeout(() => setEntriesLoading(false), 150);
   };
 
   useEffect(() => {
-    fetchDbEntries();
+    refreshMockEntries();
   }, []);
 
   // Reset swipe index when selected date changes
@@ -48,17 +41,17 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     setEntryIndex(0);
   }, [selectedDate]);
 
-  // Compute marked dates for calendar indicators (dots) strictly using real database entries
+  // Compute marked dates for calendar indicators (dots) from the shared dashboard mock data.
   const markedDates = useMemo(() => {
     const counts = {};
-    dbEntries.forEach(entry => {
+    mockDashboardEntries.forEach(entry => {
       if (entry.received_date) {
         const dateStr = entry.received_date.split("T")[0];
         counts[dateStr] = (counts[dateStr] || 0) + 1;
       }
     });
     return counts;
-  }, [dbEntries]);
+  }, []);
 
   // Calendar calculations
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay();
@@ -102,14 +95,14 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     }
   }
 
-  // Filter ONLY real database entries for the selected date
+  // Filter the same shared mock patraks used by the rest of the dashboard.
   const currentSelectedEntries = useMemo(() => {
     if (!selectedDate) return [];
-    return dbEntries.filter(entry => {
+    return mockDashboardEntries.filter(entry => {
       if (!entry.received_date) return false;
       return entry.received_date.split("T")[0] === selectedDate;
     });
-  }, [selectedDate, dbEntries]);
+  }, [selectedDate]);
 
   const activeEntry = currentSelectedEntries[Math.min(entryIndex, currentSelectedEntries.length - 1)];
   const showSelectedPatrakDetails = Boolean(selectedDate && currentSelectedEntries.length > 0);
@@ -206,7 +199,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
           {/* Refresh/Sync button */}
           <button
-            onClick={fetchDbEntries}
+            onClick={refreshMockEntries}
             className={`h-8 w-8 rounded-xl bg-slate-50/50 dark:bg-neutral-900/30 border border-slate-200/40 dark:border-neutral-800/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition hover:bg-white dark:hover:bg-neutral-800/80 ${entriesLoading ? "animate-spin" : ""}`}
           >
             <RefreshCw className="h-3.5 w-3.5" />
