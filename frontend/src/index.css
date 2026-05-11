@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.9rem;
+
+  /* Core palette - Pastel theme from pastel-track-dashboard */
+  --background: oklch(0.967 0.005 260);
+  --foreground: oklch(0.28 0.04 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.28 0.04 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.28 0.04 265);
+
+  --primary: oklch(0.65 0.18 270);
+  --primary-foreground: oklch(0.99 0.003 250);
+  --secondary: oklch(0.96 0.02 250);
+  --secondary-foreground: oklch(0.32 0.04 265);
+  --muted: oklch(0.965 0.012 250);
+  --muted-foreground: oklch(0.55 0.04 260);
+  --accent: oklch(0.95 0.04 260);
+  --accent-foreground: oklch(0.3 0.05 265);
+  --destructive: oklch(0.7 0.18 25);
+  --destructive-foreground: oklch(0.99 0.003 250);
+  --border: oklch(0.92 0.015 255 / 0.7);
+  --input: oklch(0.93 0.012 255);
+  --ring: oklch(0.7 0.12 265);
+
+  /* Category accent colours */
+  --cat-purple: oklch(0.91 0.07 295);
+  --cat-green: oklch(0.93 0.07 170);
+  --cat-orange: oklch(0.93 0.07 45);
+  --cat-pink: oklch(0.92 0.06 5);
+  --cat-blue: oklch(0.92 0.06 235);
+  --cat-teal: oklch(0.93 0.07 170);
+
+  /* Pastel colors */
+  --pastel-blue: oklch(0.92 0.06 235);
+  --pastel-mint: oklch(0.93 0.07 170);
+  --pastel-pink: oklch(0.92 0.06 5);
+  --pastel-yellow: oklch(0.94 0.09 95);
+  --pastel-purple: oklch(0.91 0.07 295);
+  --pastel-peach: oklch(0.93 0.07 45);
+
+  /* Gradients */
+  --gradient-app: #f2f4f9;
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.94 0.06 235 / 0.85), oklch(0.95 0.07 170 / 0.85));
+  --gradient-export: linear-gradient(135deg, oklch(0.7 0.18 260), oklch(0.68 0.2 295));
+  --gradient-card-blue: linear-gradient(135deg, oklch(0.985 0.015 235), oklch(0.965 0.03 235));
+  --gradient-card-mint: linear-gradient(135deg, oklch(0.97 0.04 170), oklch(0.93 0.08 170));
+  --gradient-card-pink: linear-gradient(135deg, oklch(0.98 0.03 5), oklch(0.93 0.07 5));
+  --gradient-card-yellow: linear-gradient(135deg, oklch(0.98 0.04 95), oklch(0.93 0.1 90));
+  --gradient-card-purple: linear-gradient(135deg, oklch(0.97 0.03 295), oklch(0.93 0.08 295));
+  --gradient-card-gray: linear-gradient(135deg, oklch(0.98 0.005 260), oklch(0.94 0.012 260));
+  --gradient-line: linear-gradient(90deg, oklch(0.65 0.2 295), oklch(0.7 0.18 200));
+
+  /* Shadows */
+  --shadow-glass: 0 6px 18px -8px oklch(0.4 0.05 265 / 0.18), 0 2px 6px -2px oklch(0.4 0.05 265 / 0.08);
+  --shadow-glow: 0 14px 36px -16px oklch(0.5 0.15 270 / 0.35);
+  --shadow-soft: 0 6px 16px -8px oklch(0.4 0.05 260 / 0.18);
+
+  /* Shadcn Sidebar variables - Tailored to the existing pastel theme */
+  --sidebar-background: oklch(0.967 0.005 260 / 0.85);
+  --sidebar-foreground: oklch(0.28 0.04 265);
+  --sidebar-primary: oklch(0.65 0.18 270);
+  --sidebar-primary-foreground: oklch(0.99 0.003 250);
+  --sidebar-accent: oklch(1 0 0 / 0.55);
+  --sidebar-accent-foreground: oklch(0.28 0.04 265);
+  --sidebar-border: oklch(0.92 0.015 255 / 0.5);
+  --sidebar-ring: oklch(0.7 0.12 265);
+  --sidebar-width: 260px;
+  --sidebar-width-icon: 64px;
+}
+
+.dark {
+  --background: oklch(0.15 0.02 265);
+  --foreground: oklch(0.95 0.005 260);
+  --card: oklch(0.18 0.02 265);
+  --card-foreground: oklch(0.95 0.005 260);
+  --popover: oklch(0.18 0.02 265);
+  --popover-foreground: oklch(0.95 0.005 260);
+
+  --primary: oklch(0.75 0.18 270);
+  --primary-foreground: oklch(0.2 0.02 265);
+  --secondary: oklch(0.22 0.02 265);
+  --secondary-foreground: oklch(0.95 0.005 260);
+  --muted: oklch(0.22 0.02 265);
+  --muted-foreground: oklch(0.7 0.02 260);
+  --accent: oklch(0.25 0.02 265);
+  --accent-foreground: oklch(0.95 0.005 260);
+  --destructive: oklch(0.7 0.18 25);
+  --destructive-foreground: oklch(0.95 0.005 260);
+  --border: oklch(0.3 0.02 265 / 0.5);
+  --input: oklch(0.28 0.02 265);
+  --ring: oklch(0.75 0.15 270);
+
+  --shadow-glass: 0 6px 18px -8px oklch(0 0 0 / 0.3), 0 2px 6px -2px oklch(0 0 0 / 0.15);
+
+  /* Shadcn Sidebar Dark Variables */
+  --sidebar-background: oklch(0.18 0.02 265 / 0.85);
+  --sidebar-foreground: oklch(0.95 0.005 260);
+  --sidebar-primary: oklch(0.75 0.18 270);
+  --sidebar-primary-foreground: oklch(0.2 0.02 265);
+  --sidebar-accent: oklch(0.25 0.02 265 / 0.6);
+  --sidebar-accent-foreground: oklch(0.95 0.005 260);
+  --sidebar-border: oklch(0.3 0.02 265 / 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html {
+  font-size: 80%;
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 120%;
+    /* 80% × 1.5 = 120% → simulates 150% zoom on big monitors only */
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--gradient-app);
+  background-attachment: fixed;
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer components {
+  .glass {
+    background: color-mix(in oklab, white 70%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid color-mix(in oklab, white 50%, transparent);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-strong {
+    background: color-mix(in oklab, white 80%, transparent);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid color-mix(in oklab, white 60%, transparent);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glow-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .card-premium {
+    background-color: var(--card);
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-glass);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-premium:hover {
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+  border-radius: 9999px;
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Premium Lordicon-style Hover Animations */
+@keyframes premium-calendar-swing {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(12deg) scale(1.15); }
+  75% { transform: rotate(-12deg) scale(1.15); }
+}
+
+@keyframes premium-folder-pop {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  50% { transform: translateY(-4px) scale(1.22) rotate(4deg); }
+}
+
+@keyframes premium-activity-pulse {
+  0%, 100% { transform: scale(1); }
+  20% { transform: scale(1.28); }
+  40% { transform: scale(1.12); }
+  60% { transform: scale(1.28); }
+  80% { transform: scale(1.04); }
+}
+
+.group:hover .animate-hover-calendar {
+  animation: premium-calendar-swing 0.75s ease-in-out infinite;
+}
+
+.group:hover .animate-hover-folder {
+  animation: premium-folder-pop 0.7s ease-in-out infinite;
+}
+
+.group:hover .animate-hover-activity {
+  animation: premium-activity-pulse 0.85s ease-in-out infinite;
+}

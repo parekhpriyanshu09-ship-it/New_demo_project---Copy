@@ -1,0 +1,22 @@
+# Dependencies
+frontend/node_modules/
+backend/env/
+backend/venv/
+backend/.env
+backend/cookies.txt
+backend/temp_qr.png
+backend/*.db
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+
+# Build outputs
+frontend/dist/
+
+# IDEs, Editors, and OS-specific files
+.claude/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp

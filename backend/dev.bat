@@ -1,0 +1,3 @@
+@echo off
+echo Starting Uvicorn with proper reload exclusions...
+uvicorn main:app --reload --reload-exclude "venv*" --reload-exclude "env*" --port 8000

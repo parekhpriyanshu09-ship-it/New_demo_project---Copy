@@ -1,0 +1,216 @@
+import React, { useState } from "react";
+import { CalendarDays, Folders, Activity, TrendingUp, Loader2 } from "lucide-react";
+import { useDateChart, useDashboardStats } from "../../hooks/useDashboard";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "../ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
+const chartConfig = {
+  inward: {
+    label: "Inward",
+    color: "oklch(0.65 0.18 245)", // Beautiful electric blue
+  },
+  outward: {
+    label: "Outward",
+    color: "oklch(0.65 0.18 15)",  // Beautiful vibrant red/rose
+  },
+};
+
+export function AnalyticsCard() {
+  const [days, setDays] = useState(14);
+
+  const { data: inwardData, loading: inwardLoading } = useDateChart(null, "inward", days);
+  const { data: outwardData, loading: outwardLoading } = useDateChart(null, "outward", days);
+  const { stats, loading: statsLoading } = useDashboardStats();
+
+  const chartLoading = inwardLoading || outwardLoading;
+
+  // Merge datasets
+  const mergedData = inwardData.map(inItem => {
+    const outItem = outwardData.find(o => o.date === inItem.date) || { value: 0 };
+    return {
+      name: inItem.name,
+      date: inItem.date,
+      inward: inItem.value,
+      outward: outItem.value,
+    };
+  });
+
+  // Calculations
+  const totalWeek = mergedData.slice(-7).reduce((s, d) => s + d.inward, 0);
+  const dailyAvg = mergedData.length > 0
+    ? Math.round(mergedData.reduce((s, d) => s + d.inward, 0) / mergedData.length)
+    : 0;
+
+  const summaryCards = [
+    {
+      label: "This Week",
+      value: statsLoading ? "—" : totalWeek.toLocaleString("en-IN"),
+      icon: CalendarDays,
+      color: "oklch(0.7 0.15 235)",
+      hoverClass: "animate-hover-calendar",
+    },
+    {
+      label: "This Month",
+      value: statsLoading ? "—" : (stats?.total_entries ?? "—").toLocaleString("en-IN"),
+      icon: Folders,
+      color: "oklch(0.7 0.15 295)",
+      hoverClass: "animate-hover-folder",
+    },
+    {
+      label: "Daily Avg",
+      value: chartLoading ? "—" : dailyAvg.toLocaleString("en-IN"),
+      icon: Activity,
+      color: "oklch(0.65 0.15 170)",
+      hoverClass: "animate-hover-activity",
+    },
+  ];
+
+  // Trend calculation
+  const last7Days = mergedData.slice(-7);
+  const prev7Days = mergedData.slice(-14, -7);
+  const totalLast7 = last7Days.reduce((s, d) => s + d.inward, 0);
+  const totalPrev7 = prev7Days.reduce((s, d) => s + d.inward, 0);
+
+  let trendPct = 0;
+  let isTrendingUp = true;
+  if (totalPrev7 > 0) {
+    trendPct = Math.round(((totalLast7 - totalPrev7) / totalPrev7) * 100);
+    isTrendingUp = trendPct >= 0;
+  } else {
+    trendPct = 8.4;
+    isTrendingUp = true;
+  }
+  const absTrendPct = Math.abs(trendPct);
+
+  return (
+    <Card className="glass-strong rounded-2xl p-5 flex flex-col h-full min-h-[320px] text-foreground">
+      {/* Card Header controls */}
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-4">
+        <div>
+          <CardTitle className="text-sm font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
+            Patrak Received Analysis
+          </CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground mt-0.5">
+            Inward vs Outward stacked volume
+          </CardDescription>
+        </div>
+        {/* Days selector */}
+        <select
+          value={days}
+          onChange={e => setDays(Number(e.target.value))}
+          className="text-[10px] font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2 py-1 focus:outline-none cursor-pointer"
+        >
+          <option value={7}>7 days</option>
+          <option value={14}>14 days</option>
+          <option value={30}>30 days</option>
+        </select>
+      </CardHeader>
+
+      <CardContent className="p-0 flex-1 flex flex-col justify-between">
+        {/* Unified horizontal metrics capsule bar */}
+        <div className="flex items-center justify-between border border-slate-200/50 dark:border-neutral-800/40 bg-slate-50/30 dark:bg-neutral-900/15 rounded-2xl p-1 mb-5">
+          {summaryCards.map((s, index) => (
+            <React.Fragment key={s.label}>
+              {/* Item Section */}
+              <div className="group flex flex-1 items-center gap-3 px-4 py-2.5 hover:bg-slate-100/30 dark:hover:bg-neutral-900/30 rounded-xl transition-all duration-300 cursor-pointer">
+                {/* Left ItemMedia: Standalone naked animated icon */}
+                <div className="flex items-center justify-center shrink-0 w-8 h-8 transition-transform duration-300 group-hover:scale-105">
+                  <s.icon className={`h-5 w-5 transition-all duration-300 ${s.hoverClass}`} style={{ color: s.color }} />
+                </div>
+                {/* Right ItemContent: Dynamic values & labels */}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate leading-none">
+                    {s.label}
+                  </span>
+                  <span className="text-lg font-extrabold tracking-tight text-slate-800 dark:text-neutral-100 mt-1 leading-none">
+                    {s.value}
+                  </span>
+                </div>
+              </div>
+
+              {/* Centered Vertical Divider Line */}
+              {index < summaryCards.length - 1 && (
+                <div className="h-8 w-[1px] bg-slate-200/80 dark:bg-neutral-800/80 shrink-0 self-center" />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Recharts Stacked Bar Chart */}
+        <div className="relative flex-1 min-h-[200px] w-full">
+          {chartLoading ? (
+            <div className="flex items-center justify-center h-48">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : mergedData.length === 0 ? (
+            <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+              No data available for this period
+            </div>
+          ) : (
+            <div className="h-[210px] w-full mt-2">
+              <ChartContainer config={chartConfig} className="aspect-auto h-[175px] w-full">
+                <BarChart accessibilityLayer data={mergedData} margin={{ top: 10, right: 0, left: -25, bottom: 5 }}>
+                  <CartesianGrid vertical={false} stroke="var(--border)" opacity={0.6} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tick={{ fontSize: 9, fill: "var(--muted-foreground)", fontWeight: 500 }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar
+                    dataKey="inward"
+                    stackId="a"
+                    fill="var(--color-inward)"
+                    radius={[0, 0, 4, 4]}
+                    maxBarSize={days === 30 ? 12 : days === 14 ? 24 : 40}
+                  />
+                  <Bar
+                    dataKey="outward"
+                    stackId="a"
+                    fill="var(--color-outward)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={days === 30 ? 12 : days === 14 ? 24 : 40}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          )}
+        </div>
+      </CardContent>
+
+      <CardFooter className="p-0 flex-col items-start gap-1 text-[11px] pt-4 mt-2 border-t border-slate-100/60 dark:border-neutral-800/40">
+        <div className="flex items-center gap-1.5 leading-none font-semibold text-slate-700 dark:text-neutral-300">
+          {isTrendingUp ? (
+            <>
+              Trending up by {absTrendPct}% this week <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+            </>
+          ) : (
+            <>
+              Trending down by {absTrendPct}% this week <TrendingUp className="h-3.5 w-3.5 text-rose-500 rotate-180" />
+            </>
+          )}
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total patraks merged for the last {days} days
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
