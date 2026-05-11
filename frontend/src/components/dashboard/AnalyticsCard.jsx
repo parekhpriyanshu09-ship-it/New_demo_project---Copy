@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, Folders, Activity, Loader2 } from "lucide-react";
+import { CalendarDays, Folders, Activity, Loader2, ChevronDown } from "lucide-react";
 import { useDateChart, useDashboardStats } from "../../hooks/useDashboard";
 import {
   Card,
@@ -8,6 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../ui/dropdown-menu";
 import {
   ChartContainer,
   ChartLegend,
@@ -91,15 +97,28 @@ export function AnalyticsCard() {
           </CardDescription>
         </div>
         {/* Days selector */}
-        <select
-          value={days}
-          onChange={e => setDays(Number(e.target.value))}
-          className="text-[10px] font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2 py-1 focus:outline-none cursor-pointer"
-        >
-          <option value={7}>7 days</option>
-          <option value={14}>14 days</option>
-          <option value={30}>30 days</option>
-        </select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 text-[10px] font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 focus:outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors text-slate-800 dark:text-neutral-100">
+              <span>{days} days</span>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[85px] w-[85px] bg-white dark:bg-neutral-900 border border-border ring-0 shadow-md p-1">
+            <DropdownMenuItem
+              onClick={() => setDays(7)}
+              className={`text-[11px] cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 7 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+            >
+              7 days
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setDays(14)}
+              className={`text-[11px] cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 14 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+            >
+              14 days
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
 
       <CardContent className="p-0 flex-1 flex flex-col justify-between">
