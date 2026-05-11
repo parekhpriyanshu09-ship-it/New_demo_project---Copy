@@ -9,13 +9,12 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-export function CalendarCard() {
+export function CalendarCard({ selectedDate, onDateSelect }) {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Default selected date: today (YYYY-MM-DD)
+  // selectedDate and onDateSelect are now controlled by the parent (Dashboard)
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [dbEntries, setDbEntries] = useState([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
 
@@ -70,7 +69,7 @@ export function CalendarCard() {
   const nextMonth = () => setCurrentDate(new Date(year, month, 1));
   const goToday = () => {
     setCurrentDate(new Date());
-    setSelectedDate(todayStr);
+    onDateSelect(todayStr);
   };
 
   const getDateStr = (day) =>
@@ -225,7 +224,7 @@ export function CalendarCard() {
                 className="py-0.5 relative flex items-center justify-center"
                 onClick={() => {
                   if (!c.muted) {
-                    setSelectedDate(c.dateStr);
+                    onDateSelect(c.dateStr);
                   }
                 }}
               >

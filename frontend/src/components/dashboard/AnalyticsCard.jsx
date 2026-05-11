@@ -34,11 +34,11 @@ const chartConfig = {
   },
 };
 
-export function AnalyticsCard() {
+export function AnalyticsCard({ selectedDate }) {
   const [days, setDays] = useState(14);
 
-  const { data: inwardData, loading: inwardLoading } = useDateChart(null, "inward", days);
-  const { data: outwardData, loading: outwardLoading } = useDateChart(null, "outward", days);
+  const { data: inwardData, loading: inwardLoading } = useDateChart(selectedDate, "inward", days);
+  const { data: outwardData, loading: outwardLoading } = useDateChart(selectedDate, "outward", days);
   const { stats, loading: statsLoading } = useDashboardStats();
 
   const chartLoading = inwardLoading || outwardLoading;
@@ -94,6 +94,11 @@ export function AnalyticsCard() {
           </CardTitle>
           <CardDescription className="text-[11px] text-muted-foreground mt-0.5">
             Inward vs Outward stacked volume
+            {selectedDate && (
+              <span className="ml-1 text-indigo-500 dark:text-indigo-400 font-semibold">
+                · ending {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+              </span>
+            )}
           </CardDescription>
         </div>
         {/* Days selector */}
