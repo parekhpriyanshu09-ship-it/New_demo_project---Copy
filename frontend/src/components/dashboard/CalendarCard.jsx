@@ -45,17 +45,13 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     setEntryIndex(0);
   }, [selectedDate]);
 
-  // Compute marked dates for calendar indicators (dots) from the shared dashboard mock data.
+  // Compute marked dates for calendar indicators (dots) using calendar data
   const markedDates = useMemo(() => {
     const counts = {};
-    mockDashboardEntries.forEach(entry => {
-      if (entry.received_date) {
-        const dateStr = entry.received_date.split("T")[0];
-        counts[dateStr] = (counts[dateStr] || 0) + 1;
-      }
-    });
+    calInward.forEach(item => { counts[item.date] = (counts[item.date] || 0) + item.count });
+    calOutward.forEach(item => { counts[item.date] = (counts[item.date] || 0) + item.count });
     return counts;
-  }, []);
+  }, [calInward, calOutward]);
 
   // Calendar calculations
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay();
@@ -95,12 +91,14 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     }
   }
 
-  // Filter the same shared mock patraks used by the rest of the dashboard.
+  // Filter entries for selected date - properly parse dates to handle timezone
   const currentSelectedEntries = useMemo(() => {
     if (!selectedDate) return [];
     return mockDashboardEntries.filter(entry => {
       if (!entry.received_date) return false;
-      return entry.received_date.split("T")[0] === selectedDate;
+      const entryDate = new Date(entry.received_date);
+      const entryDateStr = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, "0")}-${String(entryDate.getDate()).padStart(2, "0")}`;
+      return entryDateStr === selectedDate;
     });
   }, [selectedDate]);
 
