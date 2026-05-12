@@ -18,7 +18,7 @@ export default function Layout({ children }) {
   }, [])
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--gradient-app)", backgroundAttachment: "fixed" }}>
+    <div className="min-h-screen min-h-dvh flex" style={{ background: "var(--gradient-app)", backgroundAttachment: "fixed" }}>
       {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
@@ -34,7 +34,7 @@ export default function Layout({ children }) {
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden relative">
+      <div className="flex-1 flex flex-col min-h-screen min-h-dvh overflow-x-hidden relative">
         <Navbar
           sidebarCollapsed={sidebarCollapsed}
           onMenuClick={() => {

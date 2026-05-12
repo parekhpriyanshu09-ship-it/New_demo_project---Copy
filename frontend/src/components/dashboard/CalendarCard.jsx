@@ -14,7 +14,6 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // selectedDate and onDateSelect are now controlled by the parent (Dashboard)
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const [entriesLoading, setEntriesLoading] = useState(false);
 
   // Carousel swipe state for navigating multiple entries on the same date
@@ -22,6 +21,11 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
   const month = currentDate.getMonth() + 1; // 1-indexed
   const year = currentDate.getFullYear();
+  const selectedDateObj = useMemo(() => {
+    if (!selectedDate) return today;
+    const [selectedYear, selectedMonth, selectedDay] = selectedDate.split("-").map(Number);
+    return new Date(selectedYear, selectedMonth - 1, selectedDay);
+  }, [selectedDate, today]);
 
   // Fetch calendar dates activity indicators (dots)
   const { dates: calInward, loading: inwardLoading } = useCalendarData(month, year, "inward");
@@ -60,10 +64,6 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 2, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month, 1));
-  const goToday = () => {
-    setCurrentDate(new Date());
-    onDateSelect(todayStr);
-  };
 
   const getDateStr = (day) =>
     `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -152,24 +152,24 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
           {/* Mini Calendar Date block icon */}
           <div className="flex flex-col items-center justify-center bg-slate-100/80 dark:bg-neutral-800/80 rounded-xl h-14 w-14 border border-slate-200/50 dark:border-neutral-700/30 shrink-0 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/90">
-              {MONTHS[today.getMonth()].slice(0, 3)}
+              {MONTHS[month - 1].slice(0, 3)}
             </span>
             <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 leading-none mt-0.5">
-              {today.getDate()}
+              {selectedDateObj.getDate()}
             </span>
           </div>
           {/* Calendar Titles */}
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-base font-extrabold text-slate-800 dark:text-neutral-100 tracking-tight leading-none">
-                {MONTHS[month - 1]} {year}
+                {year}
               </span>
               <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-neutral-800/80 text-muted-foreground px-1.5 py-0.5 rounded-md leading-none">
-                Week {Math.ceil((today.getDate() + firstDayOfMonth) / 7)}
+                Week {Math.ceil((selectedDateObj.getDate() + firstDayOfMonth) / 7)}
               </span>
             </div>
             <span className="text-xs font-semibold text-muted-foreground/80 mt-1 leading-none">
-              {today.toLocaleDateString("en-IN", { weekday: "long" })}
+              {selectedDateObj.toLocaleDateString("en-IN", { weekday: "long" })}
             </span>
           </div>
         </div>
@@ -183,12 +183,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
             >
               <ChevronLeft className="h-4.5 w-4.5" />
             </button>
-            <button
-              onClick={goToday}
-              className="text-xs font-black px-3.5 py-1.5 hover:bg-white dark:hover:bg-neutral-800/80 rounded-lg transition text-slate-700 dark:text-neutral-200 leading-none"
-            >
-              Today
-            </button>
+            <div className="h-8 w-[54px]" aria-hidden="true" />
             <button
               onClick={nextMonth}
               className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800/80 transition text-muted-foreground hover:text-foreground"

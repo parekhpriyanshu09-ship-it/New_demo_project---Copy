@@ -1,17 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Plus, ScanLine, Upload, Search, FileBarChart, ClipboardList } from "lucide-react";
 
 const actions = [
-  { id: "entry", label: "Entry Form", icon: Plus },
-  { id: "scan", label: "Scan QR Code", icon: ScanLine },
-  { id: "upload", label: "Upload QR Code", icon: Upload },
-  { id: "search", label: "Tracking Search", icon: Search },
-  { id: "reports", label: "View Reports", icon: FileBarChart },
-  { id: "logs", label: "View Logs", icon: ClipboardList },
+  { id: "entry", label: "Entry Form", icon: Plus, path: "/letters" },
+  { id: "scan", label: "Scan QR Code", icon: ScanLine, path: "/scanner" },
+  { id: "upload", label: "Upload QR Code", icon: Upload, path: "/scanner" },
+  { id: "search", label: "Tracking Search", icon: Search, path: "/track-patrak" },
+  { id: "reports", label: "View Reports", icon: FileBarChart, path: "/reports" },
+  { id: "logs", label: "View Logs", icon: ClipboardList, path: "/logs" },
 ];
 
 export function QuickActions() {
-  const [activeTab, setActiveTab] = useState("entry");
+  const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -45,12 +46,12 @@ export function QuickActions() {
   };
 
   return (
-    <div className="glass-strong rounded-2xl p-4 flex items-center justify-between text-foreground w-full">
+    <div className="flex items-center justify-between text-foreground w-full">
       {/* Slide-show Pill Track Container */}
       <div className="relative flex items-center flex-1 w-full min-w-0">
         {/* Left Arrow Button with Fading Gradient Mask */}
         {showLeftArrow && (
-          <div className="absolute left-0 top-0 bottom-0 flex items-center pr-10 z-10 bg-gradient-to-r from-white dark:from-[#0d0f14] via-white/80 dark:via-[#0d0f14]/80 to-transparent pointer-events-none rounded-l-2xl">
+          <div className="absolute left-0 top-0 bottom-0 flex items-center pr-10 z-10 bg-gradient-to-r from-background via-background/80 to-transparent pointer-events-none">
             <button
               onClick={() => scroll("left")}
               className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-md hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
@@ -63,7 +64,7 @@ export function QuickActions() {
 
         {/* Right Arrow Button with Fading Gradient Mask */}
         {showRightArrow && (
-          <div className="absolute right-0 top-0 bottom-0 flex items-center pl-10 z-10 bg-gradient-to-l from-white dark:from-[#0d0f14] via-white/80 dark:via-[#0d0f14]/80 to-transparent pointer-events-none rounded-r-2xl">
+          <div className="absolute right-0 top-0 bottom-0 flex items-center pl-10 z-10 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none">
             <button
               onClick={() => scroll("right")}
               className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-md hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
@@ -78,26 +79,19 @@ export function QuickActions() {
         <div
           ref={scrollContainerRef}
           onScroll={updateArrows}
-          className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 w-full select-none scroll-smooth snap-x snap-mandatory justify-start sm:justify-center"
+          className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-1 w-full select-none scroll-smooth snap-x snap-mandatory justify-start sm:justify-center"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {actions.map((a) => {
-            const isActive = activeTab === a.id;
-            return (
-              <button
-                key={a.id}
-                onClick={() => setActiveTab(a.id)}
-                className={`snap-start shrink-0 rounded-xl px-5 py-2 text-[13px] sm:text-[14px] font-bold tracking-tight transition-all duration-200 border border-transparent cursor-pointer flex items-center gap-2 ${
-                  isActive
-                    ? "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-black shadow-sm hover:bg-slate-800 dark:hover:bg-neutral-200"
-                    : "bg-slate-100/90 hover:bg-slate-200/90 text-slate-800 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/60 dark:text-neutral-200"
-                }`}
-              >
-                <a.icon className="h-4 w-4 shrink-0" />
-                <span>{a.label}</span>
-              </button>
-            );
-          })}
+          {actions.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => navigate(a.path)}
+              className="snap-start shrink-0 rounded-xl px-5 py-2 text-[13px] sm:text-[14px] font-bold tracking-tight transition-all duration-200 border border-slate-200/80 dark:border-neutral-800 cursor-pointer flex items-center gap-2 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 active:scale-95"
+            >
+              <a.icon className="h-4 w-4 shrink-0" />
+              <span>{a.label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>

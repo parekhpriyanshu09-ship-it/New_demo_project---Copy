@@ -183,7 +183,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
       <motion.aside
         animate={{ width: isCollapsed ? 64 : 260 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="hidden lg:flex shrink-0 flex-col gap-4 p-4 border-r border-slate-200/60 dark:border-neutral-800/80 sticky top-0 h-screen bg-white dark:bg-[#0c0c0e] z-50 overflow-hidden"
+        className="hidden lg:flex shrink-0 flex-col gap-4 p-4 border-r border-slate-200/60 dark:border-neutral-800/80 sticky top-0 h-screen h-dvh bg-white dark:bg-[#0c0c0e] z-50 overflow-hidden"
       >
         {/* Acme-style Selector Header */}
         <div 
@@ -483,7 +483,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="lg:hidden fixed left-0 top-0 h-full w-[260px] shadow-2xl z-50 flex flex-col border-r border-slate-200/60 dark:border-neutral-800/80 bg-white dark:bg-[#0c0c0e] p-4"
+            className="lg:hidden fixed left-0 top-0 h-screen h-dvh w-[260px] shadow-2xl z-50 flex flex-col border-r border-slate-200/60 dark:border-neutral-800/80 bg-white dark:bg-[#0c0c0e] p-4"
           >
             {/* Mobile Header Selector */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-neutral-800/80">
