@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/layout/Layout'
-import { Button, Modal } from '../components/common'
+import { Button } from '../components/common'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useDebounce } from '../hooks/useDebounce'
-import { canCreateEntry, canGenerateQR, DEPARTMENTS } from '../utils/roleGuard'
+import { canCreateEntry, canGenerateQR } from '../utils/roleGuard'
 import { formatShortDate } from '../utils/dateUtils'
 import toast from 'react-hot-toast'
 import { 
-  Search, 
   Plus, 
   Eye, 
   QrCode, 
@@ -19,13 +18,19 @@ import {
   FileText,
   CheckCircle2,
   Calendar as CalendarIcon,
-  ChevronDown,
   Mail,
   Printer,
   Building2,
   UserRound,
   Activity,
-  Copy
+  Copy,
+  X,
+  MapPin,
+  Send,
+  Sparkles,
+  Clock,
+  ArrowRight,
+  LayoutGrid
 } from 'lucide-react'
 
 const containerVariants = {
@@ -44,14 +49,13 @@ const itemVariants = {
 export default function Letters() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const detailsRef = useRef(null)
   const [entries, setEntries] = useState([])
   const [selectedEntry, setSelectedEntry] = useState(null)
+  const [showEntryDetails, setShowEntryDetails] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState(searchParams.get('search') || '')
-  const [selectedDepartment, setSelectedDepartment] = useState('All')
+  const [search, setSearch] = useState('')
   const [pagination, setPagination] = useState({ page: 1, per_page: 10, total: 0, pages: 0 })
-  const [showCreateModal, setShowCreateModal] = useState(false)
   const [createForm, setCreateForm] = useState({
     subject: '',
     sender_name: '',
@@ -62,41 +66,16 @@ export default function Letters() {
     receiving_mode: 'Physical',
     sender_email: '',
     fax_number: '',
+    unit_district: '',
+    send_to: '',
   })
   const [creating, setCreating] = useState(false)
-  const [summaryStats, setSummaryStats] = useState({
-    total: 0,
-    pending: 0,
-    in_transit: 0,
-    received: 0
-  })
 
   const debouncedSearch = useDebounce(search, 300)
 
   useEffect(() => {
-    const q = searchParams.get('search') || ''
-    if (q !== debouncedSearch && q !== search) {
-      setSearch(q)
-    }
-
-    if (searchParams.get('action') === 'new') {
-      setShowCreateModal(true)
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams)
-    if (debouncedSearch) {
-      params.set('search', debouncedSearch)
-    } else {
-      params.delete('search')
-    }
-    setSearchParams(params, { replace: true })
-  }, [debouncedSearch, setSearchParams])
-
-  useEffect(() => {
     fetchEntries()
-  }, [debouncedSearch, selectedDepartment, pagination.page])
+  }, [debouncedSearch, pagination.page])
 
   const fetchEntries = async () => {
     setLoading(true)
@@ -105,30 +84,24 @@ export default function Letters() {
         page: pagination.page,
         per_page: pagination.per_page,
         search: debouncedSearch || undefined,
-        department: selectedDepartment !== 'All' ? selectedDepartment : undefined,
       }
 
       const res = await api.get('/api/entries', { params })
       const items = res.data.items || []
       setEntries(items)
-      setSelectedEntry(current => {
-        if (!items.length) return null
-        if (!current) return items[0]
-        return items.find(item => item.id === current.id) || items[0]
-      })
+      
+      if (!selectedEntry && items.length > 0) {
+        setSelectedEntry(items[0])
+      } else if (selectedEntry) {
+        const updated = items.find(item => item.id === selectedEntry.id)
+        if (!updated) setSelectedEntry(items[0] || null)
+      }
+      
       setPagination({
         page: res.data.page,
         per_page: res.data.per_page,
         total: res.data.total,
         pages: res.data.pages,
-      })
-
-      // Simulated stats for now
-      setSummaryStats({
-        total: res.data.total || 0,
-        pending: Math.floor((res.data.total || 0) * 0.3),
-        in_transit: Math.floor((res.data.total || 0) * 0.5),
-        received: Math.floor((res.data.total || 0) * 0.2)
       })
     } catch (error) {
       console.error('Failed to fetch entries:', error)
@@ -153,7 +126,16 @@ export default function Letters() {
       }
       const res = await api.post('/api/entries', payload)
       toast.success('Entry created successfully!')
-      setShowCreateModal(false)
+      
+      const createdEntry = res.data?.entry || res.data
+      if (createdEntry?.id) {
+        setSelectedEntry(createdEntry)
+        setShowEntryDetails(true)
+        setTimeout(() => {
+          detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 400)
+      }
+      
       setCreateForm({
         subject: '',
         sender_name: '',
@@ -164,11 +146,10 @@ export default function Letters() {
         receiving_mode: 'Physical',
         sender_email: '',
         fax_number: '',
+        unit_district: '',
+        send_to: '',
       })
-      const createdEntry = res.data?.entry || res.data
-      if (createdEntry?.id) {
-        setSelectedEntry(createdEntry)
-      }
+      
       fetchEntries()
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create entry')
@@ -196,47 +177,397 @@ export default function Letters() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-[1500px] mx-auto space-y-5 pb-10"
+        className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pb-10"
       >
-        {/* Header Section */}
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2">
-          <div className="flex flex-col gap-0.5">
-             <h1 className="text-lg sm:text-xl font-black text-slate-800 font-heading tracking-tight leading-none">
-                Letters &amp; Patrak Directory
-             </h1>
-             <p className="text-slate-400 font-bold text-[11px]">
-                Comprehensive list of all tracked correspondence within the system.
-             </p>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-             <div className="bg-white border border-slate-50 rounded-xl px-3 sm:px-4 py-2 shadow-sm flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-all">
-                <CalendarIcon size={14} className="text-slate-400" />
-                <span className="text-[11px] font-black text-slate-700">All Time</span>
-                <ChevronDown size={14} className="text-slate-300" />
-             </div>
-             {canCreateEntry(user?.role, user?.department) && (
-               <Button onClick={() => setShowCreateModal(true)} className="!bg-[#dc2626] hover:!bg-red-700 !rounded-xl shadow-lg shadow-red-100">
-                 <Plus size={16} strokeWidth={3} />
-                 <span className="text-[11px] font-black uppercase tracking-widest ml-1">New Tapal Entry</span>
-               </Button>
-             )}
-          </div>
+        {/* Page Header */}
+        <motion.div variants={itemVariants} className="mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Letters & Patrak
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage and track all correspondence entries
+          </p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_430px] gap-5 items-start">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-[12px] font-black text-slate-800 uppercase tracking-widest">Tapal List</h2>
-                <p className="text-[10px] font-bold text-slate-400 mt-1">Showing {entries.length} of {pagination.total} records</p>
+        {/* Main Content Area */}
+        <motion.div variants={itemVariants} className="space-y-6">
+          
+          {/* Form + Details Row */}
+          <div className={`grid transition-all duration-300 ease-in-out ${
+            showEntryDetails 
+              ? 'lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]' 
+              : 'grid-cols-1'
+          } gap-6 items-start`}>
+            
+            {/* New Tapal Entry Form */}
+            <motion.div
+              layout
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+            >
+              {/* Form Header */}
+              <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 sm:px-6 py-4 flex items-center gap-4">
+                <div className="p-2 bg-white/10 rounded-xl">
+                  <FileText size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-white font-semibold">New Tapal Entry</h2>
+                  <p className="text-slate-300 text-xs">Fill in the details below to create a new entry</p>
+                </div>
+              </div>
+              
+              <form onSubmit={handleCreateEntry} className="p-5 sm:p-6 space-y-5">
+                {/* Receiving Mode Selector */}
+                <div className="space-y-3">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                    Receiving Mode <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'Physical', label: 'Physical', icon: QrCode, desc: 'Paper' },
+                      { id: 'Mails', label: 'Email', icon: Mail, desc: 'Digital' },
+                      { id: 'Fax', label: 'Fax', icon: Printer, desc: 'Fax Line' }
+                    ].map((mode) => {
+                      const Icon = mode.icon;
+                      const isSelected = createForm.receiving_mode === mode.id;
+                      return (
+                        <button
+                          type="button"
+                          key={mode.id}
+                          onClick={() => setCreateForm({ ...createForm, receiving_mode: mode.id })}
+                          className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${
+                            isSelected
+                              ? 'border-red-500 bg-red-50 text-red-600'
+                              : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100'
+                          }`}
+                        >
+                          <Icon className="h-6 w-6" />
+                          <div className="text-center">
+                            <span className="text-sm font-semibold block">{mode.label}</span>
+                            <span className="text-xs text-slate-400">{mode.desc}</span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Dynamic Mode Inputs */}
+                <AnimatePresence>
+                  {createForm.receiving_mode === 'Mails' && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2 overflow-hidden"
+                    >
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Email <span className="text-red-500">*</span></label>
+                      <input
+                        required
+                        type="email"
+                        value={createForm.sender_email}
+                        onChange={(e) => setCreateForm({ ...createForm, sender_email: e.target.value })}
+                        placeholder="sender@government.gov.in"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                      />
+                    </motion.div>
+                  )}
+
+                  {createForm.receiving_mode === 'Fax' && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2 overflow-hidden"
+                    >
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fax Number <span className="text-red-500">*</span></label>
+                      <input
+                        required
+                        value={createForm.fax_number}
+                        onChange={(e) => setCreateForm({ ...createForm, fax_number: e.target.value })}
+                        placeholder="+91 (79) 2325-XXXX"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Unit/District and Send To */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                      <MapPin size={14} />
+                      Unit / District <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      required
+                      value={createForm.unit_district}
+                      onChange={(e) => setCreateForm({ ...createForm, unit_district: e.target.value })}
+                      placeholder="Enter unit or district"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                      <Send size={14} />
+                      Send To <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={createForm.send_to}
+                      onChange={(e) => setCreateForm({ ...createForm, send_to: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
+                    >
+                      <option value="">Select destination</option>
+                      <option value="DG office">DG Office</option>
+                      <option value="uploaded-sarkar">Uploaded-Sarkar</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Subject */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subject <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    value={createForm.subject}
+                    onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })}
+                    placeholder="Brief subject of the patrak..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Sender Name and Designation */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Name <span className="text-red-500">*</span></label>
+                    <input
+                      required
+                      value={createForm.sender_name}
+                      onChange={(e) => setCreateForm({ ...createForm, sender_name: e.target.value })}
+                      placeholder="Full name"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Designation</label>
+                    <input
+                      value={createForm.sender_designation}
+                      onChange={(e) => setCreateForm({ ...createForm, sender_designation: e.target.value })}
+                      placeholder="e.g. DySP, Inspector"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Date and Priority */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Received Date <span className="text-red-500">*</span></label>
+                    <input
+                      required
+                      type="date"
+                      value={createForm.received_date}
+                      onChange={(e) => setCreateForm({ ...createForm, received_date: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority</label>
+                    <select
+                      value={createForm.priority}
+                      onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
+                    >
+                      <option value="Normal">Normal</option>
+                      <option value="Urgent">Urgent</option>
+                      <option value="Confidential">Confidential</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description (Optional)</label>
+                  <textarea
+                    value={createForm.description}
+                    onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                    placeholder="Additional notes or context..."
+                    rows={3}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all resize-none placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    onClick={() => {
+                      setShowEntryDetails(false)
+                      setCreateForm({
+                        subject: '',
+                        sender_name: '',
+                        sender_designation: '',
+                        received_date: '',
+                        priority: 'Normal',
+                        description: '',
+                        receiving_mode: 'Physical',
+                        sender_email: '',
+                        fax_number: '',
+                        unit_district: '',
+                        send_to: '',
+                      })
+                    }} 
+                    className="sm:w-auto !text-slate-600 !border !border-slate-300 !bg-white hover:!bg-slate-50"
+                  >
+                    <X size={16} className="mr-2" />
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    loading={creating} 
+                    className="flex-1 sm:flex-none sm:min-w-[200px] !bg-red-600 hover:!bg-red-700 shadow-sm"
+                  >
+                    <CheckCircle2 size={16} className="mr-2" />
+                    Create Entry
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+
+            {/* Selected Tapal Details Panel */}
+            <AnimatePresence>
+              {showEntryDetails && selectedEntry && (
+                <motion.div
+                  ref={detailsRef}
+                  initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 30, scale: 0.95 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden lg:sticky lg:top-6"
+                >
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center gap-3">
+                    <div className="p-2 bg-white/10 rounded-xl">
+                      <UserRound size={18} className="text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold">Selected Entry Details</h3>
+                      <p className="text-slate-300 text-xs">View and track this entry</p>
+                    </div>
+                    <button
+                      onClick={() => setShowEntryDetails(false)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <X size={18} className="text-white/70 hover:text-white" />
+                    </button>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    {/* Patrak ID Card */}
+                    <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Patrak ID</p>
+                        <p className="text-lg font-bold text-slate-800 mt-1">{selectedEntry.unique_id}</p>
+                      </div>
+                      <button
+                        onClick={() => navigator.clipboard?.writeText(selectedEntry.unique_id || '')}
+                        className="p-2 bg-white rounded-lg shadow-sm text-slate-500 hover:text-red-600 transition-colors"
+                        title="Copy ID"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+
+                    {/* Subject */}
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Subject</p>
+                      <p className="text-base font-semibold text-slate-800 mt-1">{selectedEntry.subject}</p>
+                    </div>
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Sender', value: selectedEntry.sender_name, icon: UserRound },
+                        { label: 'Designation', value: selectedEntry.sender_designation || 'Officer', icon: FileText },
+                        { label: 'Department', value: selectedEntry.current_department || 'Pending', icon: Building2 },
+                        { label: 'Status', value: selectedEntry.status || 'Active', icon: Activity },
+                        { label: 'Date', value: formatShortDate(selectedEntry.received_date), icon: CalendarIcon },
+                        { label: 'Priority', value: selectedEntry.priority, icon: Clock },
+                      ].map(item => (
+                        <div key={item.label} className="bg-slate-50 rounded-xl p-3">
+                          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                            <item.icon size={12} />
+                            {item.label}
+                          </div>
+                          <p className="text-sm font-semibold text-slate-800 mt-1 truncate">{item.value || 'N/A'}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Description */}
+                    <div className="bg-slate-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Description</p>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {selectedEntry.description || 'No additional description provided.'}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 pt-2">
+                      {canGenerateQR(user?.role) && (
+                        <Button onClick={() => handleGenerateQR(selectedEntry.id)} className="w-full !bg-emerald-600 hover:!bg-emerald-700">
+                          <QrCode size={16} className="mr-2" />
+                          Generate QR Code
+                        </Button>
+                      )}
+                      <Button 
+                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} 
+                        className="w-full"
+                      >
+                        Track Entry
+                        <ArrowRight size={16} className="ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Tapal List Section */}
+          <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-100 rounded-lg">
+                  <LayoutGrid size={18} className="text-slate-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-800">Tapal List</h2>
+                  <p className="text-xs text-slate-500">Showing {entries.length} of {pagination.total} records</p>
+                </div>
+              </div>
+              
+              {/* Search */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search entries..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all w-full sm:w-64"
+                />
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
             </div>
 
-            <div className="divide-y divide-slate-50 max-h-[680px] overflow-y-auto no-scrollbar">
+            {/* List */}
+            <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
               {loading ? (
-                <div className="py-20 text-center text-[11px] font-bold text-slate-400">Syncing with system...</div>
+                <div className="py-16 text-center text-sm text-slate-400">Loading entries...</div>
               ) : entries.length === 0 ? (
-                <div className="py-20 text-center text-[11px] font-bold text-slate-400">No records found matching criteria.</div>
+                <div className="py-16 text-center text-sm text-slate-400">No entries found.</div>
               ) : (
                 entries.map((entry, index) => {
                   const isSelected = selectedEntry?.id === entry.id
@@ -246,36 +577,53 @@ export default function Letters() {
                       type="button"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.03 }}
-                      onClick={() => setSelectedEntry(entry)}
-                      className={`w-full text-left px-5 py-4 transition-all ${
-                        isSelected ? 'bg-red-50/70' : 'hover:bg-slate-50/70'
+                      transition={{ delay: index * 0.02 }}
+                      onClick={() => {
+                        setSelectedEntry(entry)
+                        setShowEntryDetails(true)
+                      }}
+                      className={`w-full text-left px-5 py-4 transition-all hover:bg-slate-50 ${
+                        isSelected && showEntryDetails ? 'bg-red-50 border-l-4 border-l-red-500' : ''
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-black text-red-600 font-mono">
-                            {entry.unique_id?.startsWith('PTRK') ? entry.unique_id : `#${entry.unique_id?.slice(0, 8) || entry.id}`}
-                          </p>
-                          <h3 className="mt-1 text-[13px] font-black text-slate-800 leading-tight truncate">{entry.subject}</h3>
-                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{entry.current_department || 'Department Pending'}</span>
-                            <span className={`text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded uppercase leading-none border ${
-                              entry.receiving_mode === 'Mails' ? 'bg-green-50 text-green-600 border-green-100' :
-                              entry.receiving_mode === 'Fax' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                              'bg-amber-50 text-amber-600 border-amber-100'
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-semibold text-red-600">
+                              {entry.unique_id || `#${entry.id}`}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
+                              entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
+                              'bg-emerald-100 text-emerald-700'
                             }`}>
-                              {entry.receiving_mode || 'Physical'}
+                              {entry.priority}
+                            </span>
+                          </div>
+                          <h3 className="text-sm font-semibold text-slate-800 mt-1 truncate">{entry.subject}</h3>
+                          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <UserRound size={12} />
+                              {entry.sender_name}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Building2 size={12} />
+                              {entry.current_department || 'Pending'}
                             </span>
                           </div>
                         </div>
-                        <span className={`shrink-0 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                          entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
-                          entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
-                          'bg-emerald-100 text-emerald-700'
-                        }`}>
-                          {entry.priority}
-                        </span>
+                        <div className="text-right shrink-0">
+                          <span className={`text-xs px-2 py-1 rounded-lg font-medium ${
+                            entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
+                            entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
+                            'bg-amber-100 text-amber-700'
+                          }`}>
+                            {entry.receiving_mode || 'Physical'}
+                          </span>
+                          <p className="text-xs text-slate-400 mt-2">
+                            {formatShortDate(entry.received_date)}
+                          </p>
+                        </div>
                       </div>
                     </motion.button>
                   )
@@ -283,257 +631,31 @@ export default function Letters() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t border-slate-50 bg-white">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                Page {pagination.page} / {pagination.pages || 1}
+            {/* Pagination */}
+            <div className="px-5 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                Page {pagination.page} of {pagination.pages || 1}
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <button
                   disabled={pagination.page === 1}
                   onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-                  className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
+                  className="p-2 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                 >
-                  <ChevronLeft size={16} strokeWidth={3} />
+                  <ChevronLeft size={16} className="text-slate-600" />
                 </button>
                 <button
                   disabled={pagination.page >= pagination.pages}
                   onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-                  className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
+                  className="p-2 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                 >
-                  <ChevronRight size={16} strokeWidth={3} />
+                  <ChevronRight size={16} className="text-slate-600" />
                 </button>
               </div>
             </div>
-          </div>
-
-          <aside className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden xl:sticky xl:top-20">
-            {selectedEntry ? (
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Selected Tapal</p>
-                    <h2 className="mt-1 text-lg font-black text-slate-800 leading-tight">{selectedEntry.subject}</h2>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/letters/${selectedEntry.id}`)}
-                    className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-red-600 transition-all"
-                    title="Open full details"
-                  >
-                    <Eye size={16} />
-                  </button>
-                </div>
-
-                <div className="mt-4 rounded-xl bg-red-50/60 border border-red-100 p-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Patrak ID</p>
-                    <p className="text-[13px] font-black text-red-600 font-mono mt-0.5">{selectedEntry.unique_id}</p>
-                  </div>
-                  <button
-                    onClick={() => navigator.clipboard?.writeText(selectedEntry.unique_id || '')}
-                    className="p-2 rounded-lg bg-white text-red-500 shadow-sm"
-                    title="Copy Patrak ID"
-                  >
-                    <Copy size={14} />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  {[
-                    { label: 'Sender', value: selectedEntry.sender_name, icon: UserRound },
-                    { label: 'Designation', value: selectedEntry.sender_designation || 'Officer', icon: FileText },
-                    { label: 'Department', value: selectedEntry.current_department || 'Pending', icon: Building2 },
-                    { label: 'Status', value: selectedEntry.status || 'Active', icon: Activity },
-                    { label: 'Date', value: formatShortDate(selectedEntry.received_date), icon: CalendarIcon },
-                    { label: 'Priority', value: selectedEntry.priority, icon: CheckCircle2 },
-                  ].map(item => (
-                    <div key={item.label} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-                      <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                        <item.icon size={12} />
-                        {item.label}
-                      </div>
-                      <p className="mt-2 text-[12px] font-black text-slate-700 truncate">{item.value || 'N/A'}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 rounded-xl border border-slate-100 p-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</p>
-                  <p className="text-[12px] font-bold text-slate-600 leading-5">
-                    {selectedEntry.description || 'No additional description added for this tapal.'}
-                  </p>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  {canGenerateQR(user?.role) && (
-                    <Button type="button" onClick={() => handleGenerateQR(selectedEntry.id)} className="flex-1 !bg-emerald-600 hover:!bg-emerald-700">
-                      <QrCode size={15} className="mr-2" />
-                      QR Code
-                    </Button>
-                  )}
-                  <Button type="button" onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} className="flex-1 !bg-slate-900 hover:!bg-slate-800">
-                    Track
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="p-10 text-center text-[11px] font-bold text-slate-400">Select an entry to view details.</div>
-            )}
-          </aside>
+          </motion.div>
         </motion.div>
       </motion.div>
-
-      {/* Modern Creation Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <Modal
-            isOpen={showCreateModal}
-            onClose={() => setShowCreateModal(false)}
-            title="New Patrak Entry"
-          >
-            <form onSubmit={handleCreateEntry} className="space-y-4 pt-2">
-              {/* Receiving Mode Selector */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Receiving Mode</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'Physical', label: 'Physical', icon: QrCode, desc: 'Paper QR' },
-                    { id: 'Mails', label: 'Email / Mail', icon: Mail, desc: 'Digital Inbox' },
-                    { id: 'Fax', label: 'Fax Letter', icon: Printer, desc: 'Fax Line' }
-                  ].map((mode) => {
-                    const Icon = mode.icon;
-                    const isSelected = createForm.receiving_mode === mode.id;
-                    return (
-                      <button
-                        type="button"
-                        key={mode.id}
-                        onClick={() => setCreateForm({ ...createForm, receiving_mode: mode.id })}
-                        className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all gap-1.5 text-center ${
-                          isSelected
-                            ? 'border-red-600 bg-red-50/20 text-red-600 shadow-md shadow-red-50/30'
-                            : 'border-slate-100 bg-slate-50/50 text-slate-500 hover:bg-slate-50'
-                        }`}
-                      >
-                        <Icon className="h-4.5 w-4.5 shrink-0" />
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase tracking-wider">{mode.label}</span>
-                          <span className="text-[8px] font-semibold text-slate-400 mt-0.5 leading-none">{mode.desc}</span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Dynamic Inputs based on Receiving Mode */}
-              {createForm.receiving_mode === 'Mails' && (
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Email Address</label>
-                  <input
-                    required
-                    type="email"
-                    value={createForm.sender_email}
-                    onChange={(e) => setCreateForm({ ...createForm, sender_email: e.target.value })}
-                    placeholder="e.g. sender@gujaratpolice.gov.in"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                  />
-                </div>
-              )}
-
-              {createForm.receiving_mode === 'Fax' && (
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Fax Number</label>
-                  <input
-                    required
-                    value={createForm.fax_number}
-                    onChange={(e) => setCreateForm({ ...createForm, fax_number: e.target.value })}
-                    placeholder="e.g. +91 (79) 2325-XXXX"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subject Title</label>
-                 <input
-                   required
-                   value={createForm.subject}
-                   onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })}
-                   placeholder="Brief subject of the patrak..."
-                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sender Name</label>
-                  <input
-                    required
-                    value={createForm.sender_name}
-                    onChange={(e) => setCreateForm({ ...createForm, sender_name: e.target.value })}
-                    placeholder="Full name"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation</label>
-                  <input
-                    value={createForm.sender_designation}
-                    onChange={(e) => setCreateForm({ ...createForm, sender_designation: e.target.value })}
-                    placeholder="e.g. DySP"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Received Date</label>
-                  <input
-                    required
-                    type="date"
-                    value={createForm.received_date}
-                    onChange={(e) => setCreateForm({ ...createForm, received_date: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Priority Level</label>
-                  <select
-                    value={createForm.priority}
-                    onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all appearance-none"
-                  >
-                    <option value="Normal">Normal</option>
-                    <option value="Urgent">Urgent</option>
-                    <option value="Confidential">Confidential</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description (Optional)</label>
-                <textarea
-                  value={createForm.description}
-                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                  placeholder="Additional context..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-[12px] font-bold text-foreground focus:ring-2 focus:ring-red-100 transition-all resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)} className="flex-1 !text-slate-400 !font-bold">
-                  Discard
-                </Button>
-                <Button type="submit" loading={creating} className="flex-1 !bg-[#dc2626] hover:!bg-red-700 shadow-lg shadow-red-100">
-                  <CheckCircle2 size={16} className="mr-2" />
-                  Finalize Entry
-                </Button>
-              </div>
-            </form>
-          </Modal>
-        )}
-      </AnimatePresence>
     </Layout>
   )
 }
