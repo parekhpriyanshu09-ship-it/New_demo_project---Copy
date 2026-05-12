@@ -8,8 +8,10 @@ import api from '../../services/api'
 import { useDebounce } from '../../hooks/useDebounce'
 import {
   LayoutDashboard,
-  FileText,
-  ScanLine,
+  PlusCircle,
+  QrCode,
+  FilePenLine,
+  LocateFixed,
   BarChart3,
   Users,
   History,
@@ -19,26 +21,39 @@ import {
   Search,
   ChevronsUpDown,
   ChevronDown,
-  ChevronRight
+  HelpCircle
 } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/letters', label: 'Entry Form', icon: FileText },
-  { path: '/scanner', label: 'Scanner', icon: ScanLine },
+  {
+    label: 'New Tapal Entry',
+    icon: PlusCircle,
+    children: [
+      { path: '/scanner', label: 'With QR Code', icon: QrCode },
+      { path: '/letters?action=new', matchPath: '/letters', label: 'Without QR Code', icon: FilePenLine },
+    ],
+  },
+  { path: '/track-my-tapal', label: 'Track My Tapal', icon: LocateFixed },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
-  { path: '/admin/users', label: 'Users', icon: Users, requireAdmin: true },
-  { path: '/logs', label: 'System Logs', icon: History },
+  { path: '/how-it-works', label: 'How It Works', icon: HelpCircle },
 ]
 
 const PAGES = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/letters', label: 'Entry Form', icon: FileText },
-  { path: '/scanner', label: 'Scanner', icon: ScanLine },
+  { path: '/scanner', label: 'With QR Code', icon: QrCode },
+  { path: '/letters?action=new', label: 'Without QR Code', icon: FilePenLine },
+  { path: '/track-my-tapal', label: 'Track My Tapal', icon: LocateFixed },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
+  { path: '/how-it-works', label: 'How It Works', icon: HelpCircle },
   { path: '/admin/users', label: 'Users', icon: Users, requireAdmin: true },
   { path: '/logs', label: 'System Logs', icon: History },
   { path: '/settings', label: 'Account Settings', icon: Settings },
+]
+
+const adminItems = [
+  { path: '/admin/users', label: 'Users', icon: Users, requireAdmin: true },
+  { path: '/logs', label: 'System Logs', icon: History },
 ]
 
 
@@ -67,6 +82,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const desktopProfileRef = useRef(null)
   const mobileProfileRef = useRef(null)
+  const [openGroups, setOpenGroups] = useState({ 'New Tapal Entry': true })
 
   useEffect(() => {
     async function fetchSearch() {
@@ -171,9 +187,306 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
     return true
   })
 
+  const visibleAdminItems = adminItems.filter(item => {
+    if (item.requireAdmin && user?.role !== ROLES.ADMIN) return false
+    return true
+  })
+
+  const isItemActive = (item) => {
+    if (item.matchPath) return location.pathname === item.matchPath
+    if (item.path === '/') return location.pathname === '/'
+    return item.path && location.pathname.startsWith(item.path)
+  }
+
+  const isGroupActive = (item) => item.children?.some(child => isItemActive(child))
+
+  const toggleGroup = (label) => {
+    if (isCollapsed) {
+      onToggle()
+      setOpenGroups(prev => ({ ...prev, [label]: true }))
+      return
+    }
+    setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }))
+  }
+
   const handleNavClick = () => {
     onMobileClose?.()
   }
+
+  const renderNavItem = (item, { mobile = false, nested = false } = {}) => {
+    const Icon = item.icon
+    const active = isItemActive(item)
+    const compact = isCollapsed && !mobile
+
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        title={compact ? item.label : undefined}
+        onClick={() => {
+          handleNavClick()
+          if (location.pathname !== (item.matchPath || item.path)) {
+            navigate(item.path)
+          }
+        }}
+        className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-[13.5px]'} transition-all duration-200 select-none ${
+          nested ? (mobile ? 'ml-6' : compact ? 'mx-auto justify-center' : 'ml-6') : compact ? 'mx-auto justify-center h-10 w-10 px-0' : ''
+        } ${
+          active
+            ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
+            : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
+        }`}
+      >
+        <span className={`${mobile ? 'h-6 w-6' : 'h-[18px] w-[18px]'} shrink-0 flex items-center justify-center`}>
+          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${
+            active ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400 dark:text-neutral-500'
+          }`} />
+        </span>
+
+        {!compact && <span className="flex-1 truncate">{item.label}</span>}
+
+        {compact && (
+          <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-blue-400/20 bg-slate-950/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-blue-950/30 transition-opacity group-hover:opacity-100">
+            {item.label}
+          </span>
+        )}
+      </NavLink>
+    )
+  }
+
+  const renderNavGroup = (item, { mobile = false } = {}) => {
+    const Icon = item.icon
+    const compact = isCollapsed && !mobile
+    const groupActive = isGroupActive(item)
+    const isOpen = openGroups[item.label] || groupActive
+
+    return (
+      <div key={item.label} className="flex flex-col gap-1">
+        <button
+          type="button"
+          title={compact ? item.label : undefined}
+          onClick={() => toggleGroup(item.label)}
+          className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-[13.5px]'} transition-all duration-200 select-none text-left ${
+            compact ? 'mx-auto h-10 w-10 justify-center px-0' : ''
+          } ${
+            groupActive
+              ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
+              : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
+          }`}
+        >
+          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${
+            groupActive ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400 dark:text-neutral-500'
+          }`} />
+          {!compact && (
+            <>
+              <span className="flex-1 truncate">{item.label}</span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </>
+          )}
+          {compact && (
+            <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-blue-400/20 bg-slate-950/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-blue-950/30 transition-opacity group-hover:opacity-100">
+              {item.label}
+            </span>
+          )}
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isOpen && !compact && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="overflow-hidden flex flex-col gap-1"
+            >
+              {item.children.map(child => renderNavItem(child, { mobile, nested: true }))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  const renderSidebarSearch = ({ mobile = false } = {}) => (
+    <div className={mobile ? 'py-1' : 'relative py-1'} ref={searchRef}>
+      {isCollapsed && !mobile ? (
+        <button
+          onClick={handleCollapsedSearchClick}
+          title="Search System"
+          className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] transition-all duration-200 mx-auto"
+        >
+          <Search className="h-4 w-4" />
+          <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-blue-400/20 bg-slate-950/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-blue-950/30 transition-opacity group-hover:opacity-100">
+            Search System
+          </span>
+        </button>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+        >
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-neutral-500 z-10 pointer-events-none" />
+            <input
+              ref={searchInputRef}
+              placeholder="Search by ID, Title..."
+              className={searchInputClass}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleSearchFocus}
+            />
+          </form>
+        </motion.div>
+      )}
+
+      {createPortal(
+        <AnimatePresence>
+          {isSearchFocused && (searchQuery.trim() || searchResults.entries?.length > 0 || searchResults.users?.length > 0) && (
+            <motion.div
+              id="search-popup"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="fixed w-[420px] bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-neutral-800 rounded-2xl p-1.5 shadow-2xl z-[9999] overflow-y-auto no-scrollbar"
+              style={{
+                left: mobile ? 16 : popupPosition.left,
+                top: mobile ? 160 : popupPosition.top,
+                maxHeight: '480px',
+                maxWidth: mobile ? 'calc(100vw - 32px)' : undefined
+              }}
+            >
+              {isSearching ? (
+                <div className="flex items-center justify-center gap-1 py-8">
+                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} />
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-0.5">
+                    {PAGES.filter(p => p.label.toLowerCase().includes(searchQuery.toLowerCase())).map(page => {
+                      const shortcutMap = {
+                        '/': 'D',
+                        '/letters': 'N',
+                        '/scanner': 'S',
+                        '/reports': 'R',
+                        '/admin/users': 'U',
+                        '/logs': 'L',
+                        '/settings': ',',
+                      }
+                      const shortcut = shortcutMap[page.path] || '/'
+
+                      return (
+                        <button
+                          key={page.path}
+                          onClick={() => handleSuggestionClick(page.path)}
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                        >
+                          <page.icon className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
+                          <span className="flex-1 truncate">{page.label}</span>
+                          <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[10px] text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
+                            {shortcut}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {searchResults.users?.length > 0 && (
+                    <>
+                      <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
+                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                        Users
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        {searchResults.users.map(u => (
+                          <button
+                            key={`user-${u.id}`}
+                            onClick={() => handleSuggestionClick('/admin/users')}
+                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                          >
+                            <Users className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold truncate">{u.username}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {searchResults.entries?.length > 0 && (
+                    <>
+                      <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
+                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                        Recent Entries
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        {searchResults.entries.map(entry => (
+                          <button
+                            key={`entry-${entry.id}`}
+                            onClick={() => handleSuggestionClick(`/letters/${entry.id}`)}
+                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                          >
+                            <FilePenLine className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold truncate">{entry.subject}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
+                                <span>{entry.unique_id}</span>
+                                <span>-</span>
+                                <span className="truncate">{entry.sender_name}</span>
+                              </div>
+                            </div>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${
+                              entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
+                              entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
+                              'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
+                            }`}>
+                              {entry.priority}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {searchQuery.trim() && !searchResults.entries?.length && !searchResults.users?.length && PAGES.filter(p => p.label.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-4 text-center text-xs text-slate-400">No results found</div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </div>
+  )
+
+  const renderNavigation = ({ mobile = false } = {}) => (
+    <>
+      {visibleItems.map(item => (
+        <div key={item.path || item.label} className="flex flex-col gap-1">
+          {item.children ? renderNavGroup(item, { mobile }) : renderNavItem(item, { mobile })}
+          {item.path === '/track-my-tapal' && renderSidebarSearch({ mobile })}
+        </div>
+      ))}
+      {visibleAdminItems.length > 0 && (
+        <>
+          {!isCollapsed || mobile ? (
+            <div className="text-[10px] font-bold text-slate-400/85 dark:text-neutral-500 uppercase tracking-widest px-1 mt-3 mb-1">
+              Administration
+            </div>
+          ) : (
+            <div className="my-2 border-t border-slate-200/50 dark:border-neutral-800/80" />
+          )}
+          {visibleAdminItems.map(item => renderNavItem(item, { mobile }))}
+        </>
+      )}
+    </>
+  )
 
   const searchInputClass = "w-full bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-3 py-2 text-[13.5px] outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-slate-400 dark:focus:ring-neutral-700 transition-all text-slate-800 dark:text-neutral-200"
 
@@ -221,7 +534,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
         </div>
 
         {/* Search Bar matching precise input details */}
-        <div className="relative" ref={searchRef}>
+        <div className="hidden">
           {isCollapsed ? (
             <button
               onClick={handleCollapsedSearchClick}
@@ -250,7 +563,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             </motion.div>
           )}
 
-          {createPortal(
+          {false && createPortal(
             <AnimatePresence>
               {isSearchFocused && (searchQuery.trim() || searchResults.entries?.length > 0 || searchResults.users?.length > 0) && (
                 <motion.div
@@ -347,7 +660,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                                 onClick={() => handleSuggestionClick(`/letters/${entry.id}`)}
                                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                               >
-                                <FileText className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
+                                <FilePenLine className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <div className="font-semibold truncate">{entry.subject}</div>
                                   <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
@@ -392,34 +705,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
 
         {/* Navigation list structured precisely like the image */}
         <nav className="flex-1 flex flex-col gap-1 overflow-y-auto no-scrollbar">
-          {visibleItems.map((item) => {
-            const isActive = location.pathname === item.path
-            
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={() => {
-                  if (location.pathname !== item.path) {
-                    navigate(item.path);
-                  }
-                }}
-                className={`group flex items-center gap-2.5 px-3 py-2 text-[13.5px] transition-all duration-150 select-none ${
-                  isActive
-                    ? 'border border-slate-200/80 dark:border-neutral-800/80 bg-slate-50/40 dark:bg-neutral-900/30 rounded-xl text-slate-800 dark:text-slate-100 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-50/60 dark:hover:bg-neutral-900/40 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl font-semibold'
-                }`}
-              >
-                <item.icon className={`h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-105 ${
-                  isActive ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-neutral-500'
-                }`} />
-                
-                {!isCollapsed && (
-                  <span className="flex-1 truncate">{item.label}</span>
-                )}
-              </NavLink>
-            )
-          })}
+          {renderNavigation()}
         </nav>
 
         {/* User Profile Selector Footer matches header layout detail */}
@@ -520,7 +806,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             </div>
 
             {/* Mobile Search */}
-            <div className="py-3">
+            <div className="hidden">
               <div className="relative">
                 <form onSubmit={handleSearch}>
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-neutral-500 z-10 pointer-events-none" />
@@ -536,32 +822,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
 
             {/* Mobile Navigation */}
             <nav className="flex-1 py-1 flex flex-col gap-1 overflow-y-auto no-scrollbar">
-              {visibleItems.map((item) => {
-                const isActive = location.pathname === item.path
-                
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => {
-                      handleNavClick();
-                      if (location.pathname !== item.path) {
-                        navigate(item.path);
-                      }
-                    }}
-                    className={`group flex items-center gap-3 px-3 py-2.5 text-sm transition-all duration-150 ${
-                      isActive
-                        ? 'border border-slate-200/80 dark:border-neutral-800/80 bg-slate-50/40 dark:bg-neutral-900/30 rounded-xl text-slate-800 dark:text-slate-100 font-semibold'
-                        : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-50/60 dark:hover:bg-neutral-900/40 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl font-medium'
-                    }`}
-                  >
-                    <span className={`flex h-6 w-6 items-center justify-center`}>
-                      <item.icon className="h-4 w-4" />
-                    </span>
-                    <span className="flex-1">{item.label}</span>
-                  </NavLink>
-                )
-              })}
+              {renderNavigation({ mobile: true })}
             </nav>
 
             {/* Mobile Footer Profile Selector */}

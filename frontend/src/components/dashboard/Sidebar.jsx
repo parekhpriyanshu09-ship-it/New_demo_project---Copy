@@ -41,16 +41,14 @@ export function Sidebar() {
         {items.map(({ label, icon: Icon, active }) => (
           <button
             key={label}
-            className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm transition-all ${
-              active
-                ? "glass-strong text-foreground shadow-[0_8px_24px_-12px_oklch(0.7_0.18_260/0.5)]"
-                : "text-foreground/70 hover:bg-white/40"
-            }`}
+            className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm transition-all ${active
+              ? "glass-strong text-foreground shadow-[0_8px_24px_-12px_oklch(0.7_0.18_260/0.5)]"
+              : "text-foreground/70 hover:bg-white/40"
+              }`}
           >
             <span
-              className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                active ? "bg-gradient-to-br from-[oklch(0.85_0.1_240)] to-[oklch(0.85_0.1_270)] text-white" : "bg-white/50"
-              }`}
+              className={`flex h-8 w-8 items-center justify-center rounded-xl ${active ? "bg-gradient-to-br from-[oklch(0.85_0.1_240)] to-[oklch(0.85_0.1_270)] text-white" : "bg-white/50"
+                }`}
             >
               <Icon className="h-4 w-4" />
             </span>
@@ -59,7 +57,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      
+
     </aside>
   );
 }

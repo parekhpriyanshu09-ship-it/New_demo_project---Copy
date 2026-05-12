@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/layout/Layout'
-import { Button, Badge, Input, Modal, Card } from '../components/common'
+import { Button, Modal } from '../components/common'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useDebounce } from '../hooks/useDebounce'
@@ -14,21 +14,19 @@ import {
   Plus, 
   Eye, 
   QrCode, 
-  Filter, 
   ChevronLeft, 
   ChevronRight, 
-  X,
   FileText,
-  Clock,
-  ArrowRightLeft,
   CheckCircle2,
   Calendar as CalendarIcon,
   ChevronDown,
-  Download,
   Mail,
-  Printer
+  Printer,
+  Building2,
+  UserRound,
+  Activity,
+  Copy
 } from 'lucide-react'
-import StatsCard from '../components/dashboard/StatsCard'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -48,6 +46,7 @@ export default function Letters() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [entries, setEntries] = useState([])
+  const [selectedEntry, setSelectedEntry] = useState(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [selectedDepartment, setSelectedDepartment] = useState('All')
@@ -110,7 +109,13 @@ export default function Letters() {
       }
 
       const res = await api.get('/api/entries', { params })
-      setEntries(res.data.items || [])
+      const items = res.data.items || []
+      setEntries(items)
+      setSelectedEntry(current => {
+        if (!items.length) return null
+        if (!current) return items[0]
+        return items.find(item => item.id === current.id) || items[0]
+      })
       setPagination({
         page: res.data.page,
         per_page: res.data.per_page,
@@ -146,7 +151,7 @@ export default function Letters() {
         ...createForm,
         received_date: finalDate.toISOString(),
       }
-      await api.post('/api/entries', payload)
+      const res = await api.post('/api/entries', payload)
       toast.success('Entry created successfully!')
       setShowCreateModal(false)
       setCreateForm({
@@ -160,6 +165,10 @@ export default function Letters() {
         sender_email: '',
         fax_number: '',
       })
+      const createdEntry = res.data?.entry || res.data
+      if (createdEntry?.id) {
+        setSelectedEntry(createdEntry)
+      }
       fetchEntries()
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create entry')
@@ -208,172 +217,168 @@ export default function Letters() {
              {canCreateEntry(user?.role, user?.department) && (
                <Button onClick={() => setShowCreateModal(true)} className="!bg-[#dc2626] hover:!bg-red-700 !rounded-xl shadow-lg shadow-red-100">
                  <Plus size={16} strokeWidth={3} />
-                 <span className="text-[11px] font-black uppercase tracking-widest ml-1">New Entry</span>
+                 <span className="text-[11px] font-black uppercase tracking-widest ml-1">New Tapal Entry</span>
                </Button>
              )}
           </div>
         </motion.div>
 
-        {/* Summary Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-           <StatsCard title="Total Letters" value={summaryStats.total} icon={FileText} delay={0} />
-           <StatsCard title="Pending" value={summaryStats.pending} icon={Clock} delay={1} />
-           <StatsCard title="In Transit" value={summaryStats.in_transit} icon={ArrowRightLeft} delay={2} />
-           <StatsCard title="Delivered" value={summaryStats.received} icon={CheckCircle2} delay={3} />
-        </div>
+        <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_430px] gap-5 items-start">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-[12px] font-black text-slate-800 uppercase tracking-widest">Tapal List</h2>
+                <p className="text-[10px] font-bold text-slate-400 mt-1">Showing {entries.length} of {pagination.total} records</p>
+              </div>
+            </div>
 
-        {/* Filters & Search Row */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-slate-50 flex flex-col md:flex-row md:items-center gap-3">
-          <div className="relative w-full md:w-72 shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search subject or sender..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-[12px] font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-red-100 transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0 flex-1 min-w-0">
-            {['All', ...DEPARTMENTS].map((dept) => (
-              <button
-                key={dept}
-                onClick={() => {
-                  setSelectedDepartment(dept)
-                  setPagination({ ...pagination, page: 1 })
-                }}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                  selectedDepartment === dept
-                    ? 'bg-red-600 text-white shadow-lg shadow-red-100'
-                    : 'bg-slate-50 text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {dept}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Main Table Card */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
-              <thead>
-                <tr className="text-left border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Unique ID</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Sender Details</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Priority</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                  <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {loading ? (
-                  <tr><td colSpan={7} className="py-20 text-center text-[11px] font-bold text-slate-400">Syncing with system...</td></tr>
-                ) : entries.length === 0 ? (
-                  <tr><td colSpan={7} className="py-20 text-center text-[11px] font-bold text-slate-400">No records found matching criteria.</td></tr>
-                ) : (
-                  entries.map((entry, index) => (
-                    <motion.tr
+            <div className="divide-y divide-slate-50 max-h-[680px] overflow-y-auto no-scrollbar">
+              {loading ? (
+                <div className="py-20 text-center text-[11px] font-bold text-slate-400">Syncing with system...</div>
+              ) : entries.length === 0 ? (
+                <div className="py-20 text-center text-[11px] font-bold text-slate-400">No records found matching criteria.</div>
+              ) : (
+                entries.map((entry, index) => {
+                  const isSelected = selectedEntry?.id === entry.id
+                  return (
+                    <motion.button
                       key={entry.id}
+                      type="button"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
-                      className="group hover:bg-slate-50/50 transition-all cursor-pointer"
-                      onClick={() => navigate(`/letters/${entry.id}`)}
+                      onClick={() => setSelectedEntry(entry)}
+                      className={`w-full text-left px-5 py-4 transition-all ${
+                        isSelected ? 'bg-red-50/70' : 'hover:bg-slate-50/70'
+                      }`}
                     >
-                      <td className="px-4 py-4 text-[10px] font-bold text-red-600 font-mono">
-                        {entry.unique_id.startsWith('PTRK') ? entry.unique_id : `#${entry.unique_id.slice(0, 8)}`}
-                      </td>
-                      <td className="px-4 py-4 max-w-xs">
-                        <p className="text-[11px] font-black text-slate-800 tracking-tight leading-tight">{entry.subject}</p>
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{entry.current_department}</span>
-                          <span className={`text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded uppercase leading-none border ${
-                            entry.receiving_mode === 'Mails' ? 'bg-green-50 text-green-600 border-green-100' :
-                            entry.receiving_mode === 'Fax' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                            'bg-amber-50 text-amber-600 border-amber-100'
-                          }`}>
-                            {entry.receiving_mode || 'Physical'}
-                          </span>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black text-red-600 font-mono">
+                            {entry.unique_id?.startsWith('PTRK') ? entry.unique_id : `#${entry.unique_id?.slice(0, 8) || entry.id}`}
+                          </p>
+                          <h3 className="mt-1 text-[13px] font-black text-slate-800 leading-tight truncate">{entry.subject}</h3>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{entry.current_department || 'Department Pending'}</span>
+                            <span className={`text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded uppercase leading-none border ${
+                              entry.receiving_mode === 'Mails' ? 'bg-green-50 text-green-600 border-green-100' :
+                              entry.receiving_mode === 'Fax' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                              'bg-amber-50 text-amber-600 border-amber-100'
+                            }`}>
+                              {entry.receiving_mode || 'Physical'}
+                            </span>
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="text-[11px] font-bold text-slate-600">{entry.sender_name}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{entry.sender_designation || 'Officer'}</p>
-                      </td>
-                      <td className="px-4 py-4 text-[10px] font-bold text-slate-500">
-                        {formatShortDate(entry.received_date)}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                          entry.priority === 'Urgent' ? 'bg-amber-50 text-amber-600' : 
-                          entry.priority === 'Confidential' ? 'bg-rose-50 text-rose-600' : 
-                          'bg-emerald-50 text-emerald-600'
+                        <span className={`shrink-0 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
+                          entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
+                          entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
+                          'bg-emerald-100 text-emerald-700'
                         }`}>
                           {entry.priority}
                         </span>
-                      </td>
-                      <td className="px-4 py-4">
-                         <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                           entry.status === 'Active' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-400'
-                         }`}>
-                           {entry.status}
-                         </span>
-                      </td>
-                      <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-2">
-                           <button 
-                             onClick={() => navigate(`/letters/${entry.id}`)}
-                             className="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-red-600 shadow-sm transition-all border border-transparent hover:border-slate-100"
-                           >
-                             <Eye size={14} />
-                           </button>
-                           {canGenerateQR(user?.role) && (
-                             <button
-                               onClick={() => handleGenerateQR(entry.id)}
-                               className="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-emerald-600 shadow-sm transition-all border border-transparent hover:border-slate-100"
-                             >
-                               <QrCode size={14} />
-                             </button>
-                           )}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </motion.button>
+                  )
+                })
+              )}
+            </div>
 
-          {/* Pagination */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-slate-50 bg-white">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Showing {entries.length} of {pagination.total} records
-            </p>
-            <div className="flex items-center gap-4">
-               <button
-                 disabled={pagination.page === 1}
-                 onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-                 className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
-               >
-                 <ChevronLeft size={16} strokeWidth={3} />
-               </button>
-               <span className="text-[11px] font-black text-slate-700">
-                 Page {pagination.page} / {pagination.pages || 1}
-               </span>
-               <button
-                 disabled={pagination.page >= pagination.pages}
-                 onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-                 className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
-               >
-                 <ChevronRight size={16} strokeWidth={3} />
-               </button>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t border-slate-50 bg-white">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Page {pagination.page} / {pagination.pages || 1}
+              </p>
+              <div className="flex items-center gap-4">
+                <button
+                  disabled={pagination.page === 1}
+                  onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                  className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
+                >
+                  <ChevronLeft size={16} strokeWidth={3} />
+                </button>
+                <button
+                  disabled={pagination.page >= pagination.pages}
+                  onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                  className="p-2 hover:bg-slate-50 disabled:opacity-30 rounded-xl transition-all text-slate-400"
+                >
+                  <ChevronRight size={16} strokeWidth={3} />
+                </button>
+              </div>
             </div>
           </div>
+
+          <aside className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden xl:sticky xl:top-20">
+            {selectedEntry ? (
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Selected Tapal</p>
+                    <h2 className="mt-1 text-lg font-black text-slate-800 leading-tight">{selectedEntry.subject}</h2>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/letters/${selectedEntry.id}`)}
+                    className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-red-600 transition-all"
+                    title="Open full details"
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
+
+                <div className="mt-4 rounded-xl bg-red-50/60 border border-red-100 p-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Patrak ID</p>
+                    <p className="text-[13px] font-black text-red-600 font-mono mt-0.5">{selectedEntry.unique_id}</p>
+                  </div>
+                  <button
+                    onClick={() => navigator.clipboard?.writeText(selectedEntry.unique_id || '')}
+                    className="p-2 rounded-lg bg-white text-red-500 shadow-sm"
+                    title="Copy Patrak ID"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {[
+                    { label: 'Sender', value: selectedEntry.sender_name, icon: UserRound },
+                    { label: 'Designation', value: selectedEntry.sender_designation || 'Officer', icon: FileText },
+                    { label: 'Department', value: selectedEntry.current_department || 'Pending', icon: Building2 },
+                    { label: 'Status', value: selectedEntry.status || 'Active', icon: Activity },
+                    { label: 'Date', value: formatShortDate(selectedEntry.received_date), icon: CalendarIcon },
+                    { label: 'Priority', value: selectedEntry.priority, icon: CheckCircle2 },
+                  ].map(item => (
+                    <div key={item.label} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                      <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <item.icon size={12} />
+                        {item.label}
+                      </div>
+                      <p className="mt-2 text-[12px] font-black text-slate-700 truncate">{item.value || 'N/A'}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-xl border border-slate-100 p-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</p>
+                  <p className="text-[12px] font-bold text-slate-600 leading-5">
+                    {selectedEntry.description || 'No additional description added for this tapal.'}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  {canGenerateQR(user?.role) && (
+                    <Button type="button" onClick={() => handleGenerateQR(selectedEntry.id)} className="flex-1 !bg-emerald-600 hover:!bg-emerald-700">
+                      <QrCode size={15} className="mr-2" />
+                      QR Code
+                    </Button>
+                  )}
+                  <Button type="button" onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} className="flex-1 !bg-slate-900 hover:!bg-slate-800">
+                    Track
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-10 text-center text-[11px] font-bold text-slate-400">Select an entry to view details.</div>
+            )}
+          </aside>
         </motion.div>
       </motion.div>
 

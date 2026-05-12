@@ -13,6 +13,8 @@ import Admin from './pages/Admin'
 import Users from './pages/Users'
 import TrackPage from './pages/TrackPage'
 import Reports from './pages/Reports'
+import TrackMyTapal from './pages/TrackMyTapal'
+import HowItWorks from './pages/HowItWorks'
 
 function App() {
   return (
@@ -37,8 +39,10 @@ function App() {
           <Route path="/letters" element={<ProtectedRoute><Letters /></ProtectedRoute>} />
           <Route path="/letters/:id" element={<ProtectedRoute><EntryDetail /></ProtectedRoute>} />
           <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+          <Route path="/track-my-tapal" element={<ProtectedRoute><TrackMyTapal /></ProtectedRoute>} />
           <Route path="/logs" element={<ProtectedRoute><Logs /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          <Route path="/how-it-works" element={<ProtectedRoute><HowItWorks /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
