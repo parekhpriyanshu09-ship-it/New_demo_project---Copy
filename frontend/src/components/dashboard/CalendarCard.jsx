@@ -91,16 +91,16 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     }
   }
 
-  // Filter entries for selected date - properly parse dates to handle timezone
+  // Filter entries for selected date - only show if date has dots (from calendar data)
   const currentSelectedEntries = useMemo(() => {
-    if (!selectedDate) return [];
+    if (!selectedDate || !markedDates[selectedDate]) return [];
     return mockDashboardEntries.filter(entry => {
-      if (!entry.received_date) return false;
-      const entryDate = new Date(entry.received_date);
+      if (!entry.created_at) return false;
+      const entryDate = new Date(entry.created_at);
       const entryDateStr = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, "0")}-${String(entryDate.getDate()).padStart(2, "0")}`;
       return entryDateStr === selectedDate;
     });
-  }, [selectedDate]);
+  }, [selectedDate, markedDates]);
 
   const activeEntry = currentSelectedEntries[Math.min(entryIndex, currentSelectedEntries.length - 1)];
   const showSelectedPatrakDetails = Boolean(selectedDate && currentSelectedEntries.length > 0);

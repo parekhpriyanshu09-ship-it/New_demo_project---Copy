@@ -19,19 +19,25 @@ const atTime = (date, hours, minutes) => {
 };
 
 const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth() + 1;
 
 const ENTRY_SEEDS = [
-  ["Crime statistics review and monthly compilation", "A. K. Sharma", "Deputy SP", "DG Office", "Physical", "Active", 0, [10, 20]],
-  ["Cyber cell case forwarding report", "Meera Patel", "Inspector", "CID Crime", "Mails", "Active", 0, [14, 10]],
-  ["Law and order deployment note", "R. K. Solanki", "ACP", "Law & Order", "Physical", "Active", -1, [11, 45]],
-  ["Training roster approval", "Nisha Desai", "PI", "Training", "Fax", "Closed", -1, [16, 5]],
-  ["SCRB application access request", "Vikram Jadeja", "PSI", "TS & SCRB", "Mails", "Active", -2, [9, 30]],
-  ["Confidential branch movement register", "H. M. Trivedi", "Office Superintendent", "CID Crime", "Physical", "Active", -3, [15, 25]],
-  ["District inspection compliance memo", "Pooja Rathod", "DySP", "DG Office", "Physical", "Closed", -4, [12, 0]],
-  ["Email trail for missing records", "Ketan Shah", "Head Clerk", "TS & SCRB", "Mails", "Active", -5, [10, 50]],
-  ["Public order advisory acknowledgement", "Sonal Joshi", "Inspector", "Law & Order", "Fax", "Closed", -7, [13, 15]],
-  ["Training feedback summary", "Jay Mehta", "Training Officer", "Training", "Physical", "Active", -8, [9, 5]],
-  ["Pending verification queue", "Control Room", "Duty Officer", "DG Office", "Mails", "Active", 1, [10, 0]],
+  ["Crime statistics review and monthly compilation", "A. K. Sharma", "Deputy SP", "DG Office", "Physical", "Active", 3, [10, 20]],
+  ["Cyber cell case forwarding report", "Meera Patel", "Inspector", "CID Crime", "Mails", "Active", 5, [14, 10]],
+  ["Law and order deployment note", "R. K. Solanki", "ACP", "Law & Order", "Physical", "Active", 8, [11, 45]],
+  ["Training roster approval", "Nisha Desai", "PI", "Training", "Fax", "Closed", 8, [16, 5]],
+  ["SCRB application access request", "Vikram Jadeja", "PSI", "TS & SCRB", "Mails", "Active", 10, [9, 30]],
+  ["Confidential branch movement register", "H. M. Trivedi", "Office Superintendent", "CID Crime", "Physical", "Active", 10, [15, 25]],
+  ["District inspection compliance memo", "Pooja Rathod", "DySP", "DG Office", "Physical", "Closed", 12, [12, 0]],
+  ["Email trail for missing records", "Ketan Shah", "Head Clerk", "TS & SCRB", "Mails", "Active", 14, [10, 50]],
+  ["Public order advisory acknowledgement", "Sonal Joshi", "Inspector", "Law & Order", "Fax", "Closed", 16, [13, 15]],
+  ["Training feedback summary", "Jay Mehta", "Training Officer", "Training", "Physical", "Active", 18, [9, 5]],
+  ["Pending verification queue", "Control Room", "Duty Officer", "DG Office", "Mails", "Active", 2, [10, 0]],
+  ["Special branch security report", "Suresh Kumar", "Inspector", "DG Office", "Physical", "Active", 6, [9, 15]],
+  ["Budget allocation request", "Anil Patel", "Accountant", "TS & SCRB", "Physical", "Active", 9, [11, 30]],
+  ["Personnel transfer order", "Ramesh Mishra", "SP", "Law & Order", "Mails", "Active", 11, [14, 0]],
+  ["Crime branch monthly report", "Ashok Singh", "ACP", "CID Crime", "Physical", "Active", 15, [16, 45]],
 ];
 
 export const mockDashboardEntries = ENTRY_SEEDS.map((seed, index) => {
@@ -42,22 +48,23 @@ export const mockDashboardEntries = ENTRY_SEEDS.map((seed, index) => {
     currentDepartment,
     receivingMode,
     status,
-    offset,
+    day,
     time,
   ] = seed;
-  const receivedDate = addDays(today, offset);
+  const entryDate = new Date(currentYear, currentMonth - 1, day);
+  const createdAtDate = new Date(currentYear, currentMonth - 1, day);
 
   return {
     id: index + 1,
-    unique_id: `PTRK-${toDateKey(receivedDate).replaceAll("-", "")}-${String(index + 1).padStart(3, "0")}`,
+    unique_id: `PTRK-${toDateKey(entryDate).replaceAll("-", "")}-${String(index + 1).padStart(3, "0")}`,
     subject,
     sender_name: senderName,
     sender_designation: senderDesignation,
     current_department: currentDepartment,
     receiving_mode: receivingMode,
     status,
-    received_date: atTime(receivedDate, time[0], time[1]),
-    created_at: atTime(receivedDate, time[0], time[1]),
+    received_date: atTime(entryDate, time[0], time[1]),
+    created_at: atTime(createdAtDate, time[0], time[1]),
     description: `${subject} submitted by ${senderName} for ${currentDepartment}.`,
   };
 });
@@ -89,9 +96,8 @@ export function getMockDashboardStats() {
 
 export function getMockCalendarDates(month, year, viewType = "inward") {
   const counts = countBy(mockDashboardEntries, (entry) => {
-    const baseDate = new Date(entry.received_date);
-    const date = viewType === "outward" ? addDays(baseDate, 1) : baseDate;
-    return toDateKey(date);
+    const baseDate = new Date(entry.created_at);
+    return toDateKey(baseDate);
   });
 
   return Object.entries(counts)
@@ -104,11 +110,10 @@ export function getMockCalendarDates(month, year, viewType = "inward") {
 }
 
 export function getMockDateChart(date = null, viewType = "inward", days = 14) {
-  const target = date ? new Date(`${date}T00:00:00`) : today;
+  const target = date ? new Date(`${date}T00:00:00`) : new Date(currentYear, currentMonth - 1, today.getDate());
   const calendarCounts = countBy(mockDashboardEntries, (entry) => {
-    const baseDate = new Date(entry.received_date);
-    const chartDate = viewType === "outward" ? addDays(baseDate, 1) : baseDate;
-    return toDateKey(chartDate);
+    const baseDate = new Date(entry.created_at);
+    return toDateKey(baseDate);
   });
 
   return Array.from({ length: days }, (_, index) => {
