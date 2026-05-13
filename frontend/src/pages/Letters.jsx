@@ -27,10 +27,11 @@ import {
   X,
   MapPin,
   Send,
-  Sparkles,
   Clock,
   ArrowRight,
-  LayoutGrid
+  ArrowLeftRight,
+  History,
+  ChevronDown
 } from 'lucide-react'
 
 const containerVariants = {
@@ -46,6 +47,17 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 }
 
+const DEPARTMENTS = [
+  "DG Office",
+  "CID Crime",
+  "Law & Order",
+  "Training",
+  "TS & SCRB",
+  "SP Office",
+  "Control Room",
+  "HQ"
+]
+
 export default function Letters() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -53,6 +65,7 @@ export default function Letters() {
   const [entries, setEntries] = useState([])
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [showEntryDetails, setShowEntryDetails] = useState(false)
+  const [showForwardModal, setShowForwardModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [pagination, setPagination] = useState({ page: 1, per_page: 10, total: 0, pages: 0 })
@@ -69,13 +82,25 @@ export default function Letters() {
     unit_district: '',
     send_to: '',
   })
+  const [forwardForm, setForwardForm] = useState({
+    to_department: '',
+    remarks: ''
+  })
   const [creating, setCreating] = useState(false)
+  const [forwarding, setForwarding] = useState(false)
+  const [movements, setMovements] = useState([])
 
   const debouncedSearch = useDebounce(search, 300)
 
   useEffect(() => {
     fetchEntries()
   }, [debouncedSearch, pagination.page])
+
+  useEffect(() => {
+    if (selectedEntry) {
+      fetchMovements(selectedEntry.id)
+    }
+  }, [selectedEntry])
 
   const fetchEntries = async () => {
     setLoading(true)
@@ -92,9 +117,13 @@ export default function Letters() {
       
       if (!selectedEntry && items.length > 0) {
         setSelectedEntry(items[0])
+        setShowEntryDetails(true)
       } else if (selectedEntry) {
         const updated = items.find(item => item.id === selectedEntry.id)
-        if (!updated) setSelectedEntry(items[0] || null)
+        if (!updated) {
+          setSelectedEntry(items[0] || null)
+          if (items.length > 0) setShowEntryDetails(true)
+        }
       }
       
       setPagination({
@@ -108,6 +137,16 @@ export default function Letters() {
       toast.error('Failed to load entries')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchMovements = async (entryId) => {
+    try {
+      const res = await api.get(`/api/forward/entry/${entryId}/movements`)
+      setMovements(res.data || [])
+    } catch (error) {
+      console.error('Failed to fetch movements:', error)
+      setMovements([])
     }
   }
 
@@ -158,6 +197,34 @@ export default function Letters() {
     }
   }
 
+  const handleForward = async (e) => {
+    e.preventDefault()
+    if (!selectedEntry) return
+    
+    setForwarding(true)
+    try {
+      const res = await api.post('/api/forward', {
+        entry_id: selectedEntry.id,
+        to_department: forwardForm.to_department,
+        remarks: forwardForm.remarks || undefined
+      })
+      
+      toast.success(`Patrak forwarded to ${forwardForm.to_department}`)
+      setShowForwardModal(false)
+      setForwardForm({ to_department: '', remarks: '' })
+      
+      const updatedEntry = { ...selectedEntry, current_department: forwardForm.to_department }
+      setSelectedEntry(updatedEntry)
+      
+      fetchMovements(selectedEntry.id)
+      fetchEntries()
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to forward patrak')
+    } finally {
+      setForwarding(false)
+    }
+  }
+
   const handleGenerateQR = async (entryId) => {
     try {
       const res = await api.get(`/api/qr/generate/${entryId}`)
@@ -195,7 +262,7 @@ export default function Letters() {
           {/* Form + Details Row */}
           <div className={`grid transition-all duration-300 ease-in-out ${
             showEntryDetails 
-              ? 'lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]' 
+              ? 'lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]' 
               : 'grid-cols-1'
           } gap-6 items-start`}>
             
@@ -309,7 +376,7 @@ export default function Letters() {
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
                       <Send size={14} />
-                      Send To <span className="text-red-500">*</span>
+                      Initial Department <span className="text-red-500">*</span>
                     </label>
                     <select
                       required
@@ -317,9 +384,10 @@ export default function Letters() {
                       onChange={(e) => setCreateForm({ ...createForm, send_to: e.target.value })}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
                     >
-                      <option value="">Select destination</option>
-                      <option value="DG office">DG Office</option>
-                      <option value="uploaded-sarkar">Uploaded-Sarkar</option>
+                      <option value="">Select department</option>
+                      {DEPARTMENTS.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -403,7 +471,6 @@ export default function Letters() {
                     type="button" 
                     variant="ghost" 
                     onClick={() => {
-                      setShowEntryDetails(false)
                       setCreateForm({
                         subject: '',
                         sender_name: '',
@@ -421,7 +488,7 @@ export default function Letters() {
                     className="sm:w-auto !text-slate-600 !border !border-slate-300 !bg-white hover:!bg-slate-50"
                   >
                     <X size={16} className="mr-2" />
-                    Cancel
+                    Reset
                   </Button>
                   <Button 
                     type="submit" 
@@ -451,7 +518,7 @@ export default function Letters() {
                       <UserRound size={18} className="text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-white font-semibold">Selected Entry Details</h3>
+                      <h3 className="text-white font-semibold">Entry Details</h3>
                       <p className="text-slate-300 text-xs">View and track this entry</p>
                     </div>
                     <button
@@ -489,7 +556,7 @@ export default function Letters() {
                       {[
                         { label: 'Sender', value: selectedEntry.sender_name, icon: UserRound },
                         { label: 'Designation', value: selectedEntry.sender_designation || 'Officer', icon: FileText },
-                        { label: 'Department', value: selectedEntry.current_department || 'Pending', icon: Building2 },
+                        { label: 'Current Dept', value: selectedEntry.current_department, icon: Building2 },
                         { label: 'Status', value: selectedEntry.status || 'Active', icon: Activity },
                         { label: 'Date', value: formatShortDate(selectedEntry.received_date), icon: CalendarIcon },
                         { label: 'Priority', value: selectedEntry.priority, icon: Clock },
@@ -504,13 +571,30 @@ export default function Letters() {
                       ))}
                     </div>
 
-                    {/* Description */}
-                    <div className="bg-slate-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Description</p>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {selectedEntry.description || 'No additional description provided.'}
-                      </p>
-                    </div>
+                    {/* Movement History */}
+                    {movements.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                          <History size={14} />
+                          Movement History
+                        </div>
+                        <div className="bg-slate-50 rounded-xl p-3 max-h-[200px] overflow-y-auto space-y-2">
+                          {movements.slice(-5).reverse().map((m, idx) => (
+                            <div key={m.id || idx} className="text-xs border-l-2 border-red-200 pl-3 py-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-slate-700">
+                                  {m.from_department || 'Created'} → {m.to_department}
+                                </span>
+                              </div>
+                              <p className="text-slate-400 mt-0.5">
+                                {m.forwarded_by_name} • {new Date(m.timestamp).toLocaleString()}
+                              </p>
+                              {m.remarks && <p className="text-slate-500 mt-1 italic">{m.remarks}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2 pt-2">
@@ -521,10 +605,18 @@ export default function Letters() {
                         </Button>
                       )}
                       <Button 
-                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} 
+                        onClick={() => setShowForwardModal(true)} 
                         className="w-full"
                       >
-                        Track Entry
+                        <ArrowLeftRight size={16} className="mr-2" />
+                        Forward to Department
+                      </Button>
+                      <Button 
+                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} 
+                        variant="outline"
+                        className="w-full"
+                      >
+                        View Full Track
                         <ArrowRight size={16} className="ml-2" />
                       </Button>
                     </div>
@@ -534,12 +626,111 @@ export default function Letters() {
             </AnimatePresence>
           </div>
 
+          {/* Forward Modal */}
+          <AnimatePresence>
+            {showForwardModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                onClick={() => setShowForwardModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white/10 rounded-xl">
+                        <ArrowLeftRight size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">Forward Patrak</h3>
+                        <p className="text-slate-300 text-xs">Select destination department</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowForwardModal(false)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <X size={20} className="text-white/70 hover:text-white" />
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={handleForward} className="p-5 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Current Department
+                      </label>
+                      <div className="px-4 py-3 bg-slate-100 rounded-xl text-sm font-medium text-slate-700">
+                        {selectedEntry?.current_department}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                        Forward To <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        required
+                        value={forwardForm.to_department}
+                        onChange={(e) => setForwardForm({ ...forwardForm, to_department: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
+                      >
+                        <option value="">Select destination department</option>
+                        {DEPARTMENTS.filter(d => d !== selectedEntry?.current_department).map(dept => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Remarks (Optional)
+                      </label>
+                      <textarea
+                        value={forwardForm.remarks}
+                        onChange={(e) => setForwardForm({ ...forwardForm, remarks: e.target.value })}
+                        placeholder="Add any notes or instructions..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all resize-none placeholder:text-slate-400"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        onClick={() => setShowForwardModal(false)}
+                        className="flex-1 !text-slate-600 !border !border-slate-300 !bg-white"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        loading={forwarding}
+                        className="flex-1 !bg-red-600 hover:!bg-red-700"
+                      >
+                        <Send size={16} className="mr-2" />
+                        Forward
+                      </Button>
+                    </div>
+                  </form>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Tapal List Section */}
           <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-slate-100 rounded-lg">
-                  <LayoutGrid size={18} className="text-slate-600" />
+                  <Building2 size={18} className="text-slate-600" />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-slate-800">Tapal List</h2>

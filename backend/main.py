@@ -17,6 +17,7 @@ from routers.qr import router as qr_router
 from routers.dashboard import router as dashboard_router
 from routers.admin import router as admin_router
 from routers.track import router as track_router
+from routers.forward import router as forward_router
 from middleware.security import SecurityHeadersMiddleware
 from middleware.rate_limit import RateLimitMiddleware, LoginRateLimitMiddleware
 
@@ -53,6 +54,7 @@ app.include_router(qr_router)
 app.include_router(dashboard_router)
 app.include_router(admin_router)
 app.include_router(track_router)
+app.include_router(forward_router)
 
 @app.get("/")
 async def root():

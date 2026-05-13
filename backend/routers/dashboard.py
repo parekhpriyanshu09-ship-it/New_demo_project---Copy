@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from main_db import get_db
-from models import PatrakEntry, DepartmentLog, DEPARTMENTS
+from models import PatrakEntry, PatrakMovement, User, DEPARTMENTS
 from schemas import DashboardStats, CalendarResponse
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
@@ -13,9 +13,14 @@ async def get_stats(
 ):
     total_entries = db.query(PatrakEntry).count()
 
-    active_entries = db.query(PatrakEntry).filter(PatrakEntry.status == "Active").count()
+    from models import EntryStatus
+    active_entries = db.query(PatrakEntry).filter(
+        PatrakEntry.status == EntryStatus.ACTIVE
+    ).count()
 
-    closed_entries = db.query(PatrakEntry).filter(PatrakEntry.status == "Closed").count()
+    closed_entries = db.query(PatrakEntry).filter(
+        PatrakEntry.status == EntryStatus.CLOSED
+    ).count()
 
     department_counts = {}
     for dept in DEPARTMENTS:
@@ -45,14 +50,13 @@ async def get_calendar(
     date_counts = {}
 
     if view_type == "outward":
-        logs = db.query(DepartmentLog).filter(
-            DepartmentLog.department_name == "CID Crime",
-            extract('month', DepartmentLog.received_at) == month,
-            extract('year', DepartmentLog.received_at) == year
+        movements = db.query(PatrakMovement).filter(
+            extract('month', PatrakMovement.timestamp) == month,
+            extract('year', PatrakMovement.timestamp) == year
         ).all()
-        for log in logs:
-            if log.received_at:
-                date_key = log.received_at.date().isoformat()
+        for movement in movements:
+            if movement.timestamp:
+                date_key = movement.timestamp.date().isoformat()
                 date_counts[date_key] = date_counts.get(date_key, 0) + 1
     else:
         entries = db.query(PatrakEntry).filter(
@@ -78,8 +82,8 @@ async def get_department_counts(
 ):
     counts = []
     for dept in DEPARTMENTS:
-        received_count = db.query(DepartmentLog).filter(
-            DepartmentLog.department_name == dept
+        received_count = db.query(PatrakMovement).filter(
+            PatrakMovement.to_department == dept
         ).count()
 
         current_count = db.query(PatrakEntry).filter(
@@ -110,7 +114,6 @@ async def get_receiving_modes(
     }
     
     for mode, count in results:
-        # Normalize and map null modes to Physical
         norm_mode = mode if mode else "Physical"
         if norm_mode in counts:
             counts[norm_mode] += count
@@ -140,9 +143,8 @@ async def get_date_chart(
             current_date = target_date - timedelta(days=(days-1)-i)
 
             if view_type == "outward":
-                count = db.query(DepartmentLog).filter(
-                    DepartmentLog.department_name == "CID Crime",
-                    func.date(DepartmentLog.received_at) == current_date
+                count = db.query(PatrakMovement).filter(
+                    func.date(PatrakMovement.timestamp) == current_date
                 ).count()
             else:
                 count = db.query(PatrakEntry).filter(
@@ -164,9 +166,8 @@ async def get_date_chart(
         current_date = today - timedelta(days=(days-1)-i)
 
         if view_type == "outward":
-            count = db.query(DepartmentLog).filter(
-                DepartmentLog.department_name == "CID Crime",
-                func.date(DepartmentLog.received_at) == current_date
+            count = db.query(PatrakMovement).filter(
+                func.date(PatrakMovement.timestamp) == current_date
             ).count()
         else:
             count = db.query(PatrakEntry).filter(
@@ -185,18 +186,13 @@ async def get_forward_stats(
     db: Session = Depends(get_db)
 ):
     """
-    Returns how many patraks each department forwarded to another department.
-    A department forwards a patrak when the NEXT department receives it.
+    Returns how many patraks each department forwarded (outgoing movements).
     """
     forward_counts = {}
-    for idx, dept in enumerate(DEPARTMENTS):
-        if idx < len(DEPARTMENTS) - 1:
-            next_dept = DEPARTMENTS[idx + 1]
-            count = db.query(DepartmentLog).filter(
-                DepartmentLog.department_name == next_dept
-            ).count()
-        else:
-            count = 0
+    for dept in DEPARTMENTS:
+        count = db.query(PatrakMovement).filter(
+            PatrakMovement.from_department == dept
+        ).count()
         forward_counts[dept] = count
 
     return {"forward_counts": forward_counts}
@@ -206,22 +202,17 @@ async def get_department_forwarded(
     db: Session = Depends(get_db)
 ):
     """
-    Returns for each department: how many patraks were forwarded TO other departments.
-    Shows both received (incoming) and forwarded (outgoing) counts per department.
+    Returns for each department: received (incoming) and forwarded (outgoing) counts.
     """
     results = []
-    for idx, dept in enumerate(DEPARTMENTS):
-        received = db.query(DepartmentLog).filter(
-            DepartmentLog.department_name == dept
+    for dept in DEPARTMENTS:
+        received = db.query(PatrakMovement).filter(
+            PatrakMovement.to_department == dept
         ).count()
 
-        if idx < len(DEPARTMENTS) - 1:
-            next_dept = DEPARTMENTS[idx + 1]
-            forwarded = db.query(DepartmentLog).filter(
-                DepartmentLog.department_name == next_dept
-            ).count()
-        else:
-            forwarded = 0
+        forwarded = db.query(PatrakMovement).filter(
+            PatrakMovement.from_department == dept
+        ).count()
 
         results.append({
             "department": dept,
@@ -236,24 +227,25 @@ async def get_recent_activity(
     limit: int = Query(10, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
-    logs = db.query(DepartmentLog).order_by(
-        DepartmentLog.received_at.desc()
+    movements = db.query(PatrakMovement).order_by(
+        PatrakMovement.timestamp.desc()
     ).limit(limit).all()
 
     activity = []
-    for log in logs:
-        entry = db.query(PatrakEntry).filter(PatrakEntry.id == log.entry_id).first()
-        user = db.query(User).filter(User.id == log.received_by_user_id).first()
+    for movement in movements:
+        entry = db.query(PatrakEntry).filter(PatrakEntry.id == movement.entry_id).first()
+        user = db.query(User).filter(User.id == movement.forwarded_by).first()
 
         activity.append({
-            "id": log.id,
-            "entry_id": log.entry_id,
+            "id": movement.id,
+            "entry_id": movement.entry_id,
             "entry_subject": entry.subject if entry else "Unknown",
             "entry_unique_id": entry.unique_id if entry else "Unknown",
-            "department": log.department_name,
-            "received_by": user.username if user else "Unknown",
-            "received_at": log.received_at.isoformat() if log.received_at else None,
-            "scan_method": log.scan_method
+            "from_department": movement.from_department,
+            "to_department": movement.to_department,
+            "forwarded_by": user.username if user else "Unknown",
+            "timestamp": movement.timestamp.isoformat() if movement.timestamp else None,
+            "status": movement.status.value if movement.status else "Forwarded"
         })
 
     return {"activity": activity}

@@ -20,6 +20,13 @@ class EntryStatus(str, enum.Enum):
     CLOSED = "Closed"
     ARCHIVED = "Archived"
 
+class MovementStatus(str, enum.Enum):
+    CREATED = "Created"
+    FORWARDED = "Forwarded"
+    RECEIVED = "Received"
+    PENDING = "Pending"
+    CLOSED = "Closed"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -36,7 +43,7 @@ class User(Base):
     lockout_until = Column(DateTime, nullable=True)
 
     entries_created = relationship("PatrakEntry", back_populates="creator")
-    logs_received = relationship("DepartmentLog", back_populates="received_by_user")
+    movements = relationship("PatrakMovement", back_populates="forwarded_by_user")
     audit_logs = relationship("AuditLog", back_populates="user")
 
 class PatrakEntry(Base):
@@ -53,8 +60,9 @@ class PatrakEntry(Base):
     receiving_mode = Column(String(20), nullable=False, default="Physical")
     sender_email = Column(String(100), nullable=True)
     fax_number = Column(String(50), nullable=True)
+    unit_district = Column(String(100), nullable=True)
+    send_to = Column(String(100), nullable=True)
     current_department = Column(String(100), nullable=False, default="DG Office")
-    current_stage_index = Column(Integer, default=0)
     status = Column(SQLEnum(EntryStatus), default=EntryStatus.ACTIVE)
     qr_code_data = Column(Text, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"))
@@ -62,22 +70,22 @@ class PatrakEntry(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     creator = relationship("User", back_populates="entries_created")
-    logs = relationship("DepartmentLog", back_populates="entry", order_by="DepartmentLog.received_at")
+    movements = relationship("PatrakMovement", back_populates="entry", order_by="PatrakMovement.timestamp.asc()")
 
-class DepartmentLog(Base):
-    __tablename__ = "department_logs"
+class PatrakMovement(Base):
+    __tablename__ = "patrak_movements"
 
     id = Column(Integer, primary_key=True, index=True)
     entry_id = Column(Integer, ForeignKey("patrak_entries.id"), nullable=False)
-    department_name = Column(String(100), nullable=False)
-    department_index = Column(Integer, nullable=False)
-    received_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    received_at = Column(DateTime, default=datetime.utcnow)
+    from_department = Column(String(100), nullable=True)
+    to_department = Column(String(100), nullable=False)
+    forwarded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
     remarks = Column(Text, nullable=True)
-    scan_method = Column(String(20), default="camera")
-
-    entry = relationship("PatrakEntry", back_populates="logs")
-    received_by_user = relationship("User", back_populates="logs_received")
+    status = Column(SQLEnum(MovementStatus), default=MovementStatus.FORWARDED)
+    
+    entry = relationship("PatrakEntry", back_populates="movements")
+    forwarded_by_user = relationship("User", back_populates="movements")
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
@@ -97,7 +105,8 @@ DEPARTMENTS = [
     "CID Crime",
     "Law & Order",
     "Training",
-    "TS & SCRB"
+    "TS & SCRB",
+    "SP Office",
+    "Control Room",
+    "HQ"
 ]
-
-DEPARTMENT_INDEX = {name: idx for idx, name in enumerate(DEPARTMENTS)}

@@ -19,6 +19,13 @@ class EntryStatus(str, Enum):
     CLOSED = "Closed"
     ARCHIVED = "Archived"
 
+class MovementStatus(str, Enum):
+    CREATED = "Created"
+    FORWARDED = "Forwarded"
+    RECEIVED = "Received"
+    PENDING = "Pending"
+    CLOSED = "Closed"
+
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
@@ -66,6 +73,8 @@ class PatrakEntryBase(BaseModel):
     receiving_mode: Optional[str] = "Physical"
     sender_email: Optional[str] = None
     fax_number: Optional[str] = None
+    unit_district: Optional[str] = None
+    send_to: Optional[str] = None
 
 class PatrakEntryCreate(PatrakEntryBase):
     pass
@@ -81,12 +90,13 @@ class PatrakEntryUpdate(BaseModel):
     receiving_mode: Optional[str] = None
     sender_email: Optional[str] = None
     fax_number: Optional[str] = None
+    unit_district: Optional[str] = None
+    send_to: Optional[str] = None
 
 class PatrakEntryResponse(PatrakEntryBase):
     id: int
     unique_id: str
     current_department: str
-    current_stage_index: int
     status: EntryStatus
     qr_code_data: Optional[str] = None
     created_by: Optional[int] = None
@@ -96,20 +106,24 @@ class PatrakEntryResponse(PatrakEntryBase):
     class Config:
         from_attributes = True
 
-class DepartmentLogBase(BaseModel):
-    remarks: Optional[str] = None
-    scan_method: str = "camera"
-
-class DepartmentLogCreate(DepartmentLogBase):
+class PatrakMovementBase(BaseModel):
     entry_id: int
+    to_department: str = Field(..., min_length=1)
+    remarks: Optional[str] = None
 
-class DepartmentLogResponse(DepartmentLogBase):
+class PatrakMovementCreate(PatrakMovementBase):
+    pass
+
+class PatrakMovementResponse(BaseModel):
     id: int
     entry_id: int
-    department_name: str
-    department_index: int
-    received_by_user_id: int
-    received_at: datetime
+    from_department: Optional[str] = None
+    to_department: str
+    forwarded_by: int
+    forwarded_by_name: Optional[str] = None
+    timestamp: datetime
+    remarks: Optional[str] = None
+    status: MovementStatus
 
     class Config:
         from_attributes = True
@@ -127,10 +141,35 @@ class QRUploadRequest(BaseModel):
     entry_id: int
     department_name: str
 
+class ForwardRequest(BaseModel):
+    entry_id: int
+    to_department: str = Field(..., min_length=1)
+    remarks: Optional[str] = None
+
+class TrackingNode(BaseModel):
+    from_department: Optional[str] = None
+    to_department: str
+    status: str
+    timestamp: Optional[str] = None
+    forwarded_by: Optional[str] = None
+    remarks: Optional[str] = None
+
 class TrackingResponse(BaseModel):
     entry: PatrakEntryResponse
-    logs: List[DepartmentLogResponse]
-    timeline: List[dict]
+    movements: List[PatrakMovementResponse]
+    current_department: str
+    total_movements: int
+
+class PublicTrackingResponse(BaseModel):
+    patrak_id: str
+    subject: str
+    current_status: str
+    current_department: str
+    sender_name: str
+    sender_designation: Optional[str] = None
+    priority: str
+    total_movements: int
+    movements: List[TrackingNode]
 
 class DashboardStats(BaseModel):
     total_entries: int

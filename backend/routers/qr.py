@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from main_db import get_db
-from models import User, PatrakEntry, DepartmentLog, UserRole, DEPARTMENTS, DEPARTMENT_INDEX
+from models import User, PatrakEntry, UserRole, DEPARTMENTS
 from schemas import QRCodeResponse, QRScanRequest
 from auth.dependencies import get_current_user, require_not_viewer, get_client_ip
 from utils.qr_generator import generate_qr_code, create_qr_data
@@ -43,7 +43,10 @@ async def scan_qr(
     db: Session = Depends(get_db),
     request: Request = None
 ):
-    # Department users can only scan for their own department
+    """
+    Legacy QR scan endpoint - for backward compatibility.
+    For new dynamic forwarding, use the /api/forward endpoint instead.
+    """
     if current_user.role == UserRole.DEPARTMENT_USER.value:
         if current_user.department != scan_data.department_name:
             raise HTTPException(
@@ -54,63 +57,16 @@ async def scan_qr(
     entry = db.query(PatrakEntry).filter(PatrakEntry.id == scan_data.entry_id).first()
 
     if not entry:
-        log_qr_scan(db, current_user.id, scan_data.entry_id, scan_data.department_name, get_client_ip(request), False)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
 
-    if scan_data.department_name not in DEPARTMENT_INDEX:
-        log_qr_scan(db, current_user.id, scan_data.entry_id, scan_data.department_name, get_client_ip(request), False)
+    if scan_data.department_name not in DEPARTMENTS:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid department")
 
-    dept_index = DEPARTMENT_INDEX[scan_data.department_name]
-
-    if dept_index != entry.current_stage_index:
-        log_qr_scan(db, current_user.id, scan_data.entry_id, scan_data.department_name, get_client_ip(request), False)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"This entry is currently at '{entry.current_department}'. Cannot scan for '{scan_data.department_name}' yet."
-        )
-
-    existing_log = db.query(DepartmentLog).filter(
-        DepartmentLog.entry_id == entry.id,
-        DepartmentLog.department_index == dept_index
-    ).first()
-
-    if existing_log:
-        log_qr_scan(db, current_user.id, scan_data.entry_id, scan_data.department_name, get_client_ip(request), False)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This entry has already been received at this department"
-        )
-
-    new_log = DepartmentLog(
-        entry_id=entry.id,
-        department_name=scan_data.department_name,
-        department_index=dept_index,
-        received_by_user_id=current_user.id,
-        received_at=datetime.utcnow(),
-        scan_method="camera"
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="QR scanning is deprecated. Please use the dynamic forwarding system (/api/forward) instead."
     )
 
-    db.add(new_log)
-
-    if dept_index < len(DEPARTMENTS) - 1:
-        entry.current_department = DEPARTMENTS[dept_index + 1]
-        entry.current_stage_index = dept_index + 1
-    else:
-        entry.current_department = DEPARTMENTS[-1]
-        entry.status = "Closed"
-
-    entry.updated_at = datetime.utcnow()
-    db.commit()
-
-    log_qr_scan(db, current_user.id, scan_data.entry_id, scan_data.department_name, get_client_ip(request), True)
-
-    return {
-        "message": "QR scanned successfully",
-        "entry_id": entry.id,
-        "department": scan_data.department_name,
-        "log_id": new_log.id
-    }
 
 @router.post("/upload-scan")
 async def upload_scan(
@@ -122,82 +78,14 @@ async def upload_scan(
     db: Session = Depends(get_db),
     request: Request = None
 ):
-    # Department users can only scan for their own department
-    if current_user.role == UserRole.DEPARTMENT_USER.value:
-        if current_user.department != department_name:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"You can only scan entries for your department ({current_user.department})"
-            )
-
-    if file.size and file.size > 5 * 1024 * 1024:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File size exceeds 5MB limit")
-
-    allowed_types = ["image/jpeg", "image/png", "image/jpg"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type. Allowed: JPEG, PNG")
-
-    entry = db.query(PatrakEntry).filter(PatrakEntry.id == entry_id).first()
-
-    if not entry:
-        log_qr_scan(db, current_user.id, entry_id, department_name, get_client_ip(request), False)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
-
-    if department_name not in DEPARTMENT_INDEX:
-        log_qr_scan(db, current_user.id, entry_id, department_name, get_client_ip(request), False)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid department")
-
-    dept_index = DEPARTMENT_INDEX[department_name]
-
-    if dept_index != entry.current_stage_index:
-        log_qr_scan(db, current_user.id, entry_id, department_name, get_client_ip(request), False)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"This entry is currently at '{entry.current_department}'. Cannot scan for '{department_name}' yet."
-        )
-
-    existing_log = db.query(DepartmentLog).filter(
-        DepartmentLog.entry_id == entry.id,
-        DepartmentLog.department_index == dept_index
-    ).first()
-
-    if existing_log:
-        log_qr_scan(db, current_user.id, entry_id, department_name, get_client_ip(request), False)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This entry has already been received at this department"
-        )
-
-    new_log = DepartmentLog(
-        entry_id=entry.id,
-        department_name=department_name,
-        department_index=dept_index,
-        received_by_user_id=current_user.id,
-        received_at=datetime.utcnow(),
-        remarks=remarks,
-        scan_method="upload"
+    """
+    Legacy QR upload scan - for backward compatibility.
+    For new dynamic forwarding, use the /api/forward endpoint instead.
+    """
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="QR upload scanning is deprecated. Please use the dynamic forwarding system (/api/forward) instead."
     )
-
-    db.add(new_log)
-
-    if dept_index < len(DEPARTMENTS) - 1:
-        entry.current_department = DEPARTMENTS[dept_index + 1]
-        entry.current_stage_index = dept_index + 1
-    else:
-        entry.current_department = DEPARTMENTS[-1]
-        entry.status = "Closed"
-
-    entry.updated_at = datetime.utcnow()
-    db.commit()
-
-    log_qr_scan(db, current_user.id, entry_id, department_name, get_client_ip(request), True)
-
-    return {
-        "message": "QR uploaded and scanned successfully",
-        "entry_id": entry.id,
-        "department": department_name,
-        "log_id": new_log.id
-    }
 
 
 @router.post("/decode")
@@ -274,77 +162,10 @@ async def receive_electronic(
     request: Request = None
 ):
     """
-    Digitally receives an electronic (Mails / Fax) patrak, logging the status movement
-    without requiring a camera QR scan.
+    Deprecated: Digitally receives an electronic (Mails / Fax) patrak.
+    Use /api/forward instead for dynamic forwarding.
     """
-    # Department users can only receive entries for their own department
-    if current_user.role == UserRole.DEPARTMENT_USER.value:
-        if current_user.department != scan_data.department_name:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"You can only receive entries for your department ({current_user.department})"
-            )
-
-    entry = db.query(PatrakEntry).filter(PatrakEntry.id == scan_data.entry_id).first()
-
-    if not entry:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
-
-    if entry.receiving_mode == "Physical":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Physical entries must be scanned using a physical QR Code."
-        )
-
-    if scan_data.department_name not in DEPARTMENT_INDEX:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid department")
-
-    dept_index = DEPARTMENT_INDEX[scan_data.department_name]
-
-    if dept_index != entry.current_stage_index:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"This entry is currently at '{entry.current_department}'. Cannot receive for '{scan_data.department_name}' yet."
-        )
-
-    existing_log = db.query(DepartmentLog).filter(
-        DepartmentLog.entry_id == entry.id,
-        DepartmentLog.department_index == dept_index
-    ).first()
-
-    if existing_log:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This entry has already been received at this department"
-        )
-
-    new_log = DepartmentLog(
-        entry_id=entry.id,
-        department_name=scan_data.department_name,
-        department_index=dept_index,
-        received_by_user_id=current_user.id,
-        received_at=datetime.utcnow(),
-        remarks=f"Digitally received via {entry.receiving_mode or 'Mails'}",
-        scan_method="digital"
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Electronic receiving is deprecated. Please use the dynamic forwarding system (/api/forward) instead."
     )
-
-    db.add(new_log)
-
-    if dept_index < len(DEPARTMENTS) - 1:
-        entry.current_department = DEPARTMENTS[dept_index + 1]
-        entry.current_stage_index = dept_index + 1
-    else:
-        entry.current_department = DEPARTMENTS[-1]
-        entry.status = "Closed"
-
-    entry.updated_at = datetime.utcnow()
-    db.commit()
-
-    log_qr_scan(db, current_user.id, entry.id, scan_data.department_name, get_client_ip(request), True)
-
-    return {
-        "message": "Electronic patrak received successfully",
-        "entry_id": entry.id,
-        "department": scan_data.department_name,
-        "log_id": new_log.id
-    }

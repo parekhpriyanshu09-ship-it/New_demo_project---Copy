@@ -5,15 +5,17 @@ import { Html5Qrcode } from 'html5-qrcode'
 import toast from 'react-hot-toast'
 import Layout from '../components/layout/Layout'
 import api from '../services/api'
-import { AlertCircle, BadgeCheck, Camera, CheckCircle2, Clock3, LocateFixed, Loader2, QrCode, Search, Upload } from 'lucide-react'
+import { AlertCircle, BadgeCheck, Camera, CheckCircle2, Clock3, LocateFixed, Loader2, QrCode, Search, Upload, ArrowRight, Building2, UserRound, Calendar, ShieldCheck } from 'lucide-react'
 
 const statusClass = {
   pending: 'bg-amber-500/10 text-amber-300 border-amber-400/20',
-  'in review': 'bg-blue-500/10 text-blue-300 border-blue-400/20',
+  created: 'bg-blue-500/10 text-blue-300 border-blue-400/20',
   forwarded: 'bg-cyan-500/10 text-cyan-300 border-cyan-400/20',
-  completed: 'bg-emerald-500/10 text-emerald-300 border-emerald-400/20',
+  received: 'bg-emerald-500/10 text-emerald-300 border-emerald-400/20',
   active: 'bg-blue-500/10 text-blue-300 border-blue-400/20',
-  closed: 'bg-emerald-500/10 text-emerald-300 border-emerald-400/20',
+  closed: 'bg-purple-500/10 text-purple-300 border-purple-400/20',
+  'in transit': 'bg-amber-500/10 text-amber-300 border-amber-400/20',
+  completed: 'bg-emerald-500/10 text-emerald-300 border-emerald-400/20',
 }
 
 function parseQrValue(value) {
@@ -149,9 +151,8 @@ export default function TrackMyTapal() {
     }
   }
 
-  const entry = trackingData?.entry || trackingData?.patrak || trackingData
-  const timeline = trackingData?.timeline || trackingData?.history || []
-  const currentStatus = (entry?.current_status || entry?.status || 'Pending').toString()
+  const movements = trackingData?.movements || []
+  const currentStatus = (trackingData?.current_status || 'Pending').toString()
   const normalizedStatus = currentStatus.toLowerCase()
 
   return (
@@ -165,7 +166,7 @@ export default function TrackMyTapal() {
             </div>
             <div>
               <h1 className="text-xl font-black text-white">Track My Tapal</h1>
-              <p className="text-xs font-semibold text-slate-400">Fetch tracking status by Patrak ID or QR code</p>
+              <p className="text-xs font-semibold text-slate-400">Dynamic forwarding-based tracking system</p>
             </div>
           </div>
         </div>
@@ -269,60 +270,134 @@ export default function TrackMyTapal() {
               </div>
             ) : (
               <>
+                {/* Header */}
                 <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-5 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-300">Patrak Overview</p>
-                    <h2 className="mt-1 text-xl font-black text-white">{entry?.subject || 'Tracked Tapal'}</h2>
-                    <p className="mt-2 text-xs font-bold text-slate-500">{entry?.patrak_id || entry?.unique_id || patrakId}</p>
+                    <h2 className="mt-1 text-xl font-black text-white">{trackingData?.subject || 'Tracked Tapal'}</h2>
+                    <p className="mt-2 text-xs font-bold text-slate-500">{trackingData?.patrak_id || patrakId}</p>
                   </div>
                   <span className={`rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-wider ${statusClass[normalizedStatus] || statusClass.pending}`}>
                     {currentStatus}
                   </span>
                 </div>
 
+                {/* Details Grid */}
                 <div className="grid gap-3 sm:grid-cols-3 mb-6">
                   {[
-                    { label: 'Department', value: entry?.current_department || 'Pending' },
-                    { label: 'Sender', value: entry?.sender_name || 'N/A' },
-                    { label: 'Priority', value: entry?.priority || 'Normal' },
+                    { label: 'Current Department', value: trackingData?.current_department || 'Pending', icon: Building2 },
+                    { label: 'Sender', value: trackingData?.sender_name || 'N/A', icon: UserRound },
+                    { label: 'Priority', value: trackingData?.priority || 'Normal', icon: ShieldCheck },
                   ].map(item => (
                     <div key={item.label} className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-600">{item.label}</p>
+                      <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600">
+                        <item.icon size={12} />
+                        {item.label}
+                      </div>
                       <p className="mt-2 truncate text-xs font-black text-slate-200">{item.value}</p>
                     </div>
                   ))}
                 </div>
 
+                {/* Dynamic Movement Timeline */}
                 <div>
-                  <h3 className="mb-4 text-sm font-black text-white">Tracking Status</h3>
-                  <div className="space-y-4">
-                    {(timeline.length ? timeline : [{ department: entry?.current_department || 'Current Desk', status: currentStatus, timestamp: entry?.received_date }]).map((step, index) => {
-                      const completed = step.status?.toLowerCase() !== 'pending'
-                      return (
-                        <motion.div
-                          key={`${step.department}-${index}`}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.06 }}
-                          className="relative flex gap-4"
-                        >
-                          <div className="flex flex-col items-center">
-                            <div className={`flex h-9 w-9 items-center justify-center rounded-full border ${completed ? 'border-emerald-400/30 bg-emerald-500/10' : 'border-amber-400/30 bg-amber-500/10'}`}>
-                              {completed ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Clock3 className="h-4 w-4 text-amber-300" />}
+                  <h3 className="mb-4 text-sm font-black text-white">Movement History</h3>
+                  {movements.length === 0 ? (
+                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center">
+                      <Clock3 className="mx-auto mb-3 h-10 w-10 text-slate-600" />
+                      <p className="text-sm font-semibold text-slate-400">No movements recorded yet</p>
+                      <p className="mt-1 text-xs text-slate-500">Patrak is awaiting its first forward action</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {movements.map((movement, index) => {
+                        const isLast = index === movements.length - 1
+                        const status = movement.status?.toLowerCase() || 'forwarded'
+                        
+                        return (
+                          <motion.div
+                            key={`${movement.to_department}-${index}`}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.08 }}
+                            className="relative"
+                          >
+                            <div className="flex gap-4">
+                              {/* Timeline indicator */}
+                              <div className="flex flex-col items-center">
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                                  status === 'received' || status === 'created' 
+                                    ? 'border-emerald-400/50 bg-emerald-500/20' 
+                                    : status === 'closed'
+                                    ? 'border-purple-400/50 bg-purple-500/20'
+                                    : 'border-cyan-400/50 bg-cyan-500/20'
+                                }`}>
+                                  {status === 'received' || status === 'created' ? (
+                                    <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                                  ) : status === 'closed' ? (
+                                    <BadgeCheck className="h-5 w-5 text-purple-300" />
+                                  ) : (
+                                    <ArrowRight className="h-5 w-5 text-cyan-300" />
+                                  )}
+                                </div>
+                                {!isLast && <div className="h-8 w-px bg-gradient-to-b from-cyan-400/30 to-transparent" />}
+                              </div>
+
+                              {/* Movement details */}
+                              <div className="min-w-0 flex-1 pb-4">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1">
+                                    {/* From -> To */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {movement.from_department && (
+                                        <>
+                                          <span className="text-sm font-semibold text-slate-300">{movement.from_department}</span>
+                                          <ArrowRight className="h-3 w-3 text-slate-500" />
+                                        </>
+                                      )}
+                                      <span className="text-sm font-black text-white">{movement.to_department}</span>
+                                    </div>
+                                    
+                                    {/* Meta info */}
+                                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                      <span className="flex items-center gap-1">
+                                        <UserRound size={10} />
+                                        {movement.forwarded_by || 'System'}
+                                      </span>
+                                      {movement.timestamp && (
+                                        <span className="flex items-center gap-1">
+                                          <Calendar size={10} />
+                                          {new Date(movement.timestamp).toLocaleString()}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Remarks */}
+                                    {movement.remarks && (
+                                      <p className="mt-2 text-xs text-slate-400 italic bg-white/5 rounded-lg px-3 py-2">
+                                        "{movement.remarks}"
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Status badge */}
+                                  <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                                    status === 'received' || status === 'created' 
+                                      ? 'border-emerald-400/30 text-emerald-300' 
+                                      : status === 'closed'
+                                      ? 'border-purple-400/30 text-purple-300'
+                                      : 'border-cyan-400/30 text-cyan-300'
+                                  }`}>
+                                    {movement.status}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            {index < timeline.length - 1 && <div className="h-10 w-px bg-blue-400/20" />}
-                          </div>
-                          <div className="min-w-0 flex-1 pb-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <p className="truncate text-sm font-black text-white">{step.department || step.title || 'Department'}</p>
-                              <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-black text-slate-400">{step.status || 'Pending'}</span>
-                            </div>
-                            <p className="mt-1 text-xs font-semibold text-slate-500">{step.timestamp || step.remarks || 'Awaiting update'}</p>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </>
             )}

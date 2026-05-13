@@ -2,44 +2,39 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from main_db import get_db
-from models import User, DepartmentLog, PatrakEntry, UserRole
-from schemas import DepartmentLogResponse, PaginatedResponse
+from models import User, PatrakMovement, PatrakEntry
+from schemas import PaginatedResponse
 from auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/logs", tags=["logs"])
 
-def build_log_item(log, db):
-    """Build a rich log item with full entry + user details."""
-    received_by_user = db.query(User).filter(User.id == log.received_by_user_id).first()
-    entry = db.query(PatrakEntry).filter(PatrakEntry.id == log.entry_id).first()
+def build_movement_item(movement, db):
+    """Build a rich movement item with full entry + user details."""
+    forwarded_by_user = db.query(User).filter(User.id == movement.forwarded_by).first()
+    entry = db.query(PatrakEntry).filter(PatrakEntry.id == movement.entry_id).first()
 
-    # Serialize received_at as UTC ISO string with 'Z' suffix
-    # datetime.utcnow() stores UTC but as a naive datetime (no tzinfo).
-    # Adding 'Z' tells JavaScript it is UTC, so it converts correctly to IST on the client.
-    received_at_utc = None
-    if log.received_at:
-        received_at_utc = log.received_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp_str = None
+    if movement.timestamp:
+        timestamp_str = movement.timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     return {
-        "id": log.id,
-        "entry_id": log.entry_id,
+        "id": movement.id,
+        "entry_id": movement.entry_id,
         "entry_subject": entry.subject if entry else "Unknown",
         "entry_sender": entry.sender_name if entry else "Unknown",
         "entry_sender_designation": entry.sender_designation if entry else "",
-        "entry_priority": entry.priority if entry else "Normal",
+        "entry_priority": entry.priority.value if entry and entry.priority else "Normal",
         "entry_current_department": entry.current_department if entry else "",
-        "entry_status": entry.status if entry else "",
-        "department_name": log.department_name,
-        "department_index": log.department_index,
-        "received_by_user_id": log.received_by_user_id,
-        "received_by_username": received_by_user.username if received_by_user else "Unknown",
-        "received_by_fullname": received_by_user.full_name if received_by_user and hasattr(received_by_user, 'full_name') and received_by_user.full_name else (received_by_user.username if received_by_user else "Unknown"),
-        "received_by_role": received_by_user.role if received_by_user else "",
-        "received_at": received_at_utc,
-        "remarks": log.remarks,
-        "scan_method": log.scan_method,
+        "entry_status": entry.status.value if entry and entry.status else "",
+        "from_department": movement.from_department,
+        "to_department": movement.to_department,
+        "forwarded_by_user_id": movement.forwarded_by,
+        "forwarded_by_username": forwarded_by_user.username if forwarded_by_user else "Unknown",
+        "forwarded_by_role": forwarded_by_user.role.value if forwarded_by_user and forwarded_by_user.role else "",
+        "timestamp": timestamp_str,
+        "remarks": movement.remarks,
+        "status": movement.status.value if movement.status else "Forwarded",
     }
-
 
 
 @router.get("", response_model=PaginatedResponse)
@@ -50,18 +45,21 @@ async def get_logs(
     department: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(DepartmentLog)
+    query = db.query(PatrakMovement)
 
     if entry_id:
-        query = query.filter(DepartmentLog.entry_id == entry_id)
+        query = query.filter(PatrakMovement.entry_id == entry_id)
 
     if department:
-        query = query.filter(DepartmentLog.department_name == department)
+        query = query.filter(
+            (PatrakMovement.from_department == department) | 
+            (PatrakMovement.to_department == department)
+        )
 
     total = query.count()
-    logs = query.order_by(DepartmentLog.received_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    movements = query.order_by(PatrakMovement.timestamp.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
-    items = [build_log_item(log, db) for log in logs]
+    items = [build_movement_item(movement, db) for movement in movements]
 
     return PaginatedResponse(
         items=items,
@@ -81,8 +79,8 @@ async def get_entry_logs(
     if not entry:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
 
-    logs = db.query(DepartmentLog).filter(
-        DepartmentLog.entry_id == entry_id
-    ).order_by(DepartmentLog.received_at.asc()).all()
+    movements = db.query(PatrakMovement).filter(
+        PatrakMovement.entry_id == entry_id
+    ).order_by(PatrakMovement.timestamp.asc()).all()
 
-    return [build_log_item(log, db) for log in logs]
+    return [build_movement_item(movement, db) for movement in movements]

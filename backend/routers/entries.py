@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, String
 from typing import Optional, List
 from main_db import get_db
-from models import User, PatrakEntry, DepartmentLog, UserRole, Priority, EntryStatus, DEPARTMENTS, DEPARTMENT_INDEX
+from models import User, PatrakEntry, PatrakMovement, UserRole, Priority, EntryStatus, MovementStatus, DEPARTMENTS
 from schemas import (
     PatrakEntryCreate, PatrakEntryUpdate, PatrakEntryResponse,
-    PaginatedResponse, TrackingResponse, DepartmentLogResponse
+    PaginatedResponse, TrackingResponse, PatrakMovementResponse
 )
 from auth.dependencies import get_current_user, require_admin, require_admin_or_dg_office, require_create_entry_rights, get_client_ip
 from utils.audit import log_entry_created, log_entry_updated, log_entry_deleted
@@ -29,8 +29,9 @@ def entry_to_response(entry: PatrakEntry) -> PatrakEntryResponse:
         receiving_mode=entry.receiving_mode,
         sender_email=entry.sender_email,
         fax_number=entry.fax_number,
+        unit_district=entry.unit_district,
+        send_to=entry.send_to,
         current_department=entry.current_department,
-        current_stage_index=entry.current_stage_index,
         status=entry.status,
         qr_code_data=entry.qr_code_data,
         created_by=entry.created_by,
@@ -70,7 +71,9 @@ async def get_entries(
                 PatrakEntry.unique_id.ilike(search_term),
                 PatrakEntry.description.ilike(search_term),
                 PatrakEntry.sender_designation.ilike(search_term),
-                PatrakEntry.current_department.ilike(search_term)
+                PatrakEntry.current_department.ilike(search_term),
+                cast(PatrakEntry.received_date, String).ilike(search_term),
+                cast(PatrakEntry.created_at, String).ilike(search_term)
             )
         )
 
@@ -98,10 +101,17 @@ async def create_entry(
     db: Session = Depends(get_db),
     request: Request = None
 ):
+    """
+    Create a new patrak entry.
+    Uses the send_to field for initial department, or defaults to DG Office.
+    Creates an initial movement record for the creation.
+    """
     unique_id = f"PTRK-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
     qr_data = create_qr_data(0, unique_id, "scrb://")
     qr_image = generate_qr_code(qr_data)
+
+    initial_department = entry_data.send_to if entry_data.send_to else DEPARTMENTS[0]
 
     new_entry = PatrakEntry(
         unique_id=unique_id,
@@ -114,8 +124,9 @@ async def create_entry(
         receiving_mode=entry_data.receiving_mode or "Physical",
         sender_email=entry_data.sender_email,
         fax_number=entry_data.fax_number,
-        current_department=DEPARTMENTS[0],
-        current_stage_index=0,
+        unit_district=entry_data.unit_district,
+        send_to=entry_data.send_to,
+        current_department=initial_department,
         status=EntryStatus.ACTIVE,
         qr_code_data=qr_image,
         created_by=current_user.id
@@ -127,6 +138,18 @@ async def create_entry(
 
     qr_data["entry_id"] = new_entry.id
     new_entry.qr_code_data = generate_qr_code(qr_data)
+    db.commit()
+
+    initial_movement = PatrakMovement(
+        entry_id=new_entry.id,
+        from_department=None,
+        to_department=initial_department,
+        forwarded_by=current_user.id,
+        timestamp=datetime.utcnow(),
+        remarks=f"Entry created and registered at {initial_department}",
+        status=MovementStatus.CREATED
+    )
+    db.add(initial_movement)
     db.commit()
 
     log_entry_created(db, current_user.id, new_entry.id, get_client_ip(request))
@@ -193,58 +216,36 @@ async def get_tracking(
     entry_id: int,
     db: Session = Depends(get_db)
 ):
+    """
+    Get tracking information for an entry using the new dynamic movement system.
+    """
     entry = db.query(PatrakEntry).filter(PatrakEntry.id == entry_id).first()
 
     if not entry:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
 
-    logs = db.query(DepartmentLog).filter(
-        DepartmentLog.entry_id == entry_id
-    ).order_by(DepartmentLog.received_at.asc()).all()
+    movements = db.query(PatrakMovement).filter(
+        PatrakMovement.entry_id == entry_id
+    ).order_by(PatrakMovement.timestamp.asc()).all()
 
-    logs_response = [
-        DepartmentLogResponse(
-            id=log.id,
-            entry_id=log.entry_id,
-            department_name=log.department_name,
-            department_index=log.department_index,
-            received_by_user_id=log.received_by_user_id,
-            received_at=log.received_at,
-            remarks=log.remarks,
-            scan_method=log.scan_method
-        ) for log in logs
-    ]
-
-    timeline = []
-    for idx, dept_name in enumerate(DEPARTMENTS):
-        node = {
-            "department": dept_name,
-            "index": idx,
-            "status": "pending",
-            "log": None
-        }
-
-        if idx < entry.current_stage_index:
-            node["status"] = "completed"
-        elif idx == entry.current_stage_index:
-            node["status"] = "current"
-        else:
-            node["status"] = "pending"
-
-        for log in logs:
-            if log.department_index == idx:
-                node["log"] = {
-                    "received_at": log.received_at.isoformat() if log.received_at else None,
-                    "received_by": log.received_by_user.username if log.received_by_user else None,
-                    "remarks": log.remarks,
-                    "scan_method": log.scan_method
-                }
-                break
-
-        timeline.append(node)
+    movement_responses = []
+    for m in movements:
+        user = db.query(User).filter(User.id == m.forwarded_by).first()
+        movement_responses.append(PatrakMovementResponse(
+            id=m.id,
+            entry_id=m.entry_id,
+            from_department=m.from_department,
+            to_department=m.to_department,
+            forwarded_by=m.forwarded_by,
+            forwarded_by_name=user.username if user else "Unknown",
+            timestamp=m.timestamp,
+            remarks=m.remarks,
+            status=m.status
+        ))
 
     return TrackingResponse(
         entry=entry_to_response(entry),
-        logs=logs_response,
-        timeline=timeline
+        movements=movement_responses,
+        current_department=entry.current_department,
+        total_movements=len(movements)
     )
