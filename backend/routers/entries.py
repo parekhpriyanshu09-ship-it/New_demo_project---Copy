@@ -13,6 +13,7 @@ from utils.audit import log_entry_created, log_entry_updated, log_entry_deleted
 from utils.qr_generator import generate_qr_code, create_qr_data
 import uuid
 from datetime import datetime
+from utils.smart_parser import parse_smart_query
 
 router = APIRouter(prefix="/api/entries", tags=["entries"])
 
@@ -39,6 +40,75 @@ def entry_to_response(entry: PatrakEntry) -> PatrakEntryResponse:
         updated_at=entry.updated_at
     )
 
+@router.get("/smart-search")
+async def smart_search(
+    q: str,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    intent = parse_smart_query(q)
+    
+    query = db.query(PatrakEntry)
+    
+    # Apply filters dynamically
+    if intent["department"]:
+        query = query.filter(PatrakEntry.current_department == intent["department"])
+        
+    if intent["action"]:
+        if intent["action"] == "closed":
+            query = query.filter(PatrakEntry.status == EntryStatus.CLOSED)
+        elif intent["action"] == "pending":
+            query = query.filter(PatrakEntry.status == EntryStatus.ACTIVE)
+            
+    if intent["priority"]:
+        query = query.filter(PatrakEntry.priority == intent["priority"])
+        
+    if intent["mode"]:
+        query = query.filter(PatrakEntry.receiving_mode == intent["mode"])
+        
+    if intent["date_start"] and intent["date_end"]:
+        query = query.filter(PatrakEntry.received_date.between(intent["date_start"], intent["date_end"]))
+        
+    # Build summary text dynamically
+    parts = []
+    if intent["raw_priority"]: parts.append(intent["raw_priority"].lower())
+    if intent["raw_mode"]: parts.append(intent["raw_mode"].lower())
+    parts.append("tapals")
+    if intent["raw_action"]: parts.append(intent["raw_action"].lower())
+    if intent["raw_department"]: parts.append(f"from/at {intent['raw_department']}")
+    if intent["raw_date_str"]: parts.append(intent["raw_date_str"].lower())
+    
+    # If it's a count query
+    if intent["queryType"] == "count":
+        total_count = query.count()
+        summary_text = f"{total_count} {' '.join(parts)}"
+        return {
+            "parsed_intent": intent,
+            "result_type": "analytics",
+            "summary_text": summary_text.strip(),
+            "count": total_count,
+            "items": []
+        }
+    
+    # Else it's a list query
+    query = query.order_by(PatrakEntry.created_at.desc())
+    total = query.count()
+    entries = query.offset((page - 1) * per_page).limit(per_page).all()
+    
+    summary_text = f"Found {total} {' '.join(parts)}"
+    
+    return {
+        "parsed_intent": intent,
+        "result_type": "list",
+        "summary_text": summary_text.strip(),
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "pages": (total + per_page - 1) // per_page,
+        "items": [entry_to_response(e) for e in entries]
+    }
+
 @router.get("", response_model=PaginatedResponse)
 async def get_entries(
     page: int = Query(1, ge=1),
@@ -63,19 +133,66 @@ async def get_entries(
         query = query.filter(PatrakEntry.status == status_filter)
 
     if search:
-        search_term = f"%{search}%"
-        query = query.filter(
-            or_(
-                PatrakEntry.subject.ilike(search_term),
-                PatrakEntry.sender_name.ilike(search_term),
-                PatrakEntry.unique_id.ilike(search_term),
-                PatrakEntry.description.ilike(search_term),
-                PatrakEntry.sender_designation.ilike(search_term),
-                PatrakEntry.current_department.ilike(search_term),
-                cast(PatrakEntry.received_date, String).ilike(search_term),
-                cast(PatrakEntry.created_at, String).ilike(search_term)
-            )
-        )
+        search_clean = search.strip().lower()
+        search_term = f"%{search_clean}%"
+        
+        conditions = [
+            PatrakEntry.subject.ilike(search_term),
+            PatrakEntry.sender_name.ilike(search_term),
+            PatrakEntry.unique_id.ilike(search_term),
+            PatrakEntry.description.ilike(search_term),
+            PatrakEntry.sender_designation.ilike(search_term),
+            PatrakEntry.current_department.ilike(search_term)
+        ]
+        
+        import re
+        import calendar
+        import dateparser
+
+        start_date = None
+        end_date = None
+
+        exact_formats = [
+            "%d-%m-%Y", "%d/%m/%Y", "%d.%m.%Y", 
+            "%d %m %Y", "%Y-%m-%d", 
+            "%d %b %Y", "%d %B %Y"
+        ]
+        
+        for fmt in exact_formats:
+            try:
+                parsed_dt = datetime.strptime(search.strip(), fmt)
+                start_date = parsed_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+                end_date = parsed_dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+                break
+            except ValueError:
+                continue
+
+        if not start_date:
+            if re.match(r'^\d{4}$', search_clean):
+                year = int(search_clean)
+                start_date = datetime(year, 1, 1)
+                end_date = datetime(year, 12, 31, 23, 59, 59, 999999)
+            elif re.match(r'^(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+\d{4}$', search_clean):
+                parsed_date = dateparser.parse(search_clean, settings={'TIMEZONE': 'UTC', 'PREFER_DAY_OF_MONTH': 'first'})
+                if parsed_date:
+                    start_date = parsed_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                    last_day = calendar.monthrange(start_date.year, start_date.month)[1]
+                    end_date = start_date.replace(day=last_day, hour=23, minute=59, second=59, microsecond=999999)
+            if not start_date:
+                parsed_date = dateparser.parse(search_clean, settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
+                if parsed_date:
+                    start_date = parsed_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                    end_date = parsed_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        if start_date and end_date:
+            conditions.extend([
+                PatrakEntry.received_date.between(start_date, end_date),
+                PatrakEntry.created_at.between(start_date, end_date),
+                PatrakMovement.timestamp.between(start_date, end_date)
+            ])
+            query = query.outerjoin(PatrakMovement, PatrakEntry.id == PatrakMovement.entry_id)
+            
+        query = query.filter(or_(*conditions)).distinct()
 
     if sort_order == "desc":
         query = query.order_by(getattr(PatrakEntry, sort_by).desc())
@@ -86,8 +203,36 @@ async def get_entries(
 
     entries = query.offset((page - 1) * per_page).limit(per_page).all()
 
+    response_items = []
+    for e in entries:
+        resp = entry_to_response(e)
+        if search:
+            try:
+                sd = start_date
+                ed = end_date
+            except NameError:
+                sd = None
+                ed = None
+
+            if sd and ed:
+                match_contexts = []
+                if e.received_date and sd <= e.received_date <= ed:
+                    match_contexts.append({"type": "received", "field": "Received Date", "value": e.received_date.strftime("%d %b %Y")})
+                if e.created_at and sd <= e.created_at <= ed:
+                    match_contexts.append({"type": "created", "field": "Created Date", "value": e.created_at.strftime("%d %b %Y")})
+                    
+                movements = db.query(PatrakMovement).filter(PatrakMovement.entry_id == e.id).all()
+                for m in movements:
+                    if m.timestamp and sd <= m.timestamp <= ed:
+                        match_contexts.append({"type": "forwarded", "field": f"Forwarded to {m.to_department}", "value": m.timestamp.strftime("%d %b %Y · %I:%M %p")})
+                        
+                if match_contexts:
+                    resp.match_contexts = match_contexts
+
+        response_items.append(resp)
+
     return PaginatedResponse(
-        items=[entry_to_response(e) for e in entries],
+        items=response_items,
         total=total,
         page=page,
         per_page=per_page,
@@ -201,6 +346,54 @@ async def delete_entry(
 ):
     entry = db.query(PatrakEntry).filter(PatrakEntry.id == entry_id).first()
 
+    if not entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
+
+    db.delete(entry)
+    db.commit()
+
+    log_entry_deleted(db, current_user.id, entry_id, get_client_ip(request))
+
+    return None
+
+@router.get("/{entry_id}/tracking", response_model=TrackingResponse)
+async def get_tracking(
+    entry_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get tracking information for an entry using the new dynamic movement system.
+    """
+    entry = db.query(PatrakEntry).filter(PatrakEntry.id == entry_id).first()
+
+    if not entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
+
+    movements = db.query(PatrakMovement).filter(
+        PatrakMovement.entry_id == entry_id
+    ).order_by(PatrakMovement.timestamp.asc()).all()
+
+    movement_responses = []
+    for m in movements:
+        user = db.query(User).filter(User.id == m.forwarded_by).first()
+        movement_responses.append(PatrakMovementResponse(
+            id=m.id,
+            entry_id=m.entry_id,
+            from_department=m.from_department,
+            to_department=m.to_department,
+            forwarded_by=m.forwarded_by,
+            forwarded_by_name=user.username if user else "Unknown",
+            timestamp=m.timestamp,
+            remarks=m.remarks,
+            status=m.status
+        ))
+
+    return TrackingResponse(
+        entry=entry_to_response(entry),
+        movements=movement_responses,
+        current_department=entry.current_department,
+        total_movements=len(movements)
+    )
     if not entry:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
 

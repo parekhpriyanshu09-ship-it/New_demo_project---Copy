@@ -102,6 +102,7 @@ class PatrakEntryResponse(PatrakEntryBase):
     created_by: Optional[int] = None
     created_at: datetime
     updated_at: datetime
+    match_contexts: Optional[list[dict]] = None
 
     class Config:
         from_attributes = True

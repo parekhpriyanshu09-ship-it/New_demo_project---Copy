@@ -117,12 +117,12 @@ export default function Letters() {
       
       if (!selectedEntry && items.length > 0) {
         setSelectedEntry(items[0])
-        setShowEntryDetails(true)
+        // Do not auto-open details on load to maintain full-width form
       } else if (selectedEntry) {
         const updated = items.find(item => item.id === selectedEntry.id)
         if (!updated) {
           setSelectedEntry(items[0] || null)
-          if (items.length > 0) setShowEntryDetails(true)
+          if (items.length === 0) setShowEntryDetails(false)
         }
       }
       
@@ -260,11 +260,11 @@ export default function Letters() {
         <motion.div variants={itemVariants} className="space-y-6">
           
           {/* Form + Details Row */}
-          <div className={`grid transition-all duration-300 ease-in-out ${
+          <div className={`grid gap-6 items-start transition-all duration-500 ease-in-out ${
             showEntryDetails 
-              ? 'lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]' 
+              ? 'lg:grid-cols-[2fr_1fr]' 
               : 'grid-cols-1'
-          } gap-6 items-start`}>
+          }`}>
             
             {/* New Tapal Entry Form */}
             <motion.div
@@ -507,11 +507,11 @@ export default function Letters() {
               {showEntryDetails && selectedEntry && (
                 <motion.div
                   ref={detailsRef}
-                  initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                  initial={{ opacity: 0, x: 40, scale: 0.98 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 30, scale: 0.95 }}
-                  transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden lg:sticky lg:top-6"
+                  exit={{ opacity: 0, x: 40, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 overflow-hidden lg:sticky lg:top-6"
                 >
                   <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center gap-3">
                     <div className="p-2 bg-white/10 rounded-xl">
