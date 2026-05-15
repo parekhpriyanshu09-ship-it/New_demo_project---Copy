@@ -4,6 +4,7 @@ import {
   Calendar,
   Menu
 } from 'lucide-react'
+import GlobalSearch from './GlobalSearch'
 
 export default function Navbar({ sidebarCollapsed, onMenuClick }) {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -38,7 +39,7 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
       "
     >
       {/* Left side: Hamburger + Greeting */}
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 lg:w-[250px] shrink-0">
         {/* Hamburger Menu Button */}
         <button
           onClick={onMenuClick}
@@ -51,6 +52,11 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
         <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap truncate">
           Welcome back, admin!
         </h1>
+      </div>
+
+      {/* Center: Global Search */}
+      <div className="hidden md:flex flex-1 justify-center max-w-[550px] w-full px-4">
+        <GlobalSearch />
       </div>
 
       {/* Right side: Notification + Date & Time */}
