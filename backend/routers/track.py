@@ -10,50 +10,125 @@ from datetime import datetime
 router = APIRouter(prefix="/api/track", tags=["public tracking"])
 
 
+from sqlalchemy import or_, cast, String, func
+
 class SearchResult(BaseModel):
     unique_id: str
     subject: str
     current_department: str
     received_date: datetime
     sender_name: str
+    priority: Optional[str] = None
+    status: Optional[str] = None
+    date_label: Optional[str] = "Received Date"
 
 
 @router.get("/search", response_model=List[SearchResult])
 async def search_patraks(
+    global_query: Optional[str] = None,
     subject: Optional[str] = None,
-    date: Optional[str] = None,
-    location: Optional[str] = None,
+    sender_name: Optional[str] = None,
+    unit: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    priority: Optional[str] = None,
+    patrak_id: Optional[str] = None,
+    department: Optional[str] = None,
+    designation: Optional[str] = None,
+    receiving_mode: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     query = db.query(PatrakEntry)
+    parsed_date = None
+    
+    if global_query:
+        g = f"%{global_query.lower()}%"
+        
+        # Try to parse the global query as a date
+        for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%d %b %Y', '%d %B %Y'):
+            try:
+                parsed_date = datetime.strptime(global_query.strip(), fmt).date()
+                break
+            except ValueError:
+                pass
+                
+        conditions = [
+            PatrakEntry.unique_id.ilike(g),
+            PatrakEntry.subject.ilike(g),
+            PatrakEntry.sender_name.ilike(g),
+            PatrakEntry.sender_designation.ilike(g),
+            PatrakEntry.current_department.ilike(g),
+            PatrakEntry.description.ilike(g),
+            PatrakEntry.receiving_mode.ilike(g),
+            PatrakEntry.sender_email.ilike(g),
+            PatrakEntry.fax_number.ilike(g),
+            PatrakEntry.unit_district.ilike(g),
+            PatrakEntry.send_to.ilike(g),
+            cast(PatrakEntry.priority, String).ilike(g),
+            cast(PatrakEntry.status, String).ilike(g),
+            cast(PatrakEntry.received_date, String).ilike(g)
+        ]
+        
+        if parsed_date:
+            conditions.append(func.date(PatrakEntry.received_date) == parsed_date)
+            conditions.append(PatrakEntry.movements.any(func.date(PatrakMovement.timestamp) == parsed_date))
+            
+        query = query.filter(or_(*conditions))
     
     if subject:
         query = query.filter(PatrakEntry.subject.ilike(f"%{subject}%"))
-    
-    if date:
+    if sender_name:
+        query = query.filter(PatrakEntry.sender_name.ilike(f"%{sender_name}%"))
+    if unit:
+        query = query.filter(PatrakEntry.unit_district.ilike(f"%{unit}%"))
+    if date_from:
         try:
-            search_date = datetime.strptime(date, "%Y-%m-%d")
-            query = query.filter(
-                PatrakEntry.received_date >= search_date,
-                PatrakEntry.received_date < search_date.replace(hour=23, minute=59, second=59)
-            )
-        except ValueError:
-            pass
+            query = query.filter(PatrakEntry.received_date >= datetime.strptime(date_from, "%Y-%m-%d"))
+        except ValueError: pass
+    if date_to:
+        try:
+            dt_to = datetime.strptime(date_to, "%Y-%m-%d")
+            query = query.filter(PatrakEntry.received_date <= dt_to.replace(hour=23, minute=59, second=59))
+        except ValueError: pass
+    if priority:
+        query = query.filter(PatrakEntry.priority == priority)
+    if patrak_id:
+        query = query.filter(PatrakEntry.unique_id.ilike(f"%{patrak_id}%"))
+    if department:
+        query = query.filter(PatrakEntry.current_department.ilike(f"%{department}%"))
+    if designation:
+        query = query.filter(PatrakEntry.sender_designation.ilike(f"%{designation}%"))
+    if receiving_mode:
+        query = query.filter(PatrakEntry.receiving_mode.ilike(f"%{receiving_mode}%"))
     
-    if location:
-        query = query.filter(PatrakEntry.sender_name.ilike(f"%{location}%"))
+    entries = query.limit(20).all()
     
-    entries = query.limit(10).all()
-    
-    return [
-        SearchResult(
+    results = []
+    for e in entries:
+        label = "Received Date"
+        d_date = e.received_date
+        
+        if parsed_date:
+            if e.received_date.date() != parsed_date:
+                # check if movement matched
+                for m in e.movements:
+                    if m.timestamp.date() == parsed_date:
+                        label = "Forwarded Date"
+                        d_date = m.timestamp
+                        break
+
+        results.append(SearchResult(
             unique_id=e.unique_id,
             subject=e.subject,
             current_department=e.current_department,
-            received_date=e.received_date,
-            sender_name=e.sender_name
-        ) for e in entries
-    ]
+            received_date=d_date,
+            sender_name=e.sender_name,
+            priority=e.priority.value if e.priority else "Normal",
+            status=e.status.value if e.status else "In Transit",
+            date_label=label
+        ))
+    
+    return results
 
 
 @router.get("/{patrak_id}", response_model=PublicTrackingResponse)

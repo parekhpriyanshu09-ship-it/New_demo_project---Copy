@@ -358,13 +358,13 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             {!isSearchFocused && (
               <div className="absolute -inset-[1px] rounded-[18px] bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-600 dark:to-indigo-600 opacity-30 blur-[2px] animate-pulse pointer-events-none" />
             )}
-            
+
             <form onSubmit={handleSearch} className="relative flex items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md rounded-2xl border-[1.5px] border-blue-200/80 dark:border-indigo-500/30 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-[1px] focus-within:shadow-lg focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/15 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/20 transition-all duration-300">
               {/* Inner highlight for glassmorphism */}
               <div className="absolute inset-0 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] pointer-events-none" />
-              
+
               <Search className={`absolute left-3.5 h-[18px] w-[18px] z-10 pointer-events-none transition-colors duration-200 ${isSearchFocused ? 'text-blue-500 dark:text-blue-400' : 'text-slate-500 dark:text-neutral-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'}`} />
-              
+
               <input
                 ref={searchInputRef}
                 placeholder="Search by ID, Title..."
@@ -494,11 +494,10 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                                   <span className="truncate">{entry.sender_name}</span>
                                 </div>
                               </div>
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${
-                                entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
-                                entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
-                                'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
-                              }`}>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
+                                  entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
+                                    'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
+                                }`}>
                                 {entry.priority}
                               </span>
                             </button>
@@ -726,8 +725,8 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                                 </div>
                                 <div className="flex items-center gap-1.5 shrink-0 select-none">
                                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
-                                      entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
+                                    entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
+                                      'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
                                     }`}>
                                     {entry.priority}
                                   </span>
