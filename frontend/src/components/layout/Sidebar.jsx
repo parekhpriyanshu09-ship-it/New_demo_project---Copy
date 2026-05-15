@@ -69,15 +69,6 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
     return () => clearInterval(interval)
   }, [])
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const [searchResults, setSearchResults] = useState({ entries: [], users: [] })
-  const [isSearching, setIsSearching] = useState(false)
-  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 })
-  const [hoveredEntry, setHoveredEntry] = useState(null)   // { entry, x, y }
-  const debouncedSearch = useDebounce(searchQuery, 300)
-  const searchRef = useRef(null)
-  const searchInputRef = useRef(null)
   const navigate = useNavigate()
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -85,111 +76,6 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
   const mobileProfileRef = useRef(null)
   const [openGroups, setOpenGroups] = useState({ 'New Tapal Entry': true })
 
-  useEffect(() => {
-    async function fetchSearch() {
-      if (!debouncedSearch.trim()) {
-        setSearchResults({ entries: [], users: [] })
-        return
-      }
-      setIsSearching(true)
-
-      const query = debouncedSearch.trim()
-
-      // Detect NLP-style queries — skip user search for these to avoid backend errors
-      const isNlpQuery = /\b(how|from|many|show|total|count|pending|forwarded|received|urgent|physical|fax|email|yesterday|today|last|this|week|month)\b/i.test(query)
-
-      try {
-        // Always search entries
-        const entriesRes = await api.get('/api/entries', { params: { search: query, per_page: 5 } }).catch(() => ({ data: { items: [] } }))
-        const entries = entriesRes?.data?.items || []
-
-        // Only search users for short, non-NLP queries when admin
-        let users = []
-        if (!isNlpQuery && user?.role === ROLES.ADMIN && query.length >= 2) {
-          try {
-            const usersRes = await api.get('/api/admin/users', { params: { search: query, per_page: 3 } })
-            users = usersRes?.data?.items || []
-          } catch {
-            users = []
-          }
-        }
-
-        setSearchResults({ entries, users })
-      } catch (err) {
-        console.error('Search failed:', err)
-        setSearchResults({ entries: [], users: [] })
-      } finally {
-        setIsSearching(false)
-      }
-    }
-    fetchSearch()
-  }, [debouncedSearch, user])
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (isSearchFocused && searchRef.current) {
-        const rect = searchRef.current.getBoundingClientRect()
-        setPopupPosition({ top: rect.top + 8, left: rect.right + 8 })
-      }
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [isSearchFocused])
-
-  const handleSearchFocus = () => {
-    setIsSearchFocused(true)
-    if (searchRef.current) {
-      const rect = searchRef.current.getBoundingClientRect()
-      setPopupPosition({ top: rect.top + 8, left: rect.right + 8 })
-    }
-  }
-
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      setIsSearchFocused(false)
-      navigate(`/letters?search=${encodeURIComponent(searchQuery.trim())}`)
-    }
-  }
-
-  const handleSuggestionClick = (path) => {
-    setSearchQuery('')
-    setIsSearchFocused(false)
-    navigate(path)
-  }
-
-  const handleCollapsedSearchClick = () => {
-    onToggle()
-    setTimeout(() => {
-      searchInputRef.current?.focus()
-    }, 150)
-  }
-
-  useEffect(() => {
-    function handleClickOutsideSearch(event) {
-      const popup = document.getElementById('search-popup')
-      if (searchRef.current && !searchRef.current.contains(event.target) && (!popup || !popup.contains(event.target))) {
-        setIsSearchFocused(false)
-      }
-    }
-    const handleKeyDown = (e) => {
-      if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-        e.preventDefault()
-        if (isCollapsed) {
-          onToggle()
-        }
-        setTimeout(() => {
-          searchInputRef.current?.focus()
-        }, 50)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutsideSearch)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutsideSearch)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isCollapsed, onToggle])
 
   useEffect(() => {
     function handleClickOutsideProfile(event) {
@@ -525,7 +411,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
       {visibleItems.map(item => (
         <div key={item.path || item.label} className="flex flex-col gap-1">
           {item.children ? renderNavGroup(item, { mobile }) : renderNavItem(item, { mobile })}
-          {item.path === '/track-my-tapal' && renderSidebarSearch({ mobile })}
+          
         </div>
       ))}
       {visibleAdminItems.length > 0 && (
@@ -584,168 +470,6 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
               <span className="text-[13.5px] font-bold text-slate-800 dark:text-neutral-200 truncate leading-none">Patrak Tracking</span>
               <span className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-semibold">System</span>
             </div>
-          )}
-        </div>
-
-        {/* Search Bar matching precise input details */}
-        <div className="hidden">
-          {isCollapsed ? (
-            <button
-              onClick={handleCollapsedSearchClick}
-              title="Search System"
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all duration-150 mx-auto"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.15 }}
-            >
-              <form onSubmit={handleSearch}>
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-neutral-500 z-10 pointer-events-none" />
-                <input
-                  ref={searchInputRef}
-                  placeholder="Search by ID, Title…"
-                  className={searchInputClass}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={handleSearchFocus}
-                />
-              </form>
-            </motion.div>
-          )}
-
-          {false && createPortal(
-            <AnimatePresence>
-              {isSearchFocused && (searchQuery.trim() || searchResults.entries?.length > 0 || searchResults.users?.length > 0) && (
-                <motion.div
-                  id="search-popup"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="fixed w-[420px] bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-neutral-800 rounded-2xl p-1.5 shadow-2xl z-[9999] overflow-y-auto no-scrollbar"
-                  style={{
-                    left: popupPosition.left,
-                    top: popupPosition.top,
-                    maxHeight: '480px'
-                  }}
-                >
-                  {isSearching ? (
-                    <div className="flex items-center justify-center gap-1 py-8">
-                      <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} />
-                      <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} />
-                      <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} />
-                    </div>
-                  ) : (
-                    <>
-                      {/* Pages suggestions with custom image-style shortcuts */}
-                      <div className="flex flex-col gap-0.5">
-                        {PAGES.filter(p => p.label.toLowerCase().includes(searchQuery.toLowerCase())).map(page => {
-                          const shortcutMap = {
-                            '/': '⌘D',
-                            '/letters': '⌘N',
-                            '/scanner': '⌘S',
-                            '/reports': '⌘R',
-                            '/admin/users': '⌘U',
-                            '/logs': '⌘L',
-                            '/settings': '⌘,',
-                          }
-                          const shortcut = shortcutMap[page.path] || '⌘/'
-
-                          return (
-                            <button
-                              key={page.path}
-                              onClick={() => handleSuggestionClick(page.path)}
-                              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
-                            >
-                              <page.icon className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
-                              <span className="flex-1 truncate">{page.label}</span>
-                              <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[10px] text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
-                                {shortcut}
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                      {/* Users results - structured with sequence-style shortcuts just like 'My profile' */}
-                      {searchResults.users?.length > 0 && (
-                        <>
-                          <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                          <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
-                            Users
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            {searchResults.users.map(u => (
-                              <button
-                                key={`user-${u.id}`}
-                                onClick={() => handleSuggestionClick('/admin/users')}
-                                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
-                              >
-                                <Users className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-semibold truncate">{u.username}</div>
-                                  <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0 select-none">
-                                  <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[9px] text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">⌘K</span>
-                                  <span className="text-[10px] text-slate-400 dark:text-neutral-500">➔</span>
-                                  <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[9px] text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">U</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-
-                      {/* Entries results - custom list alignment */}
-                      {searchResults.entries?.length > 0 && (
-                        <>
-                          <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                          <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
-                            Recent Entries
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            {searchResults.entries.map(entry => (
-                              <button
-                                key={`entry-${entry.id}`}
-                                onClick={() => handleSuggestionClick(`/letters/${entry.id}`)}
-                                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
-                              >
-                                <FilePenLine className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-semibold truncate">{entry.subject}</div>
-                                  <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
-                                    <span>{entry.unique_id}</span>
-                                    <span>•</span>
-                                    <span className="truncate">{entry.sender_name}</span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1.5 shrink-0 select-none">
-                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
-                                    entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
-                                      'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
-                                    }`}>
-                                    {entry.priority}
-                                  </span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-
-                      {searchQuery.trim() && !searchResults.entries?.length && !searchResults.users?.length && PAGES.filter(p => p.label.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                        <div className="p-4 text-center text-xs text-slate-400">No results found</div>
-                      )}
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>,
-            document.body
           )}
         </div>
 
@@ -926,34 +650,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
         )}
       </AnimatePresence>
 
-      {/* Portal-based Hover Tooltip — renders at body level, never clipped */}
-      {hoveredEntry && hoveredEntry.entry.match_contexts?.length > 0 && createPortal(
-        <div
-          className="fixed z-[99999] pointer-events-none"
-          style={{
-            left: Math.min(hoveredEntry.x, window.innerWidth - 260),
-            top: Math.min(hoveredEntry.y, window.innerHeight - (hoveredEntry.entry.match_contexts.length * 44 + 60)),
-          }}
-        >
-          <div className="bg-slate-900 text-white rounded-xl shadow-2xl border border-slate-700/60 px-3.5 py-3 text-[11.5px] leading-relaxed min-w-[190px] max-w-[240px]">
-            {/* Arrow */}
-            <div className="absolute -left-[5px] top-4 h-2.5 w-2.5 rotate-45 bg-slate-900 border-l border-b border-slate-700/60" />
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Matched On</div>
-            <div className="flex flex-col gap-2">
-              {hoveredEntry.entry.match_contexts.map((ctx, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
-                  <div>
-                    <div className="font-semibold text-white">{ctx.field}</div>
-                    <div className="text-slate-400 text-[10.5px]">{ctx.value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+
     </>
   )
 }

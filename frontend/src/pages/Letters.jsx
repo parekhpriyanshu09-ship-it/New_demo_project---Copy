@@ -131,13 +131,7 @@ export default function Letters() {
     }
   }, [senderTypeWatch, form])
 
-  const [forwardForm, setForwardForm] = useState({
-    to_department: '',
-    remarks: ''
-  })
   const [creating, setCreating] = useState(false)
-  const [forwarding, setForwarding] = useState(false)
-  const [movements, setMovements] = useState([])
 
   const debouncedSearch = useDebounce(search, 300)
 
@@ -145,11 +139,6 @@ export default function Letters() {
     fetchEntries()
   }, [debouncedSearch, pagination.page])
 
-  useEffect(() => {
-    if (selectedEntry) {
-      fetchMovements(selectedEntry.id)
-    }
-  }, [selectedEntry])
 
   const fetchEntries = async () => {
     setLoading(true)
@@ -186,16 +175,6 @@ export default function Letters() {
       toast.error('Failed to load entries')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const fetchMovements = async (entryId) => {
-    try {
-      const res = await api.get(`/api/forward/entry/${entryId}/movements`)
-      setMovements(res.data || [])
-    } catch (error) {
-      console.error('Failed to fetch movements:', error)
-      setMovements([])
     }
   }
 
@@ -239,34 +218,6 @@ export default function Letters() {
     }
   }
 
-  const handleForward = async (e) => {
-    e.preventDefault()
-    if (!selectedEntry) return
-
-    setForwarding(true)
-    try {
-      const res = await api.post('/api/forward', {
-        entry_id: selectedEntry.id,
-        to_department: forwardForm.to_department,
-        remarks: forwardForm.remarks || undefined
-      })
-
-      toast.success(`Patrak forwarded to ${forwardForm.to_department}`)
-      setShowForwardModal(false)
-      setForwardForm({ to_department: '', remarks: '' })
-
-      const updatedEntry = { ...selectedEntry, current_department: forwardForm.to_department }
-      setSelectedEntry(updatedEntry)
-
-      fetchMovements(selectedEntry.id)
-      fetchEntries()
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to forward patrak')
-    } finally {
-      setForwarding(false)
-    }
-  }
-
   const handleGenerateQR = async (entryId) => {
     try {
       const res = await api.get(`/api/qr/generate/${entryId}`)
@@ -303,8 +254,8 @@ export default function Letters() {
 
           {/* Form + Details Row */}
           <div className={`grid gap-6 items-start transition-all duration-500 ease-in-out ${showEntryDetails
-              ? 'lg:grid-cols-[2fr_1fr]'
-              : 'grid-cols-1'
+            ? 'lg:grid-cols-[2fr_1fr]'
+            : 'grid-cols-1'
             }`}>
 
             {/* New Tapal Entry Form */}
@@ -324,7 +275,7 @@ export default function Letters() {
               </div>
 
               <form onSubmit={form.handleSubmit(handleCreateEntry)} className="p-5 sm:p-6 space-y-8 bg-slate-50/50">
-                
+
                 {/* 1. Receiving Mode Section */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -342,8 +293,8 @@ export default function Letters() {
                           key={mode.id}
                           onClick={() => form.setValue('receiving_mode', mode.id, { shouldValidate: true })}
                           className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${isSelected
-                              ? 'border-indigo-500 bg-indigo-50/80 text-indigo-700 shadow-sm'
-                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                            ? 'border-indigo-500 bg-indigo-50/80 text-indigo-700 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
                             }`}
                         >
                           <Icon className="h-5 w-5" />
@@ -355,7 +306,7 @@ export default function Letters() {
                       )
                     })}
                   </div>
-                  
+
                   {/* Dynamic Email/Fax Fields */}
                   <AnimatePresence>
                     {receiving_mode_watch === 'Mails' && (
@@ -382,109 +333,109 @@ export default function Letters() {
                 <div className="grid lg:grid-cols-2 gap-6 items-start">
                   {/* 2. Sender Details Section */}
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
-                  <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
-                    <h3 className="font-semibold text-slate-800">Sender Details</h3>
-                    <p className="text-xs text-slate-500">Information about the sender</p>
-                  </div>
-                  <div className="p-5 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Type <span className="text-red-500">*</span></label>
-                        <select {...form.register('sender_type')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
-                          <option value="Citizen">Citizen</option>
-                          <option value="Government Department">Government Department</option>
-                          <option value="Private Department">Private Department</option>
-                          <option value="Employee">Employee</option>
-                        </select>
-                        {form.formState.errors.sender_type && <p className="text-red-500 text-xs mt-1">{form.formState.errors.sender_type.message}</p>}
+                    <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                      <h3 className="font-semibold text-slate-800">Sender Details</h3>
+                      <p className="text-xs text-slate-500">Information about the sender</p>
+                    </div>
+                    <div className="p-5 space-y-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Type <span className="text-red-500">*</span></label>
+                          <select {...form.register('sender_type')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                            <option value="Citizen">Citizen</option>
+                            <option value="Government Department">Government Department</option>
+                            <option value="Private Department">Private Department</option>
+                            <option value="Employee">Employee</option>
+                          </select>
+                          {form.formState.errors.sender_type && <p className="text-red-500 text-xs mt-1">{form.formState.errors.sender_type.message}</p>}
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Name</label>
+                          <input {...form.register('sender_name')} placeholder="Enter sender name" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Address</label>
+                          <textarea {...form.register('sender_address')} placeholder="Enter complete address" rows={2} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400 resize-none" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                            <MapPin size={14} /> Unit / District <span className="text-red-500">*</span>
+                          </label>
+                          <input {...form.register('unit_district')} placeholder="Enter unit or district" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                          {form.formState.errors.unit_district && <p className="text-red-500 text-xs mt-1">{form.formState.errors.unit_district.message}</p>}
+                        </div>
+                        <AnimatePresence mode="popLayout">
+                          {senderTypeWatch !== 'Citizen' && (
+                            <>
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                <div className="pt-1">
+                                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                                    <Send size={14} /> Sender Organization / Unit / Department <span className="text-red-500">*</span>
+                                  </label>
+                                  <select {...form.register('send_to')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                                    <option value="">Select organization or department</option>
+                                    {DEPARTMENTS.map(dept => (
+                                      <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                  </select>
+                                  {form.formState.errors.send_to && <p className="text-red-500 text-xs mt-1">{form.formState.errors.send_to.message}</p>}
+                                </div>
+                              </motion.div>
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                <div className="pt-1">
+                                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Designation</label>
+                                  <input {...form.register('sender_designation')} placeholder="e.g. Inspector, Officer, Manager" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                                </div>
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
                       </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Name</label>
-                        <input {...form.register('sender_name')} placeholder="Enter sender name" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Address</label>
-                        <textarea {...form.register('sender_address')} placeholder="Enter complete address" rows={2} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400 resize-none" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
-                          <MapPin size={14} /> Unit / District <span className="text-red-500">*</span>
-                        </label>
-                        <input {...form.register('unit_district')} placeholder="Enter unit or district" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
-                        {form.formState.errors.unit_district && <p className="text-red-500 text-xs mt-1">{form.formState.errors.unit_district.message}</p>}
-                      </div>
-                      <AnimatePresence mode="popLayout">
-                        {senderTypeWatch !== 'Citizen' && (
-                          <>
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                              <div className="pt-1">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
-                                  <Send size={14} /> Sender Organization / Unit / Department <span className="text-red-500">*</span>
-                                </label>
-                                <select {...form.register('send_to')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
-                                  <option value="">Select organization or department</option>
-                                  {DEPARTMENTS.map(dept => (
-                                    <option key={dept} value={dept}>{dept}</option>
-                                  ))}
-                                </select>
-                                {form.formState.errors.send_to && <p className="text-red-500 text-xs mt-1">{form.formState.errors.send_to.message}</p>}
-                              </div>
-                            </motion.div>
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                              <div className="pt-1">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Designation</label>
-                                <input {...form.register('sender_designation')} placeholder="e.g. Inspector, Officer, Manager" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
-                              </div>
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
                     </div>
                   </div>
-                </div>
 
                   {/* 3. Letter Details Section */}
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
-                  <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
-                    <h3 className="font-semibold text-slate-800">Letter Details</h3>
-                    <p className="text-xs text-slate-500">Information related to patrak/document</p>
-                  </div>
-                  <div className="p-5 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="md:col-span-2">
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subject <span className="text-red-500">*</span></label>
-                        <input {...form.register('subject')} placeholder="Brief subject of the patrak..." className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
-                        {form.formState.errors.subject && <p className="text-red-500 text-xs mt-1">{form.formState.errors.subject.message}</p>}
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14}/> Received Date <span className="text-red-500">*</span></label>
-                        <input type="date" {...form.register('received_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
-                        {form.formState.errors.received_date && <p className="text-red-500 text-xs mt-1">{form.formState.errors.received_date.message}</p>}
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority <span className="text-red-500">*</span></label>
-                        <select {...form.register('priority')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
-                          <option value="Normal">Normal</option>
-                          <option value="Urgent">Urgent</option>
-                          <option value="Confidential">Confidential</option>
-                        </select>
-                        {form.formState.errors.priority && <p className="text-red-500 text-xs mt-1">{form.formState.errors.priority.message}</p>}
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Letter / Reference No.</label>
-                        <input {...form.register('sender_reference_number')} placeholder="Enter sender reference number" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14}/> Reference Date</label>
-                        <input type="date" {...form.register('reference_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
-                      </div>
+                    <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                      <h3 className="font-semibold text-slate-800">Letter Details</h3>
+                      <p className="text-xs text-slate-500">Information related to patrak/document</p>
                     </div>
+                    <div className="p-5 space-y-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subject <span className="text-red-500">*</span></label>
+                          <input {...form.register('subject')} placeholder="Brief subject of the patrak..." className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                          {form.formState.errors.subject && <p className="text-red-500 text-xs mt-1">{form.formState.errors.subject.message}</p>}
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14} /> Received Date <span className="text-red-500">*</span></label>
+                          <input type="date" {...form.register('received_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
+                          {form.formState.errors.received_date && <p className="text-red-500 text-xs mt-1">{form.formState.errors.received_date.message}</p>}
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority <span className="text-red-500">*</span></label>
+                          <select {...form.register('priority')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                            <option value="Normal">Normal</option>
+                            <option value="Urgent">Urgent</option>
+                            <option value="Confidential">Confidential</option>
+                          </select>
+                          {form.formState.errors.priority && <p className="text-red-500 text-xs mt-1">{form.formState.errors.priority.message}</p>}
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Letter / Reference No.</label>
+                          <input {...form.register('sender_reference_number')} placeholder="Enter sender reference number" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14} /> Reference Date</label>
+                          <input type="date" {...form.register('reference_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
+                        </div>
+                      </div>
 
-                    <div className="pt-2">
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description (Optional)</label>
-                      <textarea {...form.register('description')} placeholder="Additional notes or context..." rows={3} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all resize-none placeholder:text-slate-400" />
+                      <div className="pt-2">
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description (Optional)</label>
+                        <textarea {...form.register('description')} placeholder="Additional notes or context..." rows={3} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all resize-none placeholder:text-slate-400" />
+                      </div>
                     </div>
-                  </div>
                   </div>
                 </div>
 
@@ -580,31 +531,6 @@ export default function Letters() {
                       ))}
                     </div>
 
-                    {/* Movement History */}
-                    {movements.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                          <History size={14} />
-                          Movement History
-                        </div>
-                        <div className="bg-slate-50 rounded-xl p-3 max-h-[200px] overflow-y-auto space-y-2">
-                          {movements.slice(-5).reverse().map((m, idx) => (
-                            <div key={m.id || idx} className="text-xs border-l-2 border-red-200 pl-3 py-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-slate-700">
-                                  {m.from_department || 'Created'} → {m.to_department}
-                                </span>
-                              </div>
-                              <p className="text-slate-400 mt-0.5">
-                                {m.forwarded_by_name} • {new Date(m.timestamp).toLocaleString()}
-                              </p>
-                              {m.remarks && <p className="text-slate-500 mt-1 italic">{m.remarks}</p>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2 pt-2">
                       {canGenerateQR(user?.role) && (
@@ -613,21 +539,14 @@ export default function Letters() {
                           Generate QR Code
                         </Button>
                       )}
-                      <Button
-                        onClick={() => setShowForwardModal(true)}
-                        className="w-full"
-                      >
-                        <ArrowLeftRight size={16} className="mr-2" />
-                        Forward to Department
-                      </Button>
-                      <Button
+                      {/* <Button
                         onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)}
                         variant="outline"
                         className="w-full"
                       >
                         View Full Track
                         <ArrowRight size={16} className="ml-2" />
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </motion.div>
@@ -635,104 +554,6 @@ export default function Letters() {
             </AnimatePresence>
           </div>
 
-          {/* Forward Modal */}
-          <AnimatePresence>
-            {showForwardModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                onClick={() => setShowForwardModal(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden"
-                >
-                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-white/10 rounded-xl">
-                        <ArrowLeftRight size={20} className="text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold">Forward Patrak</h3>
-                        <p className="text-slate-300 text-xs">Select destination department</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowForwardModal(false)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                      <X size={20} className="text-white/70 hover:text-white" />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleForward} className="p-5 space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Current Department
-                      </label>
-                      <div className="px-4 py-3 bg-slate-100 rounded-xl text-sm font-medium text-slate-700">
-                        {selectedEntry?.current_department}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
-                        Forward To <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        required
-                        value={forwardForm.to_department}
-                        onChange={(e) => setForwardForm({ ...forwardForm, to_department: e.target.value })}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
-                      >
-                        <option value="">Select destination department</option>
-                        {DEPARTMENTS.filter(d => d !== selectedEntry?.current_department).map(dept => (
-                          <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Remarks (Optional)
-                      </label>
-                      <textarea
-                        value={forwardForm.remarks}
-                        onChange={(e) => setForwardForm({ ...forwardForm, remarks: e.target.value })}
-                        placeholder="Add any notes or instructions..."
-                        rows={3}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all resize-none placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setShowForwardModal(false)}
-                        className="flex-1 !text-slate-600 !border !border-slate-300 !bg-white"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        loading={forwarding}
-                        className="flex-1 !bg-red-600 hover:!bg-red-700"
-                      >
-                        <Send size={16} className="mr-2" />
-                        Forward
-                      </Button>
-                    </div>
-                  </form>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* Tapal List Section */}
           <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -780,8 +601,8 @@ export default function Letters() {
                               {entry.unique_id || `#${entry.id}`}
                             </span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
-                                entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
-                                  'bg-emerald-100 text-emerald-700'
+                              entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
+                                'bg-emerald-100 text-emerald-700'
                               }`}>
                               {entry.priority}
                             </span>
@@ -800,8 +621,8 @@ export default function Letters() {
                         </div>
                         <div className="text-right shrink-0">
                           <span className={`text-xs px-2 py-1 rounded-lg font-medium ${entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
-                              entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
-                                'bg-amber-100 text-amber-700'
+                            entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
+                              'bg-amber-100 text-amber-700'
                             }`}>
                             {entry.receiving_mode || 'By Hand'}
                           </span>

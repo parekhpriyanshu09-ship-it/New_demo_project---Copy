@@ -23,7 +23,9 @@ import {
   User,
   ArrowLeftRight,
   Search,
-  Edit2
+  Edit2,
+  History,
+  MapPin
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Html5Qrcode } from 'html5-qrcode'
@@ -59,6 +61,7 @@ export default function Scanner() {
   const [cameraStarted, setCameraStarted] = useState(false)
   const [scannedData, setScannedData] = useState(null)
   const [entryDetails, setEntryDetails] = useState(null)
+  const [movements, setMovements] = useState([])
   const [fetchingDetails, setFetchingDetails] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
@@ -241,11 +244,22 @@ export default function Scanner() {
     try {
       const res = await api.get(`/api/entries/${entry_id}`)
       setEntryDetails(res.data)
+      
+      try {
+        const movesRes = await api.get(`/api/forward/entry/${entry_id}/movements`)
+        setMovements(movesRes.data || [])
+      } catch (moveErr) {
+        console.error('Failed to fetch movements', moveErr)
+        setMovements([])
+      }
+      
       setTimeout(() => {
         setVerificationComplete(true)
       }, 1500)
     } catch (error) {
       setEntryDetails(null)
+    setMovements([])
+      setMovements([])
     } finally {
       setFetchingDetails(false)
     }
@@ -258,6 +272,10 @@ export default function Scanner() {
       await receivePatrak(entryDetails.id)
       setArrivalConfirmed(true)
       toast.success('Patrak received at current department!')
+      try {
+        const movesRes = await api.get(`/api/forward/entry/${entryDetails.id}/movements`)
+        setMovements(movesRes.data || [])
+      } catch(e) {}
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to confirm arrival')
     } finally {
@@ -317,6 +335,10 @@ export default function Scanner() {
       })
       setArrivalConfirmed(false)
       toast.success(`Patrak forwarded to ${forwardForm.to_department}`)
+      try {
+        const movesRes = await api.get(`/api/forward/entry/${entryDetails.id}/movements`)
+        setMovements(movesRes.data || [])
+      } catch(e) {}
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to forward patrak')
     } finally {
@@ -327,6 +349,7 @@ export default function Scanner() {
   const resetScanner = () => {
     setScannedData(null)
     setEntryDetails(null)
+    setMovements([])
     setResult(null)
     setCameraReady(false)
     setCameraError('')
@@ -586,6 +609,7 @@ export default function Scanner() {
                             </div>
                           ) : entryDetails ? (
                             <div className="space-y-4">
+                              {/* Patrak Info Card */}
                               <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl p-5 border border-slate-100">
                                 <div className="flex items-start justify-between gap-3 mb-4">
                                   <div className="flex-1">
@@ -596,7 +620,6 @@ export default function Scanner() {
                                     {entryDetails.priority}
                                   </span>
                                 </div>
-                                
                                 <div className="grid grid-cols-2 gap-4">
                                   <div className="flex items-center gap-2">
                                     <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -630,6 +653,7 @@ export default function Scanner() {
                                 </div>
                               </div>
 
+                              {/* Arrival Actions */}
                               {!arrivalConfirmed ? (
                                 <>
                                   <div className="h-px bg-slate-100 my-4" />
@@ -644,7 +668,7 @@ export default function Scanner() {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-3 w-full md:w-auto">
-                                      <Button 
+                                      <Button
                                         onClick={openEditModal}
                                         variant="outline"
                                         className="flex-1 md:flex-none !border-teal-200 !text-teal-700 hover:!bg-teal-50 !font-black !text-[10px] px-5 shadow-sm transition-all"
@@ -652,7 +676,7 @@ export default function Scanner() {
                                         <Edit2 size={14} className="mr-2" />
                                         Edit Details
                                       </Button>
-                                      <Button 
+                                      <Button
                                         onClick={handleConfirmArrival}
                                         loading={receiving}
                                         className="flex-1 md:flex-none !bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 !text-white !shadow-lg !shadow-amber-200 !font-black !text-[10px] px-6 transition-all"
@@ -665,15 +689,15 @@ export default function Scanner() {
                                 </>
                               ) : (
                                 <div className="flex gap-3 pt-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    onClick={resetScanner} 
+                                  <Button
+                                    variant="ghost"
+                                    onClick={resetScanner}
                                     className="!text-slate-400 !font-bold !text-[10px]"
                                   >
                                     <X size={14} className="mr-1.5" />
                                     Cancel
                                   </Button>
-                                  <Button 
+                                  <Button
                                     onClick={() => setShowForwardModal(true)}
                                     className="flex-1 !bg-red-600 !text-white !shadow-lg !shadow-red-200 !font-black !text-[10px]"
                                   >
@@ -682,6 +706,86 @@ export default function Scanner() {
                                   </Button>
                                 </div>
                               )}
+
+                              {/* Movement History Timeline */}
+                              <div className="mt-6 pt-6 border-t border-slate-100">
+                                <div className="flex items-center gap-2 mb-5">
+                                  <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
+                                    <History size={16} className="text-indigo-600" />
+                                  </div>
+                                  <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">Movement History</h3>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 shadow-sm">
+                                  {movements.length === 0 ? (
+                                    <div className="text-center py-6 text-slate-400 text-[11px] font-bold">No movement history recorded yet.</div>
+                                  ) : (
+                                    <div className="relative">
+                                      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
+                                      <div className="space-y-5">
+                                        {movements.map((m, idx) => {
+                                          let statusColor = "bg-blue-100 text-blue-700 border-blue-200"
+                                          let dotBg = "bg-blue-500"
+                                          let dotRing = "ring-blue-100"
+                                          let statusText = "Created"
+                                          if (m.from_department && arrivalConfirmed && idx === movements.length - 1) {
+                                            statusColor = "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                            dotBg = "bg-emerald-500"
+                                            dotRing = "ring-emerald-100"
+                                            statusText = "Received"
+                                          } else if (m.from_department) {
+                                            statusColor = "bg-orange-100 text-orange-700 border-orange-200"
+                                            dotBg = "bg-orange-500"
+                                            dotRing = "ring-orange-100"
+                                            statusText = "Forwarded"
+                                          }
+                                          return (
+                                            <div key={m.id || idx} className="relative flex gap-4">
+                                              <div className={`relative z-10 flex items-center justify-center w-[30px] h-[30px] rounded-full ring-4 ${dotRing} shrink-0 mt-1 ${dotBg}`}>
+                                                <div className="w-2 h-2 bg-white rounded-full" />
+                                              </div>
+                                              <div className="flex-1 bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mb-1">
+                                                <div className="flex items-start justify-between gap-3 flex-wrap">
+                                                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${statusColor}`}>
+                                                    {statusText}
+                                                  </span>
+                                                  <div className="text-right">
+                                                    <span className="text-[9px] font-bold text-slate-400 block">
+                                                      {new Date(m.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </span>
+                                                    <span className="text-[9px] font-bold text-slate-500 block mt-0.5">
+                                                      {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-3">
+                                                  <span className="text-[11px] font-black text-slate-700">{m.from_department || 'Entry Created'}</span>
+                                                  {m.to_department && (
+                                                    <>
+                                                      <ArrowRight size={12} className="text-slate-400 shrink-0" />
+                                                      <span className="text-[11px] font-black text-slate-700">{m.to_department}</span>
+                                                    </>
+                                                  )}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-2">
+                                                  <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
+                                                    <User size={10} className="text-slate-500" />
+                                                  </div>
+                                                  <span className="text-[10px] font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
+                                                </div>
+                                                {m.remarks && (
+                                                  <div className="mt-3 px-3 py-2 bg-slate-50 rounded-lg border-l-2 border-slate-300">
+                                                    <p className="text-[10px] text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           ) : (
                             <div className="p-4 bg-rose-50 rounded-xl border border-rose-100">
