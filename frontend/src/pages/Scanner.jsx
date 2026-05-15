@@ -3,6 +3,7 @@ import Layout from '../components/layout/Layout'
 import { Card, Button } from '../components/common'
 import api from '../services/api'
 import { forwardPatrak, receivePatrak } from '../api/forwardApi'
+import { updateEntry } from '../api/entriesApi'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import {
@@ -21,7 +22,8 @@ import {
   Clock,
   User,
   ArrowLeftRight,
-  Search
+  Search,
+  Edit2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Html5Qrcode } from 'html5-qrcode'
@@ -62,11 +64,13 @@ export default function Scanner() {
   const [result, setResult] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState('')
-  const [electronicEntries, setElectronicEntries] = useState([])
-  const [loadingElectronic, setLoadingElectronic] = useState(false)
   const [verificationComplete, setVerificationComplete] = useState(false)
   const [arrivalConfirmed, setArrivalConfirmed] = useState(false)
   const [receiving, setReceiving] = useState(false)
+
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editForm, setEditForm] = useState({})
+  const [savingEdit, setSavingEdit] = useState(false)
 
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardForm, setForwardForm] = useState({ to_department: '', remarks: '' })
@@ -125,9 +129,6 @@ export default function Scanner() {
     if (activeTab !== 'camera') {
       destroyScanner()
     }
-    if (activeTab === 'electronic') {
-      fetchElectronicEntries()
-    }
   }, [activeTab])
 
   useEffect(() => {
@@ -155,7 +156,7 @@ export default function Scanner() {
         scannerStartedRef.current = true
         await scanner.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1 },
+          { fps: 10, qrbox: { width: 150, height: 150 }, aspectRatio: 1 },
           (decodedText) => {
             if (!isMountedRef.current || cancelled) return
             handleScanSuccess(decodedText)
@@ -250,35 +251,6 @@ export default function Scanner() {
     }
   }
 
-  const fetchElectronicEntries = async () => {
-    setLoadingElectronic(true)
-    try {
-      const res = await api.get('/api/entries?per_page=100')
-      const userDept = user?.department || 'DG Office'
-      const isAdmin = user?.role === 'admin'
-      const pending = res.data.items.filter(entry => {
-        const isElectronic = entry.receiving_mode === 'Mails' || entry.receiving_mode === 'Fax'
-        const isPendingHere = isAdmin || entry.current_department === userDept
-        return isElectronic && isPendingHere && entry.status !== 'Closed'
-      })
-      setElectronicEntries(pending)
-    } catch (error) {
-      toast.error('Failed to load electronic queue')
-    } finally {
-      setLoadingElectronic(false)
-    }
-  }
-
-  const handleReceiveDigitallyDirect = async (entryId, deptName) => {
-    try {
-      await receivePatrak(entryId)
-      toast.success('Document digitally received and logged!')
-      fetchElectronicEntries()
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to digitally receive document')
-    }
-  }
-
   const handleConfirmArrival = async () => {
     if (!entryDetails) return
     setReceiving(true)
@@ -290,6 +262,33 @@ export default function Scanner() {
       toast.error(error.response?.data?.detail || 'Failed to confirm arrival')
     } finally {
       setReceiving(false)
+    }
+  }
+
+  const openEditModal = () => {
+    setEditForm({
+      subject: entryDetails.subject || '',
+      priority: entryDetails.priority || 'NORMAL',
+      current_department: entryDetails.current_department || '',
+      sender_name: entryDetails.sender_name || '',
+      description: entryDetails.description || '',
+      status: entryDetails.status || 'Open'
+    })
+    setShowEditModal(true)
+  }
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault()
+    setSavingEdit(true)
+    try {
+      const updated = await updateEntry(entryDetails.id, editForm)
+      setEntryDetails({ ...entryDetails, ...updated })
+      setShowEditModal(false)
+      toast.success('Tapal details updated successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update details')
+    } finally {
+      setSavingEdit(false)
     }
   }
 
@@ -380,8 +379,7 @@ export default function Scanner() {
         <motion.div variants={itemVariants} className="flex gap-1.5 px-2">
           {[
             { id: 'camera', label: 'Live Camera', icon: Camera },
-            { id: 'upload', label: 'Upload Asset', icon: Upload },
-            { id: 'electronic', label: 'Electronic Queue', icon: Building2 }
+            { id: 'upload', label: 'Upload QR Code', icon: Upload }
           ].map(tab => (
             <button
               key={tab.id}
@@ -398,92 +396,107 @@ export default function Scanner() {
           ))}
         </motion.div>
 
-        {activeTab !== 'electronic' ? (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 px-2">
-            <motion.div variants={itemVariants} className="xl:col-span-5">
-              <div className="bg-slate-900 rounded-[1.5rem] overflow-hidden border-[5px] border-slate-800 shadow-2xl relative min-h-[340px] sm:min-h-[420px] flex items-center justify-center">
+            <motion.div variants={itemVariants} className="xl:col-span-4">
+              <div className="bg-slate-900/40 backdrop-blur-xl rounded-2xl overflow-hidden border border-slate-700/50 hover:border-teal-500/30 shadow-[0_0_40px_-15px_rgba(20,184,166,0.15)] relative min-h-[300px] sm:min-h-[340px] flex items-center justify-center transition-all duration-300 group">
                 {activeTab === 'camera' ? (
                   <div className="w-full h-full flex flex-col items-center justify-center p-5">
                     {cameraError ? (
-                      <div className="text-center">
-                        <div className="w-14 h-14 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <AlertCircle size={28} className="text-rose-400" />
+                      <div className="text-center p-6 relative z-20">
+                        <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <AlertCircle size={24} className="text-rose-400" />
                         </div>
-                        <p className="text-white font-black text-[13px] mb-2">Access Denied</p>
-                        <p className="text-slate-400 text-[10px] max-w-xs mx-auto mb-6 leading-relaxed">{cameraError}</p>
-                        <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500 !rounded-xl !text-[10px] !py-2.5">Retry Connection</Button>
+                        <p className="text-white font-black text-[11px] mb-1.5 uppercase tracking-wide">Access Denied</p>
+                        <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-5 leading-relaxed">{cameraError}</p>
+                        <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500/20 hover:!bg-rose-500/30 !text-rose-400 border border-rose-500/30 !rounded-xl !text-[9px] !py-2 !uppercase tracking-widest font-black transition-all">Retry</Button>
                       </div>
                     ) : (
                       <>
                         <div
                           id={containerIdRef.current}
-                          className="rounded-2xl overflow-hidden border-2 border-white/10"
-                          style={{ width: '260px', height: '260px', display: cameraStarted ? 'block' : 'none' }}
+                          className="[&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full"
+                          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, display: cameraStarted ? 'block' : 'none' }}
                         />
                         {!cameraStarted && (
-                          <div className="text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-white/10">
-                              <Camera size={28} className="text-slate-400" />
+                          <div className="text-center relative z-20 p-6">
+                            <div className="w-14 h-14 bg-slate-800/50 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700/50">
+                              <Camera size={24} className="text-teal-400" />
                             </div>
-                            <h3 className="text-white font-black text-base tracking-tight mb-2">QR Scanner Ready</h3>
-                            <p className="text-slate-500 text-[10px] max-w-xs mx-auto mb-8 leading-relaxed">
-                              Position the patrak QR code within the viewport for instant identification.
+                            <h3 className="text-white font-black text-[13px] tracking-tight mb-2">Scanner Ready</h3>
+                            <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-6 leading-relaxed">
+                              Position the QR code within the frame.
                             </p>
                             <button
                               onClick={handleStartCamera}
-                              className="px-8 py-3 bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-900/50 transition-all flex items-center gap-3 mx-auto"
+                              className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all flex items-center gap-2 mx-auto"
                             >
-                              <Play size={16} fill="currentColor" />
-                              Initialize Scanner
+                              <Play size={14} fill="currentColor" />
+                              Start Camera
                             </button>
                           </div>
                         )}
                         {cameraStarted && !cameraReady && (
-                          <div className="mt-6 flex flex-col items-center">
-                            <Loader2 size={22} className="text-slate-400 animate-spin mb-3" />
-                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Warming Up Sensor...</p>
+                          <div className="mt-6 flex flex-col items-center relative z-20 bg-slate-900/60 px-4 py-3 rounded-2xl backdrop-blur-sm border border-white/5">
+                            <Loader2 size={18} className="text-teal-400 animate-spin mb-2" />
+                            <p className="text-slate-300 text-[8px] font-black uppercase tracking-widest">Initializing...</p>
                           </div>
                         )}
                         {cameraStarted && cameraReady && (
-                          <div className="absolute inset-0 pointer-events-none">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-[260px] h-[260px] border-2 border-emerald-400/50 rounded-2xl animate-pulse" />
+                          <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+                            <div className="relative w-[180px] h-[180px] sm:w-[200px] sm:h-[200px]">
+                              {/* Dark overlay cutout */}
+                              <div className="absolute inset-0 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] rounded-2xl transition-all duration-500" />
+                              
+                              {/* Corner Brackets */}
+                              <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-teal-400 rounded-tl-2xl" />
+                              <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-teal-400 rounded-tr-2xl" />
+                              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-teal-400 rounded-bl-2xl" />
+                              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-teal-400 rounded-br-2xl" />
+                              
+                              {/* Scanning Line Animation */}
+                              <motion.div 
+                                className="absolute left-0 right-0 h-[1.5px] bg-teal-400 shadow-[0_0_12px_2px_rgba(45,212,191,0.6)] z-20"
+                                animate={{ top: ['0%', '100%', '0%'] }}
+                                transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+                              />
                             </div>
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-60" />
                           </div>
                         )}
                       </>
                     )}
                   </div>
                 ) : (
-                  <div className="p-10 text-center w-full h-full flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-5 border border-white/10">
-                      <Upload size={28} className="text-slate-400" />
+                  <div className="p-8 text-center w-full h-full flex flex-col items-center justify-center relative z-20">
+                    <div className="w-14 h-14 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-700/50">
+                      <Upload size={24} className="text-teal-400" />
                     </div>
-                    <p className="text-white font-black text-sm mb-2">Upload QR Image</p>
-                    <p className="text-slate-500 text-[10px] mb-8 max-w-xs mx-auto">Select a high-resolution image of the QR code for processing.</p>
-                    <label className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer">
+                    <p className="text-white font-black text-[13px] mb-1.5 tracking-tight">Upload QR Image</p>
+                    <p className="text-slate-400 text-[9px] mb-6 max-w-[200px] mx-auto leading-relaxed">Select a high-resolution image of the QR code.</p>
+                    <label className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-slate-900/20">
                       Browse Files
                       <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                     </label>
                   </div>
                 )}
 
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${cameraReady ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                      {cameraReady ? 'Active' : 'Standby'}
-                    </span>
-                  </div>
-                  <div className="text-[9px] font-medium text-slate-500">
-                    {activeTab === 'camera' ? 'Live Feed' : 'File Mode'}
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center z-20 pointer-events-none">
+                  <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/10 shadow-xl shadow-slate-950/50">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-1.5 h-1.5 rounded-full ${cameraReady ? 'bg-teal-400 animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-slate-500'}`} />
+                      <span className="text-[7.5px] font-black text-slate-200 uppercase tracking-widest">
+                        {cameraReady ? 'Active' : 'Standby'}
+                      </span>
+                    </div>
+                    <div className="w-px h-2.5 bg-white/10" />
+                    <div className="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest">
+                      {activeTab === 'camera' ? 'Live Feed' : 'File Mode'}
+                    </div>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="xl:col-span-7">
+            <motion.div variants={itemVariants} className="xl:col-span-8">
               <Card className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm h-full min-h-[420px]">
                 <AnimatePresence mode="wait">
                   {!scannedData && !result ? (
@@ -618,25 +631,38 @@ export default function Scanner() {
                               </div>
 
                               {!arrivalConfirmed ? (
-                                <div className="flex flex-col items-center justify-center py-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
-                                  <div className="flex items-center gap-3 mb-5">
-                                    <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
-                                      <Clock size={24} className="text-amber-600" />
+                                <>
+                                  <div className="h-px bg-slate-100 my-4" />
+                                  <div className="flex flex-col md:flex-row items-center justify-between p-5 bg-gradient-to-r from-slate-50 to-white rounded-2xl border border-slate-100 shadow-sm gap-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                                        <Clock size={20} className="text-amber-600" />
+                                      </div>
+                                      <div>
+                                        <p className="text-[11px] font-black text-slate-800 tracking-tight">Pending Arrival</p>
+                                        <p className="text-[9px] font-medium text-slate-500">Review details or confirm immediately</p>
+                                      </div>
                                     </div>
-                                    <div className="text-left">
-                                      <p className="text-[11px] font-black text-amber-800">Confirm Arrival</p>
-                                      <p className="text-[9px] font-medium text-amber-600">Verify patrak received at your department</p>
+                                    <div className="flex items-center gap-3 w-full md:w-auto">
+                                      <Button 
+                                        onClick={openEditModal}
+                                        variant="outline"
+                                        className="flex-1 md:flex-none !border-teal-200 !text-teal-700 hover:!bg-teal-50 !font-black !text-[10px] px-5 shadow-sm transition-all"
+                                      >
+                                        <Edit2 size={14} className="mr-2" />
+                                        Edit Details
+                                      </Button>
+                                      <Button 
+                                        onClick={handleConfirmArrival}
+                                        loading={receiving}
+                                        className="flex-1 md:flex-none !bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 !text-white !shadow-lg !shadow-amber-200 !font-black !text-[10px] px-6 transition-all"
+                                      >
+                                        <CheckCircle size={14} className="mr-2" />
+                                        Confirm Arrival
+                                      </Button>
                                     </div>
                                   </div>
-                                  <Button 
-                                    onClick={handleConfirmArrival}
-                                    loading={receiving}
-                                    className="!bg-gradient-to-r from-amber-500 to-orange-500 !text-white !shadow-lg !shadow-amber-200 !font-black !text-[10px] px-8"
-                                  >
-                                    <CheckCircle size={14} className="mr-2" />
-                                    Confirm Arrival
-                                  </Button>
-                                </div>
+                                </>
                               ) : (
                                 <div className="flex gap-3 pt-2">
                                   <Button 
@@ -687,103 +713,6 @@ export default function Scanner() {
               </Card>
             </motion.div>
           </div>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-slate-100 rounded-[1.5rem] p-6 shadow-sm mx-2"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-50 pb-5 mb-5 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center">
-                  <Building2 size={20} className="text-emerald-600" />
-                </div>
-                <div>
-                  <h2 className="text-base font-black text-slate-800">Digital Transmission Queue</h2>
-                  <p className="text-slate-400 font-bold text-[10px]">
-                    Incoming Mails & Fax documents awaiting acknowledgement
-                  </p>
-                </div>
-              </div>
-              <button 
-                onClick={fetchElectronicEntries}
-                className="px-4 py-2 border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-all"
-              >
-                <RefreshCw size={12} className={loadingElectronic ? 'animate-spin' : ''} />
-                Refresh
-              </button>
-            </div>
-
-            {loadingElectronic ? (
-              <div className="py-16 text-center">
-                <Loader2 size={32} className="text-slate-400 animate-spin mx-auto mb-4" />
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Loading queue data...</p>
-              </div>
-            ) : electronicEntries.length === 0 ? (
-              <div className="py-14 text-center max-w-md mx-auto">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                  <Building2 size={24} className="text-slate-300" />
-                </div>
-                <h3 className="text-slate-700 font-black text-[12px] tracking-tight mb-1">Queue is Clear</h3>
-                <p className="text-slate-400 font-bold text-[10px] leading-relaxed">
-                  No pending digital documents at this time.
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-400">
-                      <th className="pb-3 pl-4">Patrak ID</th>
-                      <th className="pb-3">Subject</th>
-                      <th className="pb-3">Mode</th>
-                      <th className="pb-3">Sender</th>
-                      <th className="pb-3">Current Dept</th>
-                      <th className="pb-3 pr-4 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50/50">
-                    {electronicEntries.map((entry) => (
-                      <tr key={entry.id} className="text-xs hover:bg-slate-50/40 transition-colors group">
-                        <td className="py-3.5 pl-4 font-black text-slate-700 group-hover:text-rose-600 transition-colors">
-                          {entry.unique_id || `PTRK/2025/000${entry.id}`}
-                        </td>
-                        <td className="py-3.5 max-w-[200px]">
-                          <div className="font-bold text-slate-700 truncate">{entry.subject}</div>
-                          <div className="text-[9px] text-slate-400 font-medium truncate">{entry.description || 'No description'}</div>
-                        </td>
-                        <td className="py-3.5">
-                          <span className={`px-2 py-0.5 text-[8px] font-black rounded uppercase tracking-wider border ${
-                            entry.receiving_mode === 'Mails' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-violet-50 text-violet-600 border-violet-100'
-                          }`}>
-                            {entry.receiving_mode}
-                          </span>
-                        </td>
-                        <td className="py-3.5 font-medium text-slate-500 text-[11px]">
-                          {entry.sender_email || entry.fax_number || 'N/A'}
-                        </td>
-                        <td className="py-3.5">
-                          <span className="px-2 py-1 bg-slate-800 text-white text-[9px] font-black rounded-lg">
-                            {entry.current_department}
-                          </span>
-                        </td>
-                        <td className="py-3.5 pr-4 text-right">
-                          <button 
-                            onClick={() => handleReceiveDigitallyDirect(entry.id, entry.current_department)}
-                            className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all shadow-sm hover:shadow-md flex items-center gap-1.5 ml-auto"
-                          >
-                            <CheckCircle size={11} />
-                            Acknowledge
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </motion.div>
-        )}
       </motion.div>
 
       {/* Forward Modal - Same as Letters.jsx */}
@@ -880,6 +809,142 @@ export default function Scanner() {
                   </Button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {showEditModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowEditModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-[1.5rem] shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                    <Edit2 size={16} className="text-teal-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-[14px]">Edit Tapal Details</h3>
+                    <p className="text-[10px] font-bold text-slate-400">Update scanned entry information</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 hover:bg-slate-200/50 rounded-full transition-colors"
+                >
+                  <X size={18} className="text-slate-400 hover:text-slate-600" />
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto no-scrollbar">
+                <form id="edit-tapal-form" onSubmit={handleSaveEdit} className="space-y-5">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject</label>
+                    <input
+                      required
+                      type="text"
+                      value={editForm.subject}
+                      onChange={(e) => setEditForm({...editForm, subject: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sender / Originator</label>
+                      <input
+                        type="text"
+                        value={editForm.sender_name}
+                        onChange={(e) => setEditForm({...editForm, sender_name: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Priority</label>
+                      <select
+                        value={editForm.priority}
+                        onChange={(e) => setEditForm({...editForm, priority: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="Normal">Normal</option>
+                        <option value="Important">Important</option>
+                        <option value="Urgent">Urgent</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Department</label>
+                      <select
+                        value={editForm.current_department}
+                        onChange={(e) => setEditForm({...editForm, current_department: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
+                      >
+                        {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</label>
+                      <select
+                        value={editForm.status}
+                        onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Remarks / Description</label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                      rows={3}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all resize-none"
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                <div className="text-[9px] font-bold text-slate-400">
+                  Last verified by {user?.username || 'You'}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    onClick={openEditModal}
+                    className="!text-slate-500 !font-bold !text-[10px] hover:!bg-slate-200/50"
+                  >
+                    Reset
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    form="edit-tapal-form"
+                    loading={savingEdit}
+                    className="!bg-teal-600 hover:!bg-teal-700 !text-white !font-black !text-[10px] px-6 shadow-md shadow-teal-600/20"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
