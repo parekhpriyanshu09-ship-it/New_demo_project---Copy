@@ -1,599 +1,653 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/layout/Layout'
-import { motion } from 'framer-motion'
-import { PieChart, Pie, Cell, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LabelList } from 'recharts'
-import { ChevronDown, Calendar, Download, FileText, Send, AlertCircle, CheckCircle2, BarChart2, TrendingUp } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  FileText, Download, Printer, Share2, Calendar, Filter,
+  ChevronDown, ChevronRight, Search, Clock, CheckCircle2,
+  AlertCircle, TrendingUp, Users, Building2, Inbox, Send,
+  QrCode, BarChart3, FolderOpen, FileSpreadsheet, FileIcon,
+  History, Pin, CalendarClock, MailPlus, Archive
+} from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import toast from 'react-hot-toast'
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } }
 }
 
-const CHART_COLORS = ['#3b82f6', '#a855f7', '#22c55e', '#f97316', '#ef4444', '#8b5cf6']
-const DONUT_COLORS = ['#8b5cf6', '#3b82f6', '#22c55e', '#f97316', '#ef4444', '#a855f7']
+const REPORT_CATEGORIES = [
+  {
+    id: 'daily',
+    title: 'Daily Inward Register',
+    description: 'Summary of all inward patraks for the selected date range',
+    icon: Inbox,
+    color: 'blue',
+    format: ['PDF', 'Excel']
+  },
+  {
+    id: 'outward',
+    title: 'Outward Movement Report',
+    description: 'Complete record of outward patrak movements',
+    icon: Send,
+    color: 'red',
+    format: ['PDF', 'Excel']
+  },
+  {
+    id: 'department',
+    title: 'Department Summary',
+    description: 'Department-wise patrak processing and pending analysis',
+    icon: Building2,
+    color: 'purple',
+    format: ['PDF', 'Excel', 'CSV']
+  },
+  {
+    id: 'pending',
+    title: 'Pending Action Report',
+    description: 'List of patraks awaiting action beyond SLA period',
+    icon: AlertCircle,
+    color: 'orange',
+    format: ['PDF', 'Excel']
+  },
+  {
+    id: 'monthly',
+    title: 'Monthly Disposal Report',
+    description: 'Monthly statistics and disposal performance metrics',
+    icon: Calendar,
+    color: 'green',
+    format: ['PDF', 'Excel']
+  },
+  {
+    id: 'qr',
+    title: 'QR Scan Activity Report',
+    description: 'QR code scanning activity and verification logs',
+    icon: QrCode,
+    color: 'cyan',
+    format: ['PDF', 'Excel']
+  },
+  {
+    id: 'priority',
+    title: 'Priority Wise Report',
+    description: 'Analysis of patraks by priority level and response time',
+    icon: TrendingUp,
+    color: 'rose',
+    format: ['PDF']
+  },
+  {
+    id: 'user',
+    title: 'User Activity Report',
+    description: 'User-wise processing statistics and performance',
+    icon: Users,
+    color: 'indigo',
+    format: ['PDF', 'Excel']
+  },
+]
 
-const Dropdown = ({ text, icon: Icon, primary = false }) => (
-  <button className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-bold transition-all border ${
-    primary 
-      ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm' 
-      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
-  }`}>
-    {Icon && <Icon size={14} className={primary ? "text-white" : "text-slate-400"} />}
-    <span>{text}</span>
-    {!primary && <ChevronDown size={14} className="text-slate-400 ml-1" />}
-  </button>
-)
+const COLOR_MAP = {
+  blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', icon: 'bg-blue-100' },
+  red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', icon: 'bg-red-100' },
+  purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200', icon: 'bg-purple-100' },
+  orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', icon: 'bg-orange-100' },
+  green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', icon: 'bg-green-100' },
+  cyan: { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200', icon: 'bg-cyan-100' },
+  rose: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200', icon: 'bg-rose-100' },
+  indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', icon: 'bg-indigo-100' },
+}
+
+const MOCK_HISTORY = [
+  { id: 1, name: 'Daily Inward Register', generatedBy: 'Admin', date: '13 May 2026', time: '10:30 AM', format: 'PDF', size: '2.4 MB' },
+  { id: 2, name: 'Pending Action Report', generatedBy: 'DG Office', date: '12 May 2026', time: '04:15 PM', format: 'Excel', size: '1.1 MB' },
+  { id: 3, name: 'Department Summary', generatedBy: 'SCRB Admin', date: '11 May 2026', time: '09:00 AM', format: 'PDF', size: '3.2 MB' },
+  { id: 4, name: 'Monthly Disposal Report', generatedBy: 'Admin', date: '10 May 2026', time: '02:45 PM', format: 'PDF', size: '4.8 MB' },
+  { id: 5, name: 'QR Scan Activity', generatedBy: 'CID Crime', date: '09 May 2026', time: '11:20 AM', format: 'Excel', size: '0.8 MB' },
+]
+
+const DEPARTMENTS = ['All Departments', 'DG Office', 'CID Crime', 'Law & Order', 'Training', 'TS & SCRB']
+const PRIORITIES = ['All Priorities', 'Normal', 'Urgent', 'Critical']
+const STATUS = ['All Status', 'Active', 'Closed', 'Pending']
 
 export default function Reports() {
   const { user } = useAuth()
-  
-  const [loading, setLoading] = useState(true)
-  const [filterDays, setFilterDays] = useState(7)
-  const [stats, setStats] = useState({ total_entries: 0, active_entries: 0, closed_entries: 0 })
-  const [deptForwarded, setDeptForwarded] = useState([])
-  const [lineData, setLineData] = useState([])
 
-  useEffect(() => {
-    fetchReportData(filterDays)
-  }, [filterDays])
+  const [loading, setLoading] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [activeTab, setActiveTab] = useState('generate')
 
-  const fetchReportData = async (days) => {
-    setLoading(true)
-    try {
-      const [statsRes, forwardedRes, inwardChartRes, outwardChartRes] = await Promise.all([
-        api.get('/api/dashboard/stats'),
-        api.get('/api/dashboard/department-forwarded'),
-        api.get(`/api/dashboard/date-chart?view_type=inward&days=${days}`),
-        api.get(`/api/dashboard/date-chart?view_type=outward&days=${days}`)
-      ])
-
-      setStats(statsRes.data)
-      setDeptForwarded(forwardedRes.data.departments || [])
-
-      const inwardData = inwardChartRes.data.data || []
-      const outwardData = outwardChartRes.data.data || []
-      
-      const mergedLineData = inwardData.map(inItem => {
-        const outItem = outwardData.find(o => o.date === inItem.date) || { count: 0 }
-        return {
-          date: new Date(inItem.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }),
-          inward: inItem.count,
-          outward: outItem.count
-        }
-      }).reverse()
-      
-      setLineData(mergedLineData)
-    } catch (error) {
-      console.error("Failed to load reports data", error)
-      toast.error("Failed to load analytics")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleExportPDF = () => {
-    toast.success("Preparing PDF Export...")
-    setTimeout(() => window.print(), 500)
-  }
-
-  // Data processing
-  const totalInward = deptForwarded.reduce((sum, d) => sum + d.received, 0) || stats.total_entries
-  const totalOutward = deptForwarded.reduce((sum, d) => sum + d.forwarded, 0)
-  
-  // All departments are always shown (including TS & SCRB with 0 entries)
-  const ALL_DEPTS = ['DG Office', 'CID Crime', 'Law & Order', 'Training', 'TS & SCRB']
-
-  const donutDataRaw = ALL_DEPTS.map((deptName, i) => {
-    const found = deptForwarded.find(d => d.department === deptName)
-    return {
-      name: deptName,
-      shortName: deptName.length > 12 ? deptName.substring(0, 10) + '...' : deptName,
-      value: found ? found.received : 0,
-      fill: DONUT_COLORS[i % DONUT_COLORS.length]
-    }
-  }).sort((a, b) => b.value - a.value)
-
-  const donutTotal = donutDataRaw.reduce((sum, item) => sum + item.value, 0)
-  
-  const donutData = donutDataRaw.map(item => ({
-    ...item,
-    percentage: donutTotal > 0 ? ((item.value / donutTotal) * 100).toFixed(1) : '0.0'
-  }))
-
-  const barData = ALL_DEPTS.map((deptName, i) => {
-    const found = deptForwarded.find(d => d.department === deptName)
-    const abbr = deptName === 'Law & Order' ? 'L&Order' : deptName === 'TS & SCRB' ? 'TS&SCRB' : deptName.length > 8 ? deptName.substring(0, 8) + '..' : deptName
-    return {
-      name: abbr,
-      fullName: deptName,
-      value: found ? found.received : 0,
-      fill: CHART_COLORS[i % CHART_COLORS.length]
-    }
+  const [filters, setFilters] = useState({
+    dateRange: 'last7',
+    startDate: '',
+    endDate: '',
+    department: 'All Departments',
+    priority: 'All Priorities',
+    status: 'All Status',
+    reportType: 'daily'
   })
 
-  const gaugeTotal = stats.active_entries + stats.closed_entries || 1
-  const activePercent = ((stats.active_entries / gaugeTotal) * 100).toFixed(0)
-  const closedPercent = ((stats.closed_entries / gaugeTotal) * 100).toFixed(0)
+  const [previewData, setPreviewData] = useState(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
-  // Gauge data needs to be ordered for the half-donut properly
-  const gaugeData = [
-    { name: 'Active', value: stats.active_entries, fill: '#22c55e' },
-    { name: 'Closed', value: stats.closed_entries, fill: '#e2e8f0' },
-  ]
-
-  const topPerformers = ALL_DEPTS.map((deptName, i) => {
-    const found = deptForwarded.find(d => d.department === deptName)
-    const received = found ? found.received : 0
-    const forwarded = found ? found.forwarded : 0
-    const rate = received > 0 ? Math.min(100, Math.round((forwarded / received) * 100)) : 0
-    return {
-      name: deptName,
-      value: rate,
-      fill: DONUT_COLORS[i % DONUT_COLORS.length]
-    }
-  })
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5)
-
-  const getDateRangeText = () => {
-    const end = new Date()
-    const start = new Date()
-    start.setDate(end.getDate() - (filterDays - 1))
-    
-    const formatDate = (d) => {
-      const day = d.getDate().toString().padStart(2, '0')
-      const month = d.toLocaleString('en-US', { month: 'short' })
-      const year = d.getFullYear()
-      return `${day} ${month} ${year}`
-    }
-    
-    // Only show year on the end date to save space if it's the same year
-    const startStr = `${start.getDate().toString().padStart(2, '0')} ${start.toLocaleString('en-US', { month: 'short' })}`
-    return `${startStr} – ${formatDate(end)}`
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
   }
 
-  const CustomReportTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-slate-900/95 dark:bg-neutral-900/95 backdrop-blur-md border border-slate-800 dark:border-neutral-800/80 p-2.5 rounded-xl shadow-xl text-white text-[10px] font-sans">
-          <p className="font-bold text-slate-300 mb-0.5 leading-tight">{data.fullName}</p>
-          <p className="font-extrabold text-sm text-white">
-            {data.value.toLocaleString("en-IN")}{" "}
-            <span className="text-[10px] text-slate-400 font-medium">Inward Patraks</span>
-          </p>
+  const handleGenerateReport = async (category) => {
+    setIsGenerating(true)
+    setSelectedCategory(category)
+
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    setPreviewData({
+      category: category.title,
+      generatedAt: new Date().toLocaleString('en-IN'),
+      totalEntries: 127,
+      departmentsCovered: 5,
+      summary: [
+        { label: 'Total Inward', value: 48, color: 'blue' },
+        { label: 'Total Outward', value: 35, color: 'red' },
+        { label: 'Pending Action', value: 12, color: 'orange' },
+        { label: 'Resolved', value: 32, color: 'green' },
+      ],
+      departmentBreakdown: [
+        { name: 'DG Office', inward: 20, outward: 15, pending: 5 },
+        { name: 'CID Crime', inward: 10, outward: 8, pending: 2 },
+        { name: 'Law & Order', inward: 8, outward: 6, pending: 2 },
+        { name: 'Training', inward: 6, outward: 4, pending: 2 },
+        { name: 'TS & SCRB', inward: 4, outward: 2, pending: 1 },
+      ],
+      dateRange: filters.startDate && filters.endDate
+        ? `${filters.startDate} to ${filters.endDate}`
+        : 'Last 7 Days'
+    })
+
+    setIsGenerating(false)
+    setActiveTab('preview')
+  }
+
+  const handleExport = (format) => {
+    toast.success(`Exporting report as ${format}...`)
+  }
+
+  const FilterSection = () => (
+    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
+        onClick={() => setFilterOpen(!filterOpen)}
+      >
+        <div className="flex items-center gap-2">
+          <Filter size={16} className="text-slate-600" />
+          <span className="text-sm font-semibold text-slate-800">Report Filters</span>
         </div>
-      );
-    }
-    return null;
-  };
+        <ChevronDown
+          size={16}
+          className={`text-slate-400 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+        />
+      </div>
+
+      <AnimatePresence>
+        {filterOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 border-t border-slate-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Date Range</label>
+                  <div className="relative">
+                    <select
+                      value={filters.dateRange}
+                      onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+                      className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                    >
+                      <option value="last7">Last 7 Days</option>
+                      <option value="last14">Last 14 Days</option>
+                      <option value="last30">Last 30 Days</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                {filters.dateRange === 'custom' && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">From Date</label>
+                      <input
+                        type="date"
+                        value={filters.startDate}
+                        onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">To Date</label>
+                      <input
+                        type="date"
+                        value={filters.endDate}
+                        onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Department</label>
+                  <div className="relative">
+                    <select
+                      value={filters.department}
+                      onChange={(e) => handleFilterChange('department', e.target.value)}
+                      className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                    >
+                      {DEPARTMENTS.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+                  <div className="relative">
+                    <select
+                      value={filters.priority}
+                      onChange={(e) => handleFilterChange('priority', e.target.value)}
+                      className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                    >
+                      {PRIORITIES.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                  <div className="relative">
+                    <select
+                      value={filters.status}
+                      onChange={(e) => handleFilterChange('status', e.target.value)}
+                      className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                    >
+                      {STATUS.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+
+  const ReportCategoryCard = ({ category, index }) => {
+    const colors = COLOR_MAP[category.color]
+
+    return (
+      <motion.div
+        variants={itemVariants}
+        className={`bg-white rounded-lg border ${colors.border} hover:shadow-md transition-all cursor-pointer group`}
+        onClick={() => handleGenerateReport(category)}
+      >
+        <div className="p-4">
+          <div className="flex items-start gap-3">
+            <div className={`w-10 h-10 rounded-lg ${colors.icon} flex items-center justify-center shrink-0`}>
+              <category.icon size={20} className={colors.text} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                {category.title}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{category.description}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+            <div className="flex gap-1.5">
+              {category.format.map(fmt => (
+                <span key={fmt} className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
+                  {fmt}
+                </span>
+              ))}
+            </div>
+            <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  const ReportPreview = () => (
+    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          <FileText size={18} className="text-blue-600" />
+          <h3 className="text-sm font-semibold text-slate-900">Report Preview</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleExport('PDF')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <Download size={14} />
+            PDF
+          </button>
+          <button
+            onClick={() => handleExport('Excel')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          >
+            <FileSpreadsheet size={14} />
+            Excel
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200 transition-colors"
+          >
+            <Printer size={14} />
+            Print
+          </button>
+        </div>
+      </div>
+
+      {isGenerating ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-sm font-medium text-slate-600">Generating report...</p>
+        </div>
+      ) : previewData ? (
+        <div className="p-6">
+          <div className="text-center border-b border-slate-200 pb-4 mb-6">
+            <h2 className="text-lg font-bold text-slate-900">{previewData.category}</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Date Range: {previewData.dateRange} | Generated: {previewData.generatedAt}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {previewData.summary.map((item, i) => (
+              <div key={i} className="bg-slate-50 rounded-lg p-4 text-center border border-slate-100">
+                <p className={`text-2xl font-bold ${item.color === 'blue' ? 'text-blue-600' :
+                  item.color === 'red' ? 'text-red-600' :
+                    item.color === 'orange' ? 'text-orange-600' :
+                      'text-green-600'
+                  }`}>{item.value}</p>
+                <p className="text-xs font-medium text-slate-500 mt-1">{item.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="border border-slate-200 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">Department</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">Inward</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">Outward</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">Pending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.departmentBreakdown.map((dept, i) => (
+                  <tr key={i} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-2.5 font-medium text-slate-800">{dept.name}</td>
+                    <td className="px-4 py-2.5 text-center text-blue-600 font-semibold">{dept.inward}</td>
+                    <td className="px-4 py-2.5 text-center text-red-600 font-semibold">{dept.outward}</td>
+                    <td className="px-4 py-2.5 text-center text-orange-600 font-semibold">{dept.pending}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <FileText size={48} className="mb-3 opacity-50" />
+          <p className="text-sm font-medium">Select a report category to generate preview</p>
+        </div>
+      )}
+    </div>
+  )
+
+  const ReportHistory = () => (
+    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          <History size={18} className="text-slate-600" />
+          <h3 className="text-sm font-semibold text-slate-900">Recently Generated Reports</h3>
+        </div>
+        <button className="text-xs font-medium text-blue-600 hover:text-blue-700">View All</button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50">
+            <tr>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Report Name</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Generated By</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Format</th>
+              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Size</th>
+              <th className="text-center px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {MOCK_HISTORY.map((report, i) => (
+              <tr key={report.id} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+                <td className="px-4 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <FileText size={14} className="text-blue-600" />
+                    <span className="font-medium text-slate-800">{report.name}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-slate-600">{report.generatedBy}</td>
+                <td className="px-4 py-2.5">
+                  <span className="text-slate-700">{report.date}</span>
+                  <span className="text-slate-400 text-xs ml-1">{report.time}</span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded">{report.format}</span>
+                </td>
+                <td className="px-4 py-2.5 text-slate-500 text-xs">{report.size}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex items-center justify-center gap-1">
+                    <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Download">
+                      <Download size={14} />
+                    </button>
+                    <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors" title="Print">
+                      <Printer size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#fafafa] -mx-4 -mt-4 p-4 sm:p-8">
+      <div className="min-h-screen bg-[#f8f9fa] -mx-4 -mt-4 p-4 sm:p-6">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-[1500px] mx-auto space-y-5 print:m-0 print:p-0"
+          className="max-w-[1600px] mx-auto space-y-5"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-[22px] font-black text-slate-900 tracking-tight">Analytics Overview</h1>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-500">
-                  <path d="M4 12c2 0 2-4 4-4s2 4 4 4 2-4 4-4 2 4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <p className="text-[13px] text-slate-500 font-medium">Monitor patrak movement, department efficiency, and overall system health.</p>
-            </div>
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full lg:w-auto mt-3 lg:mt-0">
-              <div className="w-full sm:w-auto flex-1">
-                <Dropdown text={getDateRangeText()} icon={Calendar} />
-              </div>
-              <div className="relative shrink-0 w-[48%] sm:w-auto">
-                <select 
-                  value={filterDays}
-                  onChange={(e) => setFilterDays(Number(e.target.value))}
-                  className="appearance-none w-full flex items-center pl-3 pr-8 py-2 rounded-lg text-[12px] font-bold transition-all border bg-white hover:bg-slate-50 text-slate-700 border-slate-200 outline-none cursor-pointer"
-                >
-                  <option value={7}>Last 7 Days</option>
-                  <option value={14}>Last 14 Days</option>
-                  <option value={30}>Last 30 Days</option>
-                </select>
-                <ChevronDown size={14} className="text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-              <div onClick={handleExportPDF} className="w-[48%] sm:w-auto">
-                <Dropdown text="Export Report" icon={Download} primary />
-              </div>
+
+
+          {/* Tab Navigation - Full Width Segmented Control */}
+          <motion.div variants={itemVariants} className="w-full">
+            <div className="flex items-stretch bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              
+              {/* Generate Report Tab */}
+              <button
+                onClick={() => setActiveTab('generate')}
+                className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 transition-all duration-200 group relative ${
+                  activeTab === 'generate'
+                    ? 'bg-[#E8F0EA]'
+                    : 'hover:bg-slate-50'
+                }`}
+              >
+                {activeTab === 'generate' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4A7C59]" />
+                )}
+                <div className={`p-1.5 rounded-md ${activeTab === 'generate' ? 'bg-[#4A7C59]' : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                  <FolderOpen size={16} className={activeTab === 'generate' ? 'text-white' : 'text-slate-500'} />
+                </div>
+                <div className="text-left">
+                  <span className={`block text-sm font-semibold ${activeTab === 'generate' ? 'text-[#2D4A35]' : 'text-slate-700'}`}>
+                    Generate Report
+                  </span>
+                  <span className={`block text-[11px] ${activeTab === 'generate' ? 'text-[#5A7A63]' : 'text-slate-400'}`}>
+                    Create new reports
+                  </span>
+                </div>
+              </button>
+
+              {/* Divider */}
+              <div className="w-px bg-slate-200" />
+
+              {/* Report Preview Tab */}
+              <button
+                onClick={() => setActiveTab('preview')}
+                className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 transition-all duration-200 group relative ${
+                  activeTab === 'preview'
+                    ? 'bg-[#EDE9F4]'
+                    : 'hover:bg-slate-50'
+                }`}
+              >
+                {activeTab === 'preview' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6B5B8C]" />
+                )}
+                <div className={`p-1.5 rounded-md ${activeTab === 'preview' ? 'bg-[#6B5B8C]' : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                  <FileText size={16} className={activeTab === 'preview' ? 'text-white' : 'text-slate-500'} />
+                </div>
+                <div className="text-left">
+                  <span className={`block text-sm font-semibold ${activeTab === 'preview' ? 'text-[#3D3454]' : 'text-slate-700'}`}>
+                    Report Preview
+                  </span>
+                  <span className={`block text-[11px] ${activeTab === 'preview' ? 'text-[#7A6A96]' : 'text-slate-400'}`}>
+                    View generated output
+                  </span>
+                </div>
+              </button>
+
+              {/* Divider */}
+              <div className="w-px bg-slate-200" />
+
+              {/* Report History Tab */}
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 transition-all duration-200 group relative ${
+                  activeTab === 'history'
+                    ? 'bg-[#F2EEE8]'
+                    : 'hover:bg-slate-50'
+                }`}
+              >
+                {activeTab === 'history' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B7355]" />
+                )}
+                <div className={`p-1.5 rounded-md ${activeTab === 'history' ? 'bg-[#8B7355]' : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                  <History size={16} className={activeTab === 'history' ? 'text-white' : 'text-slate-500'} />
+                </div>
+                <div className="text-left">
+                  <span className={`block text-sm font-semibold ${activeTab === 'history' ? 'text-[#4A3F33]' : 'text-slate-700'}`}>
+                    Report History
+                  </span>
+                  <span className={`block text-[11px] ${activeTab === 'history' ? 'text-[#8B7355]' : 'text-slate-400'}`}>
+                    Past generated reports
+                  </span>
+                </div>
+              </button>
             </div>
           </motion.div>
 
-          {/* 4 Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 1: Total Inward */}
-            <motion.div variants={itemVariants} className="bg-white rounded-xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between min-h-[110px]">
-              <div className="flex justify-between items-start w-full">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#eff6ff] text-blue-600 flex items-center justify-center shrink-0">
-                    <FileText size={22} strokeWidth={2} />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[12px] font-bold text-slate-800 mb-1">Total Inward</span>
-                    <span className="text-3xl font-black text-slate-900 leading-none">{loading ? '-' : totalInward}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#ecfdf5] text-emerald-600">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l7-7 7 7"/><path d="M12 19V5"/></svg>
-                    33.4%
-                  </div>
-                  <span className="text-[9px] font-medium text-slate-400">vs prev {filterDays} days</span>
-                </div>
-              </div>
-              <div className="w-16 h-1 bg-blue-600 rounded-full mt-4"></div>
-            </motion.div>
+          {/* Filter Panel */}
+          <motion.div variants={itemVariants}>
+            <FilterSection />
+          </motion.div>
 
-            {/* Card 2: Total Outward */}
-            <motion.div variants={itemVariants} className="bg-white rounded-xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between min-h-[110px]">
-              <div className="flex justify-between items-start w-full">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#fef2f2] text-red-500 flex items-center justify-center shrink-0">
-                    <Send size={22} strokeWidth={2} />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[12px] font-bold text-slate-800 mb-1">Total Outward</span>
-                    <span className="text-3xl font-black text-slate-900 leading-none">{loading ? '-' : totalOutward}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#fef2f2] text-red-500">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="M5 12l7-7 7 7"/><path d="M12 19V5"/></svg>
-                    12.4%
-                  </div>
-                  <span className="text-[9px] font-medium text-slate-400">vs prev {filterDays} days</span>
-                </div>
-              </div>
-              <div className="w-16 h-1 bg-red-500 rounded-full mt-4"></div>
-            </motion.div>
-
-            {/* Card 3: Pending Action */}
-            <motion.div variants={itemVariants} className="bg-white rounded-xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between min-h-[110px]">
-              <div className="flex justify-between items-start w-full">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#fff7ed] text-orange-500 flex items-center justify-center shrink-0">
-                    <AlertCircle size={22} strokeWidth={2} />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[12px] font-bold text-slate-800 mb-1">Pending Action</span>
-                    <span className="text-3xl font-black text-slate-900 leading-none">{loading ? '-' : stats.active_entries}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#fff7ed] text-orange-500">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="M5 12l7-7 7 7"/><path d="M12 19V5"/></svg>
-                    2.1%
-                  </div>
-                  <span className="text-[9px] font-medium text-slate-400">vs prev {filterDays} days</span>
-                </div>
-              </div>
-              <div className="w-16 h-1 bg-orange-500 rounded-full mt-4"></div>
-            </motion.div>
-
-            {/* Card 4: Resolved Patraks */}
-            <motion.div variants={itemVariants} className="bg-white rounded-xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col justify-between min-h-[110px]">
-              <div className="flex justify-between items-start w-full">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#ecfdf5] text-emerald-500 flex items-center justify-center shrink-0">
-                    <CheckCircle2 size={22} strokeWidth={2} />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[12px] font-bold text-slate-800 mb-1">Resolved Patraks</span>
-                    <span className="text-3xl font-black text-slate-900 leading-none">{loading ? '-' : stats.closed_entries}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#ecfdf5] text-emerald-600">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l7-7 7 7"/><path d="M12 19V5"/></svg>
-                    62.0%
-                  </div>
-                  <span className="text-[9px] font-medium text-slate-400">vs prev {filterDays} days</span>
-                </div>
-              </div>
-              <div className="w-16 h-1 bg-emerald-500 rounded-full mt-4"></div>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Movement Trends Area Chart */}
-            <motion.div variants={itemVariants} className="lg:col-span-7 xl:col-span-7 bg-white rounded-xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col h-[380px]">
-               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-[15px] font-black text-slate-900 tracking-tight">Movement Trends</h3>
-                  <p className="text-[12px] text-slate-500 mt-1">Daily inward vs outward volume</p>
-                  <div className="flex items-center gap-4 mt-3">
-                     <div className="flex items-center gap-2">
-                       <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                       <span className="text-[11px] font-bold text-slate-800">Inward Volume</span>
-                     </div>
-                     <div className="flex items-center gap-2">
-                       <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                       <span className="text-[11px] font-bold text-slate-800">Outward Volume</span>
-                     </div>
-                  </div>
-                </div>
-                <div className="hidden sm:block relative">
-                  <select 
-                    value={filterDays}
-                    onChange={(e) => setFilterDays(Number(e.target.value))}
-                    className="appearance-none flex items-center gap-2 pl-3 pr-8 py-1.5 rounded-lg text-[11px] font-bold transition-all border bg-white hover:bg-slate-50 text-slate-600 border-slate-200 outline-none cursor-pointer"
-                  >
-                    <option value={7}>Last 7 Days</option>
-                    <option value={14}>Last 14 Days</option>
-                    <option value={30}>Last 30 Days</option>
-                  </select>
-                  <ChevronDown size={14} className="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+          {/* Content based on active tab */}
+          {activeTab === 'generate' && (
+            <motion.div variants={itemVariants}>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <Archive size={16} className="text-slate-500" />
+                  Available Report Templates
+                </h2>
+                <span className="text-xs text-slate-500">{REPORT_CATEGORIES.length} reports available</span>
               </div>
 
-              <div className="flex-1 w-full mt-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={lineData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorInward" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorOutward" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                    <Tooltip 
-                      cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                      contentStyle={{ borderRadius: '8px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-                      itemStyle={{ fontSize: '11px', fontWeight: 800 }}
-                      labelStyle={{ fontSize: '11px', color: '#64748b', fontWeight: 700, marginBottom: '4px' }}
-                    />
-                    <Area type="monotone" dataKey="outward" name="Outward" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorOutward)" activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} dot={{ r: 4, fill: '#ef4444', strokeWidth: 2, stroke: '#fff' }} />
-                    <Area type="monotone" dataKey="inward" name="Inward" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorInward)" activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {REPORT_CATEGORIES.map((category, index) => (
+                  <ReportCategoryCard key={category.id} category={category} index={index} />
+                ))}
               </div>
             </motion.div>
+          )}
 
-            {/* Department Flow Donut Chart */}
-            <motion.div variants={itemVariants} className="lg:col-span-5 xl:col-span-5 bg-white rounded-xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col h-[380px]">
-              <div className="flex items-start justify-between mb-2">
-                 <div>
-                   <h3 className="text-[15px] font-black text-slate-900 tracking-tight">Department Flow</h3>
-                   <p className="text-[12px] text-slate-500 mt-1">Inward distribution</p>
-                </div>
-                <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                  View Details
-                </button>
-              </div>
-              
-              <div className="flex-1 flex flex-col sm:flex-row items-center justify-between mt-2 gap-4 sm:gap-6">
-                {/* Pie Chart */}
-                <div className="w-[140px] h-[140px] sm:w-[170px] sm:h-[170px] shrink-0 relative">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[22px] sm:text-[26px] font-black text-slate-900 leading-none">{totalInward}</span>
-                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 mt-1">Total</span>
-                  </div>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-                        itemStyle={{ fontSize: '12px', fontWeight: 800 }}
-                        formatter={(value, name) => [value, name]}
-                      />
-                      <Pie
-                        data={donutData}
-                        innerRadius="65%"
-                        outerRadius="95%"
-                        paddingAngle={6}
-                        dataKey="value"
-                        stroke="none"
-                        cornerRadius={4}
-                      >
-                        {donutData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Vertical Legend */}
-                <div className="w-full sm:flex-1 flex flex-col justify-center gap-3">
-                  {donutData.length > 0 ? donutData.map(item => (
-                    <div key={item.name} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2 pr-2">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }}></div>
-                        <span className="text-[11px] font-bold text-slate-700 whitespace-nowrap" title={item.name}>{item.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[11px] sm:text-[12px] font-black text-slate-900">{item.value}</span>
-                        <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 w-10 text-right">({item.percentage}%)</span>
-                      </div>
-                    </div>
-                  )) : (
-                    <span className="text-xs font-bold text-slate-400">No data</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Footer Pill */}
-              <div className="mt-4 bg-slate-50 rounded-lg py-2.5 px-4 flex justify-between items-center border border-slate-100">
-                <span className="text-[11px] font-bold text-slate-500">Total Departments</span>
-                <span className="text-[13px] font-black text-slate-900">{donutData.length}</span>
-              </div>
+          {activeTab === 'preview' && (
+            <motion.div variants={itemVariants}>
+              <ReportPreview />
             </motion.div>
-          </div>
+          )}
 
-          {/* Bottom Row: DG Office Inward Entry Analysis, Resolution Overview, Top Performers */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5">
-             {/* DG Office – Inward Entry Analysis — Horizontal Bar Chart, no card bg */}
-             <motion.div variants={itemVariants} className="xl:col-span-5 flex flex-col h-[320px] bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-               {/* Header */}
-               <div className="flex items-center justify-between mb-3">
-                 <div className="flex items-center gap-2.5">
-                   <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm shrink-0">
-                     <BarChart2 size={13} className="text-white" strokeWidth={2.5} />
-                   </div>
-                   <div>
-                     <h3 className="text-[13px] font-black text-slate-900 tracking-tight leading-tight">DG Office – Inward Entry Analysis</h3>
-                     <p className="text-[11px] text-slate-400 font-medium">Volume received per department</p>
-                   </div>
-                 </div>
-                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100">
-                   <TrendingUp size={10} className="text-blue-600" strokeWidth={3} />
-                   <span className="text-[10px] font-black text-blue-700">{totalInward} Total</span>
-                 </div>
-               </div>
+          {activeTab === 'history' && (
+            <motion.div variants={itemVariants}>
+              <ReportHistory />
+            </motion.div>
+          )}
 
-               {/* Vertical Bar Chart */}
-               <div className="flex-1 min-h-[190px] w-full mt-2">
-                 <ResponsiveContainer width="100%" height="100%">
-                   <BarChart data={barData} margin={{ top: 10, right: 0, left: -25, bottom: 5 }}>
-                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" opacity={0.8} />
-                     <XAxis
-                       dataKey="name"
-                       axisLine={false}
-                       tickLine={false}
-                       tick={{ fontSize: 9.5, fill: "#64748b", fontWeight: 600 }}
-                       dy={5}
-                     />
-                     <YAxis
-                       axisLine={false}
-                       tickLine={false}
-                       tick={{ fontSize: 9.5, fill: "#64748b", fontWeight: 600 }}
-                       dx={-2}
-                     />
-                     <Tooltip
-                       content={<CustomReportTooltip />}
-                       cursor={{ fill: "#f1f5f9", opacity: 0.4 }}
-                     />
-                     <Bar
-                       dataKey="value"
-                       radius={[4, 4, 0, 0]}
-                       maxBarSize={32}
-                       animationDuration={1000}
-                     >
-                       {barData.map((entry, index) => (
-                         <Cell key={`cell-${index}`} fill={entry.fill} />
-                       ))}
-                     </Bar>
-                   </BarChart>
-                 </ResponsiveContainer>
-               </div>
-
-               {/* Footer */}
-               <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inward Entries · All Departments</span>
-                 <button onClick={handleExportPDF} className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-blue-600 transition-colors">
-                   <Download size={10} /> Export
-                 </button>
-               </div>
-             </motion.div>
-
-             {/* Resolution Overview Gauge */}
-             <motion.div variants={itemVariants} className="xl:col-span-3 bg-white rounded-xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col h-[320px]">
-                <h3 className="text-[15px] font-black text-slate-900 tracking-tight">Resolution Overview</h3>
-                <p className="text-[12px] text-slate-500 mt-1 mb-8">Status of patraks</p>
-                
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  <div className="w-[180px] h-[90px] relative overflow-hidden flex justify-center mt-auto">
-                    <ResponsiveContainer width="100%" height="200%">
-                      <PieChart>
-                        <Pie
-                          data={gaugeData}
-                          cx="50%"
-                          cy="50%"
-                          startAngle={180}
-                          endAngle={0}
-                          innerRadius="75%"
-                          outerRadius="100%"
-                          paddingAngle={2}
-                          dataKey="value"
-                          stroke="none"
-                          cornerRadius={4}
-                        >
-                          {gaugeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-end pb-2">
-                       <span className="text-[28px] font-black text-slate-900 leading-none">{stats.active_entries}</span>
-                       <span className="text-[12px] font-bold text-slate-500 mt-1">Active</span>
-                    </div>
-                  </div>
-
-                  <div className="w-full mt-auto pt-6 border-t border-slate-50 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e]"></div>
-                        <span className="text-[12px] font-bold text-slate-800">Active</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[12px] font-bold text-slate-800">{stats.active_entries}</span>
-                        <span className="text-[11px] text-slate-500 font-medium w-10 text-right">({activePercent}%)</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#e2e8f0]"></div>
-                        <span className="text-[12px] font-bold text-slate-800">Closed</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[12px] font-bold text-slate-800">{stats.closed_entries}</span>
-                        <span className="text-[11px] text-slate-500 font-medium w-10 text-right">({closedPercent}%)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-             </motion.div>
-
-             {/* Top Performers Progress Bars */}
-             <motion.div variants={itemVariants} className="xl:col-span-4 bg-white rounded-xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col h-[320px]">
-                <h3 className="text-[15px] font-black text-slate-900 tracking-tight">Top Performers</h3>
-                <p className="text-[12px] text-slate-500 mt-1 mb-6">By volume processed</p>
-                
-                <div className="flex-1 flex flex-col justify-around py-2">
-                  {topPerformers.length > 0 ? topPerformers.map(item => (
-                    <div key={item.name} className="flex items-center gap-4 group">
-                      <div className="flex items-center gap-2.5 w-[110px]">
-                        <div className="w-6 h-6 rounded-md bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100" style={{ color: item.fill }}>
-                          <CheckCircle2 size={12} strokeWidth={3} />
-                        </div>
-                        <span className="text-[12px] font-bold text-slate-700 truncate group-hover:text-slate-900 transition-colors">{item.name}</span>
-                      </div>
-                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${item.value}%`, backgroundColor: item.fill }}></div>
-                      </div>
-                      <span className="text-[11px] font-black text-slate-800 w-8 text-right">{item.value}%</span>
-                    </div>
-                  )) : (
-                    <span className="text-xs font-bold text-slate-400">Not enough data</span>
-                  )}
-                </div>
-             </motion.div>
-          </div>
+          {/* Quick Actions Section - Premium Features */}
+          <motion.div variants={itemVariants} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 size={18} className="text-slate-600" />
+              <h3 className="text-sm font-semibold text-slate-900">Quick Actions</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <CalendarClock size={14} className="text-blue-500" />
+                Scheduled Reports
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <Pin size={14} className="text-orange-500" />
+                Pinned Reports
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <MailPlus size={14} className="text-green-500" />
+                Auto Email
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <Download size={14} className="text-purple-500" />
+                Download Center
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <Archive size={14} className="text-cyan-500" />
+                Archive Access
+              </button>
+              <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">
+                <Share2 size={14} className="text-rose-500" />
+                Share Report
+              </button>
+            </div>
+          </motion.div>
 
         </motion.div>
       </div>

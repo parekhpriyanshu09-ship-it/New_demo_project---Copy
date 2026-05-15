@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/layout/Layout'
@@ -9,12 +13,12 @@ import { useDebounce } from '../hooks/useDebounce'
 import { canCreateEntry, canGenerateQR } from '../utils/roleGuard'
 import { formatShortDate } from '../utils/dateUtils'
 import toast from 'react-hot-toast'
-import { 
-  Plus, 
-  Eye, 
-  QrCode, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Plus,
+  Eye,
+  QrCode,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   CheckCircle2,
   Calendar as CalendarIcon,
@@ -47,6 +51,33 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 }
 
+
+const formSchema = z.object({
+  receiving_mode: z.enum(['By Hand', 'Mails', 'Post', 'Fax']),
+  sender_email: z.string().email('Invalid email').optional().or(z.literal('')),
+  fax_number: z.string().optional().or(z.literal('')),
+  sender_type: z.string().min(1, 'Sender Type is required'),
+  sender_name: z.string().optional().or(z.literal('')),
+  sender_address: z.string().optional().or(z.literal('')),
+  unit_district: z.string().min(1, 'Unit/District is required'),
+  send_to: z.string().optional().or(z.literal('')),
+  sender_designation: z.string().optional().or(z.literal('')),
+  subject: z.string().min(1, 'Subject is required'),
+  received_date: z.string().min(1, 'Received Date is required'),
+  priority: z.string().min(1, 'Priority is required'),
+  sender_reference_number: z.string().optional().or(z.literal('')),
+  reference_date: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal(''))
+}).refine(data => {
+  if (data.sender_type !== 'Citizen' && (!data.send_to || data.send_to.trim() === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Organization is required",
+  path: ["send_to"]
+})
+
 const DEPARTMENTS = [
   "DG Office",
   "CID Crime",
@@ -69,19 +100,37 @@ export default function Letters() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [pagination, setPagination] = useState({ page: 1, per_page: 10, total: 0, pages: 0 })
-  const [createForm, setCreateForm] = useState({
-    subject: '',
-    sender_name: '',
-    sender_designation: '',
-    received_date: '',
-    priority: 'Normal',
-    description: '',
-    receiving_mode: 'Physical',
-    sender_email: '',
-    fax_number: '',
-    unit_district: '',
-    send_to: '',
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      receiving_mode: 'By Hand',
+      sender_email: '',
+      fax_number: '',
+      sender_type: 'Citizen',
+      sender_name: '',
+      sender_address: '',
+      unit_district: '',
+      send_to: '',
+      sender_designation: '',
+      subject: '',
+      received_date: '',
+      priority: 'Normal',
+      sender_reference_number: '',
+      reference_date: '',
+      description: ''
+    }
   })
+  const receiving_mode_watch = form.watch('receiving_mode')
+  const senderTypeWatch = form.watch('sender_type')
+
+  useEffect(() => {
+    if (senderTypeWatch === 'Citizen') {
+      form.setValue('send_to', '')
+      form.setValue('sender_designation', '')
+      form.clearErrors(['send_to', 'sender_designation'])
+    }
+  }, [senderTypeWatch, form])
+
   const [forwardForm, setForwardForm] = useState({
     to_department: '',
     remarks: ''
@@ -114,7 +163,7 @@ export default function Letters() {
       const res = await api.get('/api/entries', { params })
       const items = res.data.items || []
       setEntries(items)
-      
+
       if (!selectedEntry && items.length > 0) {
         setSelectedEntry(items[0])
         // Do not auto-open details on load to maintain full-width form
@@ -125,7 +174,7 @@ export default function Letters() {
           if (items.length === 0) setShowEntryDetails(false)
         }
       }
-      
+
       setPagination({
         page: res.data.page,
         per_page: res.data.per_page,
@@ -150,22 +199,28 @@ export default function Letters() {
     }
   }
 
-  const handleCreateEntry = async (e) => {
-    e.preventDefault()
+  const handleCreateEntry = async (data) => {
     setCreating(true)
     try {
-      const selectedDate = createForm.received_date;
+      const selectedDate = data.received_date;
       const now = new Date();
       const [year, month, day] = selectedDate.split('-');
       const finalDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
 
+      let finalRefDate = null;
+      if (data.reference_date) {
+        const [ry, rm, rd] = data.reference_date.split('-');
+        finalRefDate = new Date(ry, rm - 1, rd, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
+      }
+
       const payload = {
-        ...createForm,
+        ...data,
         received_date: finalDate.toISOString(),
+        reference_date: finalRefDate || undefined
       }
       const res = await api.post('/api/entries', payload)
       toast.success('Entry created successfully!')
-      
+
       const createdEntry = res.data?.entry || res.data
       if (createdEntry?.id) {
         setSelectedEntry(createdEntry)
@@ -174,21 +229,8 @@ export default function Letters() {
           detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }, 400)
       }
-      
-      setCreateForm({
-        subject: '',
-        sender_name: '',
-        sender_designation: '',
-        received_date: '',
-        priority: 'Normal',
-        description: '',
-        receiving_mode: 'Physical',
-        sender_email: '',
-        fax_number: '',
-        unit_district: '',
-        send_to: '',
-      })
-      
+
+      form.reset()
       fetchEntries()
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create entry')
@@ -200,7 +242,7 @@ export default function Letters() {
   const handleForward = async (e) => {
     e.preventDefault()
     if (!selectedEntry) return
-    
+
     setForwarding(true)
     try {
       const res = await api.post('/api/forward', {
@@ -208,14 +250,14 @@ export default function Letters() {
         to_department: forwardForm.to_department,
         remarks: forwardForm.remarks || undefined
       })
-      
+
       toast.success(`Patrak forwarded to ${forwardForm.to_department}`)
       setShowForwardModal(false)
       setForwardForm({ to_department: '', remarks: '' })
-      
+
       const updatedEntry = { ...selectedEntry, current_department: forwardForm.to_department }
       setSelectedEntry(updatedEntry)
-      
+
       fetchMovements(selectedEntry.id)
       fetchEntries()
     } catch (error) {
@@ -258,14 +300,13 @@ export default function Letters() {
 
         {/* Main Content Area */}
         <motion.div variants={itemVariants} className="space-y-6">
-          
+
           {/* Form + Details Row */}
-          <div className={`grid gap-6 items-start transition-all duration-500 ease-in-out ${
-            showEntryDetails 
-              ? 'lg:grid-cols-[2fr_1fr]' 
+          <div className={`grid gap-6 items-start transition-all duration-500 ease-in-out ${showEntryDetails
+              ? 'lg:grid-cols-[2fr_1fr]'
               : 'grid-cols-1'
-          }`}>
-            
+            }`}>
+
             {/* New Tapal Entry Form */}
             <motion.div
               layout
@@ -281,219 +322,187 @@ export default function Letters() {
                   <p className="text-slate-300 text-xs">Fill in the details below to create a new entry</p>
                 </div>
               </div>
-              
-              <form onSubmit={handleCreateEntry} className="p-5 sm:p-6 space-y-5">
-                {/* Receiving Mode Selector */}
-                <div className="space-y-3">
-                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                    Receiving Mode <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
+
+              <form onSubmit={form.handleSubmit(handleCreateEntry)} className="p-5 sm:p-6 space-y-8 bg-slate-50/50">
+                
+                {/* 1. Receiving Mode Section */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                      { id: 'Physical', label: 'Physical', icon: QrCode, desc: 'Paper' },
-                      { id: 'Mails', label: 'Email', icon: Mail, desc: 'Digital' },
+                      { id: 'By Hand', label: 'By Hand', icon: QrCode, desc: 'Physical Submission' },
+                      { id: 'Mails', label: 'Email', icon: Mail, desc: 'Digital Mail' },
+                      { id: 'Post', label: 'Post', icon: Mail, desc: 'Postal Service' },
                       { id: 'Fax', label: 'Fax', icon: Printer, desc: 'Fax Line' }
                     ].map((mode) => {
                       const Icon = mode.icon;
-                      const isSelected = createForm.receiving_mode === mode.id;
+                      const isSelected = receiving_mode_watch === mode.id;
                       return (
                         <button
                           type="button"
                           key={mode.id}
-                          onClick={() => setCreateForm({ ...createForm, receiving_mode: mode.id })}
-                          className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${
-                            isSelected
-                              ? 'border-red-500 bg-red-50 text-red-600'
-                              : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100'
-                          }`}
+                          onClick={() => form.setValue('receiving_mode', mode.id, { shouldValidate: true })}
+                          className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${isSelected
+                              ? 'border-indigo-500 bg-indigo-50/80 text-indigo-700 shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                            }`}
                         >
-                          <Icon className="h-6 w-6" />
+                          <Icon className="h-5 w-5" />
                           <div className="text-center">
                             <span className="text-sm font-semibold block">{mode.label}</span>
-                            <span className="text-xs text-slate-400">{mode.desc}</span>
+                            <span className="text-xs opacity-70">{mode.desc}</span>
                           </div>
                         </button>
                       )
                     })}
                   </div>
+                  
+                  {/* Dynamic Email/Fax Fields */}
+                  <AnimatePresence>
+                    {receiving_mode_watch === 'Mails' && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="pt-2">
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Email <span className="text-red-500">*</span></label>
+                          <input type="email" {...form.register('sender_email')} placeholder="sender@email.com" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                          {form.formState.errors.sender_email && <p className="text-red-500 text-xs mt-1">{form.formState.errors.sender_email.message}</p>}
+                        </div>
+                      </motion.div>
+                    )}
+                    {receiving_mode_watch === 'Fax' && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="pt-2">
+                          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fax Number <span className="text-red-500">*</span></label>
+                          <input {...form.register('fax_number')} placeholder="+91 XXXX XXXX" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                          {form.formState.errors.fax_number && <p className="text-red-500 text-xs mt-1">{form.formState.errors.fax_number.message}</p>}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Dynamic Mode Inputs */}
-                <AnimatePresence>
-                  {createForm.receiving_mode === 'Mails' && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-2 overflow-hidden"
-                    >
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Email <span className="text-red-500">*</span></label>
-                      <input
-                        required
-                        type="email"
-                        value={createForm.sender_email}
-                        onChange={(e) => setCreateForm({ ...createForm, sender_email: e.target.value })}
-                        placeholder="sender@government.gov.in"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                      />
-                    </motion.div>
-                  )}
-
-                  {createForm.receiving_mode === 'Fax' && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-2 overflow-hidden"
-                    >
-                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fax Number <span className="text-red-500">*</span></label>
-                      <input
-                        required
-                        value={createForm.fax_number}
-                        onChange={(e) => setCreateForm({ ...createForm, fax_number: e.target.value })}
-                        placeholder="+91 (79) 2325-XXXX"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Unit/District and Send To */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
-                      <MapPin size={14} />
-                      Unit / District <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      value={createForm.unit_district}
-                      onChange={(e) => setCreateForm({ ...createForm, unit_district: e.target.value })}
-                      placeholder="Enter unit or district"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                    />
+                <div className="grid lg:grid-cols-2 gap-6 items-start">
+                  {/* 2. Sender Details Section */}
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
+                  <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                    <h3 className="font-semibold text-slate-800">Sender Details</h3>
+                    <p className="text-xs text-slate-500">Information about the sender</p>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
-                      <Send size={14} />
-                      Initial Department <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      required
-                      value={createForm.send_to}
-                      onChange={(e) => setCreateForm({ ...createForm, send_to: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
-                    >
-                      <option value="">Select department</option>
-                      {DEPARTMENTS.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Subject */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subject <span className="text-red-500">*</span></label>
-                  <input
-                    required
-                    value={createForm.subject}
-                    onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })}
-                    placeholder="Brief subject of the patrak..."
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                {/* Sender Name and Designation */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Name <span className="text-red-500">*</span></label>
-                    <input
-                      required
-                      value={createForm.sender_name}
-                      onChange={(e) => setCreateForm({ ...createForm, sender_name: e.target.value })}
-                      placeholder="Full name"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Designation</label>
-                    <input
-                      value={createForm.sender_designation}
-                      onChange={(e) => setCreateForm({ ...createForm, sender_designation: e.target.value })}
-                      placeholder="e.g. DySP, Inspector"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all placeholder:text-slate-400"
-                    />
+                  <div className="p-5 space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Type <span className="text-red-500">*</span></label>
+                        <select {...form.register('sender_type')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                          <option value="Citizen">Citizen</option>
+                          <option value="Government Department">Government Department</option>
+                          <option value="Private Department">Private Department</option>
+                          <option value="Employee">Employee</option>
+                        </select>
+                        {form.formState.errors.sender_type && <p className="text-red-500 text-xs mt-1">{form.formState.errors.sender_type.message}</p>}
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Name</label>
+                        <input {...form.register('sender_name')} placeholder="Enter sender name" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Address</label>
+                        <textarea {...form.register('sender_address')} placeholder="Enter complete address" rows={2} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400 resize-none" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                          <MapPin size={14} /> Unit / District <span className="text-red-500">*</span>
+                        </label>
+                        <input {...form.register('unit_district')} placeholder="Enter unit or district" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                        {form.formState.errors.unit_district && <p className="text-red-500 text-xs mt-1">{form.formState.errors.unit_district.message}</p>}
+                      </div>
+                      <AnimatePresence mode="popLayout">
+                        {senderTypeWatch !== 'Citizen' && (
+                          <>
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                              <div className="pt-1">
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                                  <Send size={14} /> Sender Organization / Unit / Department <span className="text-red-500">*</span>
+                                </label>
+                                <select {...form.register('send_to')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                                  <option value="">Select organization or department</option>
+                                  {DEPARTMENTS.map(dept => (
+                                    <option key={dept} value={dept}>{dept}</option>
+                                  ))}
+                                </select>
+                                {form.formState.errors.send_to && <p className="text-red-500 text-xs mt-1">{form.formState.errors.send_to.message}</p>}
+                              </div>
+                            </motion.div>
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                              <div className="pt-1">
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Designation</label>
+                                <input {...form.register('sender_designation')} placeholder="e.g. Inspector, Officer, Manager" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
 
-                {/* Date and Priority */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Received Date <span className="text-red-500">*</span></label>
-                    <input
-                      required
-                      type="date"
-                      value={createForm.received_date}
-                      onChange={(e) => setCreateForm({ ...createForm, received_date: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all"
-                    />
+                  {/* 3. Letter Details Section */}
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
+                  <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                    <h3 className="font-semibold text-slate-800">Letter Details</h3>
+                    <p className="text-xs text-slate-500">Information related to patrak/document</p>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority</label>
-                    <select
-                      value={createForm.priority}
-                      onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all cursor-pointer"
-                    >
-                      <option value="Normal">Normal</option>
-                      <option value="Urgent">Urgent</option>
-                      <option value="Confidential">Confidential</option>
-                    </select>
-                  </div>
-                </div>
+                  <div className="p-5 space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="md:col-span-2">
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subject <span className="text-red-500">*</span></label>
+                        <input {...form.register('subject')} placeholder="Brief subject of the patrak..." className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                        {form.formState.errors.subject && <p className="text-red-500 text-xs mt-1">{form.formState.errors.subject.message}</p>}
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14}/> Received Date <span className="text-red-500">*</span></label>
+                        <input type="date" {...form.register('received_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
+                        {form.formState.errors.received_date && <p className="text-red-500 text-xs mt-1">{form.formState.errors.received_date.message}</p>}
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority <span className="text-red-500">*</span></label>
+                        <select {...form.register('priority')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
+                          <option value="Normal">Normal</option>
+                          <option value="Urgent">Urgent</option>
+                          <option value="Confidential">Confidential</option>
+                        </select>
+                        {form.formState.errors.priority && <p className="text-red-500 text-xs mt-1">{form.formState.errors.priority.message}</p>}
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sender Letter / Reference No.</label>
+                        <input {...form.register('sender_reference_number')} placeholder="Enter sender reference number" className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5"><CalendarIcon size={14}/> Reference Date</label>
+                        <input type="date" {...form.register('reference_date')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all" />
+                      </div>
+                    </div>
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description (Optional)</label>
-                  <textarea
-                    value={createForm.description}
-                    onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                    placeholder="Additional notes or context..."
-                    rows={3}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all resize-none placeholder:text-slate-400"
-                  />
+                    <div className="pt-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description (Optional)</label>
+                      <textarea {...form.register('description')} placeholder="Additional notes or context..." rows={3} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all resize-none placeholder:text-slate-400" />
+                    </div>
+                  </div>
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    onClick={() => {
-                      setCreateForm({
-                        subject: '',
-                        sender_name: '',
-                        sender_designation: '',
-                        received_date: '',
-                        priority: 'Normal',
-                        description: '',
-                        receiving_mode: 'Physical',
-                        sender_email: '',
-                        fax_number: '',
-                        unit_district: '',
-                        send_to: '',
-                      })
-                    }} 
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => form.reset()}
                     className="sm:w-auto !text-slate-600 !border !border-slate-300 !bg-white hover:!bg-slate-50"
                   >
                     <X size={16} className="mr-2" />
                     Reset
                   </Button>
-                  <Button 
-                    type="submit" 
-                    loading={creating} 
-                    className="flex-1 sm:flex-none sm:min-w-[200px] !bg-red-600 hover:!bg-red-700 shadow-sm"
+                  <Button
+                    type="submit"
+                    loading={creating}
+                    className="sm:min-w-[200px] !bg-indigo-600 hover:!bg-indigo-700 shadow-sm"
                   >
                     <CheckCircle2 size={16} className="mr-2" />
                     Create Entry
@@ -604,15 +613,15 @@ export default function Letters() {
                           Generate QR Code
                         </Button>
                       )}
-                      <Button 
-                        onClick={() => setShowForwardModal(true)} 
+                      <Button
+                        onClick={() => setShowForwardModal(true)}
                         className="w-full"
                       >
                         <ArrowLeftRight size={16} className="mr-2" />
                         Forward to Department
                       </Button>
-                      <Button 
-                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)} 
+                      <Button
+                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)}
                         variant="outline"
                         className="w-full"
                       >
@@ -660,7 +669,7 @@ export default function Letters() {
                       <X size={20} className="text-white/70 hover:text-white" />
                     </button>
                   </div>
-                  
+
                   <form onSubmit={handleForward} className="p-5 space-y-4">
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
@@ -702,16 +711,16 @@ export default function Letters() {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
+                      <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setShowForwardModal(false)}
                         className="flex-1 !text-slate-600 !border !border-slate-300 !bg-white"
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         loading={forwarding}
                         className="flex-1 !bg-red-600 hover:!bg-red-700"
                       >
@@ -737,20 +746,8 @@ export default function Letters() {
                   <p className="text-xs text-slate-500">Showing {entries.length} of {pagination.total} records</p>
                 </div>
               </div>
-              
-              {/* Search */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search entries..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all w-full sm:w-64"
-                />
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
+
+
             </div>
 
             {/* List */}
@@ -773,9 +770,8 @@ export default function Letters() {
                         setSelectedEntry(entry)
                         setShowEntryDetails(true)
                       }}
-                      className={`w-full text-left px-5 py-4 transition-all hover:bg-slate-50 ${
-                        isSelected && showEntryDetails ? 'bg-red-50 border-l-4 border-l-red-500' : ''
-                      }`}
+                      className={`w-full text-left px-5 py-4 transition-all hover:bg-slate-50 ${isSelected && showEntryDetails ? 'bg-red-50 border-l-4 border-l-red-500' : ''
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
@@ -783,11 +779,10 @@ export default function Letters() {
                             <span className="text-xs font-mono font-semibold text-red-600">
                               {entry.unique_id || `#${entry.id}`}
                             </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
-                              entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
-                              'bg-emerald-100 text-emerald-700'
-                            }`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
+                                entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
+                                  'bg-emerald-100 text-emerald-700'
+                              }`}>
                               {entry.priority}
                             </span>
                           </div>
@@ -804,12 +799,11 @@ export default function Letters() {
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className={`text-xs px-2 py-1 rounded-lg font-medium ${
-                            entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
-                            entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
-                            'bg-amber-100 text-amber-700'
-                          }`}>
-                            {entry.receiving_mode || 'Physical'}
+                          <span className={`text-xs px-2 py-1 rounded-lg font-medium ${entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
+                              entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
+                                'bg-amber-100 text-amber-700'
+                            }`}>
+                            {entry.receiving_mode || 'By Hand'}
                           </span>
                           <p className="text-xs text-slate-400 mt-2">
                             {formatShortDate(entry.received_date)}

@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 DEPARTMENTS_MAP = {
     "dg office": "DG Office",
     "cid crime": "CID Crime",
-    "law & order": "Law & Order",
+    "law & order":
+     "Law & Order",
     "training": "Training",
     "ts & scrb": "TS & SCRB",
     "sp office": "SP Office",

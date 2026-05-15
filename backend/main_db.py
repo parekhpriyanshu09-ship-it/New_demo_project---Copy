@@ -38,7 +38,7 @@ def init_db():
             # Add missing columns to patrak_entries
             migrations_patrak = []
             if "receiving_mode" not in patrak_columns:
-                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN receiving_mode VARCHAR(20) DEFAULT 'Physical'")
+                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN receiving_mode VARCHAR(20) DEFAULT 'By Hand'")
                 migrations_patrak.append("receiving_mode")
             if "sender_email" not in patrak_columns:
                 cursor.execute("ALTER TABLE patrak_entries ADD COLUMN sender_email VARCHAR(100) NULL")
@@ -52,6 +52,18 @@ def init_db():
             if "send_to" not in patrak_columns:
                 cursor.execute("ALTER TABLE patrak_entries ADD COLUMN send_to VARCHAR(100) NULL")
                 migrations_patrak.append("send_to")
+            if "sender_type" not in patrak_columns:
+                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN sender_type VARCHAR(50) DEFAULT 'Citizen'")
+                migrations_patrak.append("sender_type")
+            if "sender_address" not in patrak_columns:
+                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN sender_address TEXT NULL")
+                migrations_patrak.append("sender_address")
+            if "sender_reference_number" not in patrak_columns:
+                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN sender_reference_number VARCHAR(100) NULL")
+                migrations_patrak.append("sender_reference_number")
+            if "reference_date" not in patrak_columns:
+                cursor.execute("ALTER TABLE patrak_entries ADD COLUMN reference_date DATETIME NULL")
+                migrations_patrak.append("reference_date")
             
             for col in migrations_patrak:
                 print(f"Migration: Added column {col} to patrak_entries table")

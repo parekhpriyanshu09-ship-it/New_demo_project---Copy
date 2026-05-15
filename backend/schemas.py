@@ -65,24 +65,30 @@ class RefreshRequest(BaseModel):
 
 class PatrakEntryBase(BaseModel):
     subject: str = Field(..., min_length=3, max_length=255)
-    sender_name: str = Field(..., min_length=2, max_length=100)
+    sender_type: str = Field("Citizen", max_length=50)
+    sender_name: Optional[str] = Field(None, max_length=100)
     sender_designation: Optional[str] = Field(None, max_length=100)
+    sender_address: Optional[str] = None
     received_date: datetime
     priority: Priority = Priority.NORMAL
     description: Optional[str] = None
-    receiving_mode: Optional[str] = "Physical"
+    receiving_mode: Optional[str] = "By Hand"
     sender_email: Optional[str] = None
     fax_number: Optional[str] = None
     unit_district: Optional[str] = None
     send_to: Optional[str] = None
+    sender_reference_number: Optional[str] = None
+    reference_date: Optional[datetime] = None
 
 class PatrakEntryCreate(PatrakEntryBase):
     pass
 
 class PatrakEntryUpdate(BaseModel):
     subject: Optional[str] = Field(None, min_length=3, max_length=255)
-    sender_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    sender_type: Optional[str] = Field(None, max_length=50)
+    sender_name: Optional[str] = Field(None, max_length=100)
     sender_designation: Optional[str] = Field(None, max_length=100)
+    sender_address: Optional[str] = None
     received_date: Optional[datetime] = None
     priority: Optional[Priority] = None
     description: Optional[str] = None
@@ -92,6 +98,8 @@ class PatrakEntryUpdate(BaseModel):
     fax_number: Optional[str] = None
     unit_district: Optional[str] = None
     send_to: Optional[str] = None
+    sender_reference_number: Optional[str] = None
+    reference_date: Optional[datetime] = None
 
 class PatrakEntryResponse(PatrakEntryBase):
     id: int
