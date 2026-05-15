@@ -5,7 +5,8 @@ from models import PatrakEntry, PatrakMovement, MovementStatus, EntryStatus, Use
 from schemas import PublicTrackingResponse, TrackingNode, PatrakMovementResponse, PatrakEntryResponse
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
 
 router = APIRouter(prefix="/api/track", tags=["public tracking"])
 
@@ -25,107 +26,134 @@ class SearchResult(BaseModel):
 
 @router.get("/search", response_model=List[SearchResult])
 async def search_patraks(
-    global_query: Optional[str] = None,
-    subject: Optional[str] = None,
-    sender_name: Optional[str] = None,
-    unit: Optional[str] = None,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
+    date: Optional[str] = None,
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None,
+    senderLocation: Optional[str] = None,
+    receiverDepartment: Optional[str] = None,
+    status: Optional[str] = None,
     priority: Optional[str] = None,
-    patrak_id: Optional[str] = None,
-    department: Optional[str] = None,
-    designation: Optional[str] = None,
-    receiving_mode: Optional[str] = None,
+    patrakId: Optional[str] = None,
+    keyword: Optional[str] = None,
+    senderName: Optional[str] = None,
+    smart_query: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     query = db.query(PatrakEntry)
-    parsed_date = None
     
-    if global_query:
-        g = f"%{global_query.lower()}%"
-        
-        # Try to parse the global query as a date
-        for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%d %b %Y', '%d %B %Y'):
-            try:
-                parsed_date = datetime.strptime(global_query.strip(), fmt).date()
-                break
-            except ValueError:
-                pass
-                
-        conditions = [
-            PatrakEntry.unique_id.ilike(g),
-            PatrakEntry.subject.ilike(g),
-            PatrakEntry.sender_name.ilike(g),
-            PatrakEntry.sender_designation.ilike(g),
-            PatrakEntry.current_department.ilike(g),
-            PatrakEntry.description.ilike(g),
-            PatrakEntry.receiving_mode.ilike(g),
-            PatrakEntry.sender_email.ilike(g),
-            PatrakEntry.fax_number.ilike(g),
-            PatrakEntry.unit_district.ilike(g),
-            PatrakEntry.send_to.ilike(g),
-            cast(PatrakEntry.priority, String).ilike(g),
-            cast(PatrakEntry.status, String).ilike(g),
-            cast(PatrakEntry.received_date, String).ilike(g)
-        ]
-        
-        if parsed_date:
-            conditions.append(func.date(PatrakEntry.received_date) == parsed_date)
-            conditions.append(PatrakEntry.movements.any(func.date(PatrakMovement.timestamp) == parsed_date))
-            
-        query = query.filter(or_(*conditions))
-    
-    if subject:
-        query = query.filter(PatrakEntry.subject.ilike(f"%{subject}%"))
-    if sender_name:
-        query = query.filter(PatrakEntry.sender_name.ilike(f"%{sender_name}%"))
-    if unit:
-        query = query.filter(PatrakEntry.unit_district.ilike(f"%{unit}%"))
-    if date_from:
+    # 1. Apply Explicit Filters (From Advanced Popup)
+    if keyword:
+        query = query.filter(or_(
+            PatrakEntry.subject.ilike(f"%{keyword}%"),
+            PatrakEntry.description.ilike(f"%{keyword}%"),
+            PatrakEntry.unique_id.ilike(f"%{keyword}%")
+        ))
+    if date:
         try:
-            query = query.filter(PatrakEntry.received_date >= datetime.strptime(date_from, "%Y-%m-%d"))
+            d = datetime.strptime(date, "%Y-%m-%d").date()
+            query = query.filter(func.date(PatrakEntry.received_date) == d)
         except ValueError: pass
-    if date_to:
+    if fromDate:
         try:
-            dt_to = datetime.strptime(date_to, "%Y-%m-%d")
-            query = query.filter(PatrakEntry.received_date <= dt_to.replace(hour=23, minute=59, second=59))
+            d = datetime.strptime(fromDate, "%Y-%m-%d").date()
+            query = query.filter(func.date(PatrakEntry.received_date) >= d)
         except ValueError: pass
+    if toDate:
+        try:
+            d = datetime.strptime(toDate, "%Y-%m-%d").date()
+            query = query.filter(func.date(PatrakEntry.received_date) <= d)
+        except ValueError: pass
+    if senderLocation:
+        query = query.filter(PatrakEntry.unit_district.ilike(f"%{senderLocation}%"))
+    if receiverDepartment:
+        query = query.filter(PatrakEntry.current_department.ilike(f"%{receiverDepartment}%"))
+    if status:
+        query = query.filter(cast(PatrakEntry.status, String).ilike(f"%{status}%"))
     if priority:
-        query = query.filter(PatrakEntry.priority == priority)
-    if patrak_id:
-        query = query.filter(PatrakEntry.unique_id.ilike(f"%{patrak_id}%"))
-    if department:
-        query = query.filter(PatrakEntry.current_department.ilike(f"%{department}%"))
-    if designation:
-        query = query.filter(PatrakEntry.sender_designation.ilike(f"%{designation}%"))
-    if receiving_mode:
-        query = query.filter(PatrakEntry.receiving_mode.ilike(f"%{receiving_mode}%"))
-    
-    entries = query.limit(20).all()
+        query = query.filter(cast(PatrakEntry.priority, String).ilike(f"%{priority}%"))
+    if patrakId:
+        query = query.filter(PatrakEntry.unique_id.ilike(f"%{patrakId}%"))
+    if senderName:
+        query = query.filter(PatrakEntry.sender_name.ilike(f"%{senderName}%"))
+
+    # 2. Apply Smart AI Query
+    if smart_query:
+        sq = smart_query.lower()
+        extracted_priority = None
+        if 'urgent' in sq or 'high' in sq: extracted_priority = 'HIGH'
+        elif 'medium' in sq: extracted_priority = 'MEDIUM'
+        
+        extracted_status = None
+        if 'pending' in sq: extracted_status = 'Pending'
+        elif 'received' in sq: extracted_status = 'Received'
+        elif 'completed' in sq or 'closed' in sq: extracted_status = 'Closed'
+        elif 'forwarded' in sq: extracted_status = 'Forwarded'
+        
+        extracted_date = None
+        today = datetime.now().date()
+        if 'today' in sq: extracted_date = today
+        elif 'yesterday' in sq: extracted_date = today - timedelta(days=1)
+        else:
+            match = re.search(r'\b(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b', sq)
+            if match:
+                try:
+                    month_num = datetime.strptime(match.group(2), '%b').month
+                    extracted_date = datetime(today.year, month_num, int(match.group(1))).date()
+                except: pass
+
+        stop_words = {'from', 'on', 'by', 'tapal', 'patrak', 'between', 'to', 'urgent', 'high', 'pending', 'received', 'today', 'yesterday', 'the', 'a', 'in', 'of'}
+        words = [w for w in sq.split() if w not in stop_words and not re.match(r'^\d{1,2}$', w)]
+        
+        q1 = query
+        # Only apply extracted fields if not already explicitly provided
+        if extracted_priority and not priority: q1 = q1.filter(cast(PatrakEntry.priority, String).ilike(f"%{extracted_priority}%"))
+        if extracted_status and not status: q1 = q1.filter(cast(PatrakEntry.status, String).ilike(f"%{extracted_status}%"))
+        if extracted_date and not date and not fromDate and not toDate: q1 = q1.filter(func.date(PatrakEntry.received_date) == extracted_date)
+        
+        if words:
+            for w in words:
+                q1 = q1.filter(or_(
+                    PatrakEntry.subject.ilike(f"%{w}%"),
+                    PatrakEntry.sender_name.ilike(f"%{w}%"),
+                    PatrakEntry.unit_district.ilike(f"%{w}%"),
+                    PatrakEntry.current_department.ilike(f"%{w}%"),
+                    PatrakEntry.unique_id.ilike(f"%{w}%")
+                ))
+                
+        entries = q1.limit(50).all()
+        
+        # Fallback Search: broad match
+        if not entries and (words or extracted_status or extracted_priority or extracted_date):
+            q2 = query
+            conditions = []
+            for w in sq.split():
+                if w not in ('from', 'on', 'by', 'tapal', 'patrak', 'the'):
+                    conditions.append(or_(
+                        PatrakEntry.subject.ilike(f"%{w}%"),
+                        PatrakEntry.sender_name.ilike(f"%{w}%"),
+                        PatrakEntry.unit_district.ilike(f"%{w}%"),
+                        PatrakEntry.current_department.ilike(f"%{w}%"),
+                        PatrakEntry.unique_id.ilike(f"%{w}%"),
+                        cast(PatrakEntry.status, String).ilike(f"%{w}%"),
+                        cast(PatrakEntry.priority, String).ilike(f"%{w}%")
+                    ))
+            if conditions:
+                q2 = q2.filter(or_(*conditions))
+            entries = q2.limit(50).all()
+    else:
+        entries = query.limit(50).all()
     
     results = []
     for e in entries:
-        label = "Received Date"
-        d_date = e.received_date
-        
-        if parsed_date:
-            if e.received_date.date() != parsed_date:
-                # check if movement matched
-                for m in e.movements:
-                    if m.timestamp.date() == parsed_date:
-                        label = "Forwarded Date"
-                        d_date = m.timestamp
-                        break
-
         results.append(SearchResult(
             unique_id=e.unique_id,
             subject=e.subject,
             current_department=e.current_department,
-            received_date=d_date,
+            received_date=e.received_date,
             sender_name=e.sender_name,
             priority=e.priority.value if e.priority else "Normal",
             status=e.status.value if e.status else "In Transit",
-            date_label=label
+            date_label="Received Date"
         ))
     
     return results

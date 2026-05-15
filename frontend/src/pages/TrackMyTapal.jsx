@@ -8,7 +8,7 @@ import { searchPatraks } from '../api/trackApi'
 import {
   AlertCircle, Camera, LocateFixed, Loader2, QrCode, Upload,
   MapPin, FileText, User, Clock, Shield, Zap, Headphones, Search,
-  Calendar as CalendarIcon, Info
+  Calendar as CalendarIcon, Info, Sparkles, SlidersHorizontal
 } from 'lucide-react'
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -62,14 +62,30 @@ export default function TrackMyTapal() {
   const [activeTab, setActiveTab] = useState('id')   // 'id' | 'qr'
   const [patrakId, setPatrakId] = useState(searchParams.get('id') || '')
 
-  // Advanced Search State
-  const [searchForm, setSearchForm] = useState({
-    subject: '', sender_name: '', unit: '', date_from: '', priority: '',
-    patrak_id: '', department: '', designation: '', date_to: '', receiving_mode: ''
+  const [smartQuery, setSmartQuery] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const advancedRef = useRef(null)
+
+  const [advancedForm, setAdvancedForm] = useState({
+    keyword: '', senderName: '', receiverDepartment: '', senderLocation: '', status: '', priority: '', patrakId: '', date: '', fromDate: '', toDate: ''
   })
 
-  // Global Search State
-  const [globalQuery, setGlobalQuery] = useState('')
+  const [placeholderIdx, setPlaceholderIdx] = useState(0)
+
+  const placeholders = [
+    "Search tapals from Surat on 13 May...",
+    "Urgent tapal received today...",
+    "Patrak from crime branch...",
+    "Pending tapal from Ahmedabad...",
+    "Confidential patrak by Dhruv..."
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIdx((prev) => (prev + 1) % placeholders.length)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
 
   const [searchResults, setSearchResults] = useState(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -83,6 +99,16 @@ export default function TrackMyTapal() {
   const scannerRef = useRef(null)
   const scannerStartedRef = useRef(false)
   const scannerIdRef = useRef(`track-qr-reader-${Date.now()}`)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (advancedRef.current && !advancedRef.current.contains(event.target)) {
+        setShowAdvanced(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   /* auto-track from URL param */
   useEffect(() => {
@@ -126,31 +152,20 @@ export default function TrackMyTapal() {
   }, [cameraStarted])
 
 
-  const handleAdvancedSearch = async (e) => {
-    e.preventDefault()
+  const handleSmartSearch = async (e, queryOverride = null) => {
+    if (e) e.preventDefault()
+    const queryToUse = queryOverride !== null ? queryOverride : smartQuery
+    const hasAdvanced = Object.values(advancedForm).some(v => v)
+    if (!queryToUse.trim() && !hasAdvanced) return
     setIsSearching(true)
     setSearchResults(null)
     setTrackingData(null)
     setError('')
+    setShowAdvanced(false)
     try {
-      const results = await searchPatraks(searchForm)
-      setSearchResults(results || [])
-    } catch {
-      toast.error('Search failed. Please try again.')
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  const handleGlobalSearch = async (e) => {
-    e.preventDefault()
-    if (!globalQuery.trim()) return
-    setIsSearching(true)
-    setSearchResults(null)
-    setTrackingData(null)
-    setError('')
-    try {
-      const results = await searchPatraks({ global_query: globalQuery.trim() })
+      const payload = { ...advancedForm }
+      if (queryToUse.trim()) payload.smart_query = queryToUse.trim()
+      const results = await searchPatraks(payload)
       setSearchResults(results || [])
     } catch {
       toast.error('Search failed. Please try again.')
@@ -160,11 +175,10 @@ export default function TrackMyTapal() {
   }
 
   const resetSearch = () => {
-    setSearchForm({
-      subject: '', sender_name: '', unit: '', date_from: '', priority: '',
-      patrak_id: '', department: '', designation: '', date_to: '', receiving_mode: ''
+    setSmartQuery('')
+    setAdvancedForm({
+      keyword: '', senderName: '', receiverDepartment: '', senderLocation: '', status: '', priority: '', patrakId: '', date: '', fromDate: '', toDate: ''
     })
-    setGlobalQuery('')
     setSearchResults(null)
     setTrackingData(null)
     setError('')
@@ -261,19 +275,19 @@ export default function TrackMyTapal() {
                   Track via QR Code
                 </button>
                 <button
-                  onClick={() => { setActiveTab('global'); stopScanner() }}
-                  className={`flex items-center gap-2.5 px-6 py-3.5 text-[13.5px] font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'global'
+                  onClick={() => { setActiveTab('search'); stopScanner() }}
+                  className={`flex items-center gap-2.5 px-6 py-3.5 text-[13.5px] font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'search'
                     ? 'bg-[#00C896] text-white shadow-sm'
                     : 'bg-white text-slate-600 border border-b-0 border-slate-100 hover:bg-slate-50'
                     }`}
                 >
-                  <Search size={18} className={activeTab === 'global' ? 'text-white' : 'text-slate-400'} />
-                  Global Search
+                  <Sparkles size={18} className={activeTab === 'search' ? 'text-white' : 'text-slate-400'} />
+                  Smart Search
                 </button>
               </div>
 
               {/* Card Body */}
-              <div className={`bg-white rounded-b-2xl rounded-tr-2xl border border-slate-100 p-6 sm:p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex-1 flex flex-col ${activeTab === 'search' || activeTab === 'global' ? 'justify-start h-[550px] overflow-y-auto pr-2 pb-4 custom-scrollbar' : 'justify-center min-h-[360px]'}`}>
+              <div className={`bg-white rounded-b-2xl rounded-tr-2xl border border-slate-100 p-6 sm:p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex-1 flex flex-col ${activeTab === 'search' ? 'justify-start h-[550px] overflow-y-auto pr-2 pb-4 custom-scrollbar' : 'justify-center min-h-[360px]'}`}>
                 {activeTab === 'id' ? (
                   <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <h2 className="text-xl font-bold text-slate-800 mb-1.5">Enter Patrak ID</h2>
@@ -360,204 +374,174 @@ export default function TrackMyTapal() {
                     </div>
                   </div>
 
-                ) : activeTab === 'global' ? (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
-                  <h2 className="text-xl font-bold text-slate-800 mb-1.5">Global Search</h2>
-                  <p className="text-[13.5px] text-slate-500 mb-6">Quickly find tapal using a single keyword search</p>
-
-                  <form onSubmit={handleGlobalSearch} className="space-y-4">
-                    <div className="relative">
-                      <input
-                        value={globalQuery}
-                        onChange={(e) => setGlobalQuery(e.target.value)}
-                        placeholder="Search by ID, subject, sender, department..."
-                        className="w-full border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-[14px] text-slate-800 font-semibold outline-none bg-white placeholder:text-slate-400 focus:border-[#00C896] focus:ring-4 focus:ring-[#00C896]/10 transition-all shadow-sm"
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        <Search size={18} />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSearching}
-                      className="w-full flex items-center justify-center gap-2 bg-[#00C896] hover:bg-[#00b386] text-white font-bold rounded-xl py-3.5 text-[14px] transition-colors disabled:opacity-60 shadow-[0_2px_8px_-2px_rgba(0,200,150,0.4)]"
-                    >
-                      {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-                      Search Tapal
-                    </button>
-                  </form>
-
-                  {/* Results below the filters */}
-                  {searchResults && (
-                    <div className="mt-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                        <h3 className="text-sm font-bold text-slate-800">Search Results</h3>
-                        <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">{searchResults.length} found</span>
-                      </div>
-                      {searchResults.length === 0 ? (
-                        <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
-                          <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                          <p className="text-[13px] font-bold text-slate-600">No records found</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3 pb-4">
-                          {searchResults.map(result => (
-                            <div key={result.unique_id} title={`Date shown is: ${result.date_label || 'Received Date'}`} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-[#00C896]/40 hover:shadow-md transition-all group relative overflow-hidden cursor-help">
-                              <div className="absolute top-0 left-0 w-1 h-full bg-[#00C896] opacity-0 group-hover:opacity-100 transition-opacity" />
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-[13.5px] font-bold text-[#0D3D56]">{result.unique_id}</span>
-                                  <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1"><CalendarIcon size={10} /> {formatDate(result.received_date)}</span>
-                                </div>
-                                <button onClick={() => { fetchTracking(result.unique_id); toast.success('Tracking loaded!') }} className="shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-[#00C896] hover:text-white hover:border-[#00C896] text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5">
-                                  <LocateFixed size={12} /> View Tracking
-                                </button>
-                              </div>
-                              <p className="text-[13px] font-semibold text-slate-800 line-clamp-1 mb-3" title={result.subject}>{result.subject}</p>
-                              <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100">
-                                <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.sender_name}>
-                                  <User size={10} className="text-slate-400" /> {result.sender_name}
-                                </span>
-                                <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.current_department}>
-                                  <MapPin size={10} className="text-slate-400" /> {result.current_department}
-                                </span>
-                                <div className="flex-1 flex justify-end gap-2">
-                                  <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${result.priority === 'HIGH' ? 'bg-red-50 text-red-600 border border-red-100' : result.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>{result.priority}</span>
-                                  <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${statusClass[result.status?.toLowerCase()] || 'bg-blue-50 text-blue-600 border-blue-100'}`}>{result.status}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
                 ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <h2 className="text-xl font-bold text-slate-800 mb-1.5">Advanced Search</h2>
-                  <p className="text-[13.5px] text-slate-500 mb-6">Find tapal records using multiple filters</p>
-
-                  <form onSubmit={handleAdvancedSearch} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Left Column */}
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Subject</label>
-                          <input value={searchForm.subject} onChange={e => setSearchForm({ ...searchForm, subject: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Keywords in subject..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Sender Name</label>
-                          <input value={searchForm.sender_name} onChange={e => setSearchForm({ ...searchForm, sender_name: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Name of sender..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Unit / District</label>
-                          <input value={searchForm.unit} onChange={e => setSearchForm({ ...searchForm, unit: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Unit location..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date From</label>
-                          <input type="date" value={searchForm.date_from} onChange={e => setSearchForm({ ...searchForm, date_from: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Priority</label>
-                          <select value={searchForm.priority} onChange={e => setSearchForm({ ...searchForm, priority: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10 bg-white">
-                            <option value="">All Priorities</option>
-                            <option value="NORMAL">Normal</option>
-                            <option value="MEDIUM">Medium</option>
-                            <option value="HIGH">High</option>
-                          </select>
-                        </div>
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 className="text-[22px] font-bold text-slate-800 flex items-center gap-2 mb-1.5">
+                          <Sparkles size={22} className="text-[#00C896]" />
+                          Smart Search
+                        </h2>
+                        <p className="text-[13.5px] text-slate-500">Use natural language to find tapals instantly</p>
                       </div>
-
-                      {/* Right Column */}
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Patrak ID</label>
-                          <input value={searchForm.patrak_id} onChange={e => setSearchForm({ ...searchForm, patrak_id: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Exact or partial ID..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Department</label>
-                          <input value={searchForm.department} onChange={e => setSearchForm({ ...searchForm, department: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Department name..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Designation</label>
-                          <input value={searchForm.designation} onChange={e => setSearchForm({ ...searchForm, designation: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" placeholder="Sender designation..." />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date To</label>
-                          <input type="date" value={searchForm.date_to} onChange={e => setSearchForm({ ...searchForm, date_to: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Receiving Mode</label>
-                          <select value={searchForm.receiving_mode} onChange={e => setSearchForm({ ...searchForm, receiving_mode: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-[#00C896] focus:ring-2 focus:ring-[#00C896]/10 bg-white">
-                            <option value="">All Modes</option>
-                            <option value="By Post">By Post</option>
-                            <option value="By Hand">By Hand</option>
-                            <option value="By Email">By Email</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-2 z-10 border-t border-slate-100 mt-4">
-                      <button type="button" onClick={resetSearch} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-[13px] hover:bg-slate-50 transition">
-                        Reset
-                      </button>
-                      <button type="submit" disabled={isSearching} className="flex-1 flex items-center justify-center gap-2 rounded-xl text-white font-bold text-[13px] transition shadow-[0_4px_12px_-2px_rgba(0,200,150,0.3)] hover:shadow-[0_6px_16px_-2px_rgba(0,200,150,0.4)] disabled:opacity-70 bg-gradient-to-r from-[#00C896] to-[#0D3D56] hover:-translate-y-0.5 duration-300">
-                        {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-                        Search Tapal
-                      </button>
-                    </div>
-                  </form>
-
-                  {/* Results below the filters */}
-                  {searchResults && (
-                    <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                        <h3 className="text-sm font-bold text-slate-800">Search Results</h3>
-                        <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">{searchResults.length} found</span>
-                      </div>
-                      {searchResults.length === 0 ? (
-                        <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
-                          <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                          <p className="text-[13px] font-bold text-slate-600">No records found matching filters</p>
-                          <p className="text-[12px] text-slate-400 mt-1">Try adjusting your search criteria</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3 pb-4">
-                          {searchResults.map(result => (
-                            <div key={result.unique_id} title={`Date shown is: ${result.date_label || 'Received Date'}`} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-[#00C896]/40 hover:shadow-md transition-all group relative overflow-hidden cursor-help">
-                              <div className="absolute top-0 left-0 w-1 h-full bg-[#00C896] opacity-0 group-hover:opacity-100 transition-opacity" />
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-[13.5px] font-bold text-[#0D3D56]">{result.unique_id}</span>
-                                  <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1"><CalendarIcon size={10} /> {formatDate(result.received_date)}</span>
-                                </div>
-                                <button onClick={() => { fetchTracking(result.unique_id); toast.success('Tracking loaded!') }} className="shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-[#00C896] hover:text-white hover:border-[#00C896] text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5">
-                                  <LocateFixed size={12} /> View Tracking
-                                </button>
-                              </div>
-                              <p className="text-[13px] font-semibold text-slate-800 line-clamp-1 mb-3" title={result.subject}>{result.subject}</p>
-                              <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100">
-                                <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.sender_name}>
-                                  <User size={10} className="text-slate-400" /> {result.sender_name}
-                                </span>
-                                <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.current_department}>
-                                  <MapPin size={10} className="text-slate-400" /> {result.current_department}
-                                </span>
-                                <div className="flex-1 flex justify-end gap-2">
-                                  <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${result.priority === 'HIGH' ? 'bg-red-50 text-red-600 border border-red-100' : result.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>{result.priority}</span>
-                                  <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${statusClass[result.status?.toLowerCase()] || 'bg-blue-50 text-blue-600 border-blue-100'}`}>{result.status}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                      {(smartQuery || Object.values(advancedForm).some(v => v)) && (
+                        <button type="button" onClick={resetSearch} className="text-[12px] font-bold text-[#00C896] bg-[#e6f9f4] px-3 py-1.5 rounded-lg hover:bg-[#00C896]/20 transition-colors">
+                          Clear Search
+                        </button>
                       )}
                     </div>
-                  )}
-                </div>
+
+                    <form onSubmit={handleSmartSearch} className="relative z-20 space-y-4">
+                      <div className="relative group">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-[#00C896] to-[#0D3D56] rounded-[14px] blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                        <div className="relative bg-white rounded-xl shadow-sm border border-slate-200/80 flex items-center h-14">
+                           <div className="w-14 flex items-center justify-center shrink-0">
+                             <Search className="text-slate-400" size={20} />
+                           </div>
+                           <input
+                             value={smartQuery}
+                             onChange={(e) => setSmartQuery(e.target.value)}
+                             className="flex-1 bg-transparent border-none outline-none text-slate-800 text-[15px] font-medium placeholder:text-slate-400 h-full"
+                             placeholder={placeholders[placeholderIdx]}
+                           />
+                           
+                           {/* Filter Button */}
+                           <button 
+                             type="button"
+                             onClick={() => setShowAdvanced(!showAdvanced)}
+                             className={`w-14 h-full flex items-center justify-center border-l border-slate-100 transition-colors ${showAdvanced ? 'bg-slate-50 text-[#00C896]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                             title="Show search options"
+                           >
+                             <SlidersHorizontal size={20} />
+                           </button>
+
+                           <div className="pr-1.5 pl-1 flex items-center gap-2 shrink-0">
+                             <button type="submit" disabled={isSearching || (!smartQuery.trim() && !Object.values(advancedForm).some(v=>v))} className="bg-[#0D3D56] text-white w-11 h-11 rounded-lg flex items-center justify-center shadow-md hover:bg-[#092a3b] transition-all disabled:opacity-50">
+                                {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                             </button>
+                           </div>
+                        </div>
+                      </div>
+
+                      {/* GMAIL STYLE POPUP */}
+                      {showAdvanced && (
+                        <div ref={advancedRef} className="absolute top-[60px] left-0 right-0 sm:right-auto sm:w-[500px] bg-white rounded-xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/80 p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                           <div className="grid grid-cols-[100px_1fr] gap-y-3.5 gap-x-4 items-center">
+                              
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Sender</label>
+                              <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Department</label>
+                              <input value={advancedForm.receiverDepartment} onChange={e=>setAdvancedForm({...advancedForm, receiverDepartment: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Subject / Words</label>
+                              <input value={advancedForm.keyword} onChange={e=>setAdvancedForm({...advancedForm, keyword: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Location</label>
+                              <input value={advancedForm.senderLocation} onChange={e=>setAdvancedForm({...advancedForm, senderLocation: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Patrak ID</label>
+                              <input value={advancedForm.patrakId} onChange={e=>setAdvancedForm({...advancedForm, patrakId: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Status</label>
+                              <select value={advancedForm.status} onChange={e=>setAdvancedForm({...advancedForm, status: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="Pending">Pending</option>
+                                <option value="Received">Received</option>
+                                <option value="Forwarded">Forwarded</option>
+                                <option value="Closed">Closed</option>
+                              </select>
+
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Priority</label>
+                              <select value={advancedForm.priority} onChange={e=>setAdvancedForm({...advancedForm, priority: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="NORMAL">Normal</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                              </select>
+                              
+                              <label className="text-[12px] font-medium text-slate-500 text-right">Date Within</label>
+                              <div className="flex gap-2">
+                                <input type="date" value={advancedForm.fromDate} onChange={e=>setAdvancedForm({...advancedForm, fromDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+                                <span className="text-slate-400 mt-1">-</span>
+                                <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13.5px] outline-none focus:border-[#00C896] transition-colors" />
+                              </div>
+
+                           </div>
+                           
+                           <div className="flex justify-end mt-6">
+                             <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2 rounded font-bold text-[13px] hover:bg-[#092a3b] transition-colors flex items-center gap-2">
+                               Search
+                             </button>
+                           </div>
+                        </div>
+                      )}
+
+                      {/* Quick Search Chips */}
+                      <div className="pt-2">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Suggested Quick Searches</p>
+                        <div className="flex flex-wrap gap-2.5">
+                          {['Urgent tapals today', 'Pending from Surat', 'Crime Branch', 'Received yesterday', 'High priority'].map(chip => (
+                            <button
+                              key={chip}
+                              type="button"
+                              onClick={() => { setSmartQuery(chip); handleSmartSearch(null, chip) }}
+                              className="px-3.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[12px] font-bold text-slate-600 hover:bg-[#00C896]/10 hover:text-[#00C896] hover:border-[#00C896]/30 transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
+                            >
+                              {chip}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </form>
+
+                    {/* Results below the filters */}
+                    {searchResults && (
+                      <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500 flex-1">
+                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                          <h3 className="text-sm font-bold text-slate-800">Search Results</h3>
+                          <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">{searchResults.length} found</span>
+                        </div>
+                        {searchResults.length === 0 ? (
+                          <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
+                            <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                            <p className="text-[13px] font-bold text-slate-600">No records found matching filters</p>
+                            <p className="text-[12px] text-slate-400 mt-1">Try adjusting your search criteria</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 pb-4">
+                            {searchResults.map(result => (
+                              <div key={result.unique_id} title={`Date shown is: ${result.date_label || 'Received Date'}`} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-[#00C896]/40 hover:shadow-md transition-all group relative overflow-hidden cursor-help">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-[#00C896] opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-[13.5px] font-bold text-[#0D3D56]">{result.unique_id}</span>
+                                    <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1"><CalendarIcon size={10} /> {formatDate(result.received_date)}</span>
+                                  </div>
+                                  <button onClick={() => { fetchTracking(result.unique_id); toast.success('Tracking loaded!') }} className="shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-[#00C896] hover:text-white hover:border-[#00C896] text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5">
+                                    <LocateFixed size={12} /> View Tracking
+                                  </button>
+                                </div>
+                                <p className="text-[13px] font-semibold text-slate-800 line-clamp-1 mb-3" title={result.subject}>{result.subject}</p>
+                                <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100">
+                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.sender_name}>
+                                    <User size={10} className="text-slate-400" /> {result.sender_name}
+                                  </span>
+                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.current_department}>
+                                    <MapPin size={10} className="text-slate-400" /> {result.current_department}
+                                  </span>
+                                  <div className="flex-1 flex justify-end gap-2">
+                                    <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${result.priority === 'HIGH' ? 'bg-red-50 text-red-600 border border-red-100' : result.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>{result.priority}</span>
+                                    <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${statusClass[result.status?.toLowerCase()] || 'bg-blue-50 text-blue-600 border-blue-100'}`}>{result.status}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
