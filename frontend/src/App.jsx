@@ -37,6 +37,7 @@ function App() {
           <Route path="/track-patrak" element={<TrackPage />} />
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/letters" element={<ProtectedRoute><Letters /></ProtectedRoute>} />
+          <Route path="/without-qr-code" element={<ProtectedRoute><Letters /></ProtectedRoute>} />
           <Route path="/letters/:id" element={<ProtectedRoute><EntryDetail /></ProtectedRoute>} />
           <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
           <Route path="/track-my-tapal" element={<ProtectedRoute><TrackMyTapal /></ProtectedRoute>} />

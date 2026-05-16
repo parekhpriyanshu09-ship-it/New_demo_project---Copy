@@ -3,16 +3,17 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, cast, String
 from typing import Optional, List
 from main_db import get_db
-from models import User, PatrakEntry, PatrakMovement, UserRole, Priority, EntryStatus, MovementStatus, DEPARTMENTS
+from models import User, PatrakEntry, PatrakMovement, UserRole, Priority, EntryStatus, MovementStatus, DEPARTMENTS, PatrakEditHistory
 from schemas import (
     PatrakEntryCreate, PatrakEntryUpdate, PatrakEntryResponse,
-    PaginatedResponse, TrackingResponse, PatrakMovementResponse
+    PaginatedResponse, TrackingResponse, PatrakMovementResponse, PatrakEditHistoryResponse
 )
 from auth.dependencies import get_current_user, require_admin, require_admin_or_dg_office, require_create_entry_rights, get_client_ip
 from utils.audit import log_entry_created, log_entry_updated, log_entry_deleted
 from utils.qr_generator import generate_qr_code, create_qr_data
 import uuid
 from datetime import datetime
+import json
 from utils.smart_parser import parse_smart_query
 
 router = APIRouter(prefix="/api/entries", tags=["entries"])
@@ -22,8 +23,10 @@ def entry_to_response(entry: PatrakEntry) -> PatrakEntryResponse:
         id=entry.id,
         unique_id=entry.unique_id,
         subject=entry.subject,
+        sender_type=entry.sender_type,
         sender_name=entry.sender_name,
         sender_designation=entry.sender_designation,
+        sender_address=entry.sender_address,
         received_date=entry.received_date,
         priority=entry.priority,
         description=entry.description,
@@ -32,6 +35,8 @@ def entry_to_response(entry: PatrakEntry) -> PatrakEntryResponse:
         fax_number=entry.fax_number,
         unit_district=entry.unit_district,
         send_to=entry.send_to,
+        sender_reference_number=entry.sender_reference_number,
+        reference_date=entry.reference_date,
         current_department=entry.current_department,
         status=entry.status,
         qr_code_data=entry.qr_code_data,
@@ -261,16 +266,20 @@ async def create_entry(
     new_entry = PatrakEntry(
         unique_id=unique_id,
         subject=entry_data.subject,
+        sender_type=entry_data.sender_type or "Citizen",
         sender_name=entry_data.sender_name,
         sender_designation=entry_data.sender_designation,
+        sender_address=entry_data.sender_address,
         received_date=entry_data.received_date,
         priority=entry_data.priority,
         description=entry_data.description,
-        receiving_mode=entry_data.receiving_mode or "Physical",
+        receiving_mode=entry_data.receiving_mode or "By Hand",
         sender_email=entry_data.sender_email,
         fax_number=entry_data.fax_number,
         unit_district=entry_data.unit_district,
         send_to=entry_data.send_to,
+        sender_reference_number=entry_data.sender_reference_number,
+        reference_date=entry_data.reference_date,
         current_department=initial_department,
         status=EntryStatus.ACTIVE,
         qr_code_data=qr_image,
@@ -327,11 +336,47 @@ async def update_entry(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
 
     update_data = entry_data.model_dump(exclude_unset=True)
+
+    # ─── QR PRESERVATION GUARD ──────────────────────────────────────────────
+    # Editing patrak details does NOT require QR regeneration.
+    # The existing QR code remains permanently valid for tracking and movement.
+    # Immutable identity fields are explicitly stripped from any update payload.
+    IMMUTABLE_FIELDS = {"qr_code_data", "unique_id", "created_by", "created_at"}
+    update_data = {k: v for k, v in update_data.items() if k not in IMMUTABLE_FIELDS}
+    # ────────────────────────────────────────────────────────────────────────
+
+    old_values = {}
+    new_values = {}
+    changed_fields = []
+
     for field, value in update_data.items():
-        setattr(entry, field, value)
+        old_val = getattr(entry, field)
+        
+        # Handle enum and datetime serialization for JSON comparison
+        ov_cmp = old_val.value if hasattr(old_val, 'value') else old_val
+        nv_cmp = value.value if hasattr(value, 'value') else value
+        
+        # Simplified check
+        if ov_cmp != nv_cmp:
+            old_values[field] = str(old_val) if old_val is not None else None
+            new_values[field] = str(value) if value is not None else None
+            changed_fields.append(field)
+            setattr(entry, field, value)
+
 
     db.commit()
     db.refresh(entry)
+    
+    if changed_fields:
+        edit_history = PatrakEditHistory(
+            entry_id=entry.id,
+            edited_by=current_user.id,
+            changed_fields=json.dumps(changed_fields),
+            old_values=json.dumps(old_values),
+            new_values=json.dumps(new_values)
+        )
+        db.add(edit_history)
+        db.commit()
 
     log_entry_updated(db, current_user.id, entry_id, get_client_ip(request))
 
@@ -356,53 +401,6 @@ async def delete_entry(
 
     return None
 
-@router.get("/{entry_id}/tracking", response_model=TrackingResponse)
-async def get_tracking(
-    entry_id: int,
-    db: Session = Depends(get_db)
-):
-    """
-    Get tracking information for an entry using the new dynamic movement system.
-    """
-    entry = db.query(PatrakEntry).filter(PatrakEntry.id == entry_id).first()
-
-    if not entry:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
-
-    movements = db.query(PatrakMovement).filter(
-        PatrakMovement.entry_id == entry_id
-    ).order_by(PatrakMovement.timestamp.asc()).all()
-
-    movement_responses = []
-    for m in movements:
-        user = db.query(User).filter(User.id == m.forwarded_by).first()
-        movement_responses.append(PatrakMovementResponse(
-            id=m.id,
-            entry_id=m.entry_id,
-            from_department=m.from_department,
-            to_department=m.to_department,
-            forwarded_by=m.forwarded_by,
-            forwarded_by_name=user.username if user else "Unknown",
-            timestamp=m.timestamp,
-            remarks=m.remarks,
-            status=m.status
-        ))
-
-    return TrackingResponse(
-        entry=entry_to_response(entry),
-        movements=movement_responses,
-        current_department=entry.current_department,
-        total_movements=len(movements)
-    )
-    if not entry:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
-
-    db.delete(entry)
-    db.commit()
-
-    log_entry_deleted(db, current_user.id, entry_id, get_client_ip(request))
-
-    return None
 
 @router.get("/{entry_id}/tracking", response_model=TrackingResponse)
 async def get_tracking(
@@ -436,9 +434,25 @@ async def get_tracking(
             status=m.status
         ))
 
+    edits = db.query(PatrakEditHistory).filter(PatrakEditHistory.entry_id == entry_id).order_by(PatrakEditHistory.edited_at.desc()).all()
+    edit_responses = []
+    for e in edits:
+        editor = db.query(User).filter(User.id == e.edited_by).first()
+        edit_responses.append(PatrakEditHistoryResponse(
+            id=e.id,
+            entry_id=e.entry_id,
+            edited_by=e.edited_by,
+            edited_by_name=editor.username if editor else "Unknown",
+            edited_at=e.edited_at,
+            changed_fields=e.changed_fields,
+            old_values=e.old_values,
+            new_values=e.new_values
+        ))
+
     return TrackingResponse(
         entry=entry_to_response(entry),
         movements=movement_responses,
+        edit_history=edit_responses,
         current_department=entry.current_department,
         total_movements=len(movements)
     )

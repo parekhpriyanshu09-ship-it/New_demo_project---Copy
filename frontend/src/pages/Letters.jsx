@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/layout/Layout'
 import { Button } from '../components/common'
@@ -92,7 +92,12 @@ const DEPARTMENTS = [
 export default function Letters() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const detailsRef = useRef(null)
+  const [editMode, setEditMode] = useState(false)
+  const [editEntryId, setEditEntryId] = useState(null)
+  const [lastModified, setLastModified] = useState(null)
+  const [patrakUniqueId, setPatrakUniqueId] = useState(null)
   const [entries, setEntries] = useState([])
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [showEntryDetails, setShowEntryDetails] = useState(false)
@@ -139,6 +144,36 @@ export default function Letters() {
     fetchEntries()
   }, [debouncedSearch, pagination.page])
 
+  useEffect(() => {
+    if (location.state?.editMode && location.state?.patrakData) {
+      const data = location.state.patrakData
+      setEditMode(true)
+      setEditEntryId(data.id)
+      setLastModified(data.updated_at)
+      setPatrakUniqueId(data.unique_id)
+
+      const rDate = data.received_date ? new Date(data.received_date).toISOString().split('T')[0] : ''
+      const refDate = data.reference_date ? new Date(data.reference_date).toISOString().split('T')[0] : ''
+
+      form.reset({
+        receiving_mode: data.receiving_mode || 'By Hand',
+        sender_email: data.sender_email || '',
+        fax_number: data.fax_number || '',
+        sender_type: data.sender_type || 'Citizen',
+        sender_name: data.sender_name || '',
+        sender_address: data.sender_address || '',
+        unit_district: data.unit_district || '',
+        send_to: data.send_to || '',
+        sender_designation: data.sender_designation || '',
+        subject: data.subject || '',
+        received_date: rDate,
+        priority: data.priority || 'Normal',
+        sender_reference_number: data.sender_reference_number || '',
+        reference_date: refDate,
+        description: data.description || ''
+      })
+    }
+  }, [location.state, form])
 
   const fetchEntries = async () => {
     setLoading(true)
@@ -178,8 +213,41 @@ export default function Letters() {
     }
   }
 
+  // ── Blank default values — used to fully reset the form ──────────────
+  const BLANK_DEFAULTS = {
+    receiving_mode: 'By Hand',
+    sender_email: '',
+    fax_number: '',
+    sender_type: 'Citizen',
+    sender_name: '',
+    sender_address: '',
+    unit_district: '',
+    send_to: '',
+    sender_designation: '',
+    subject: '',
+    received_date: '',
+    priority: 'Normal',
+    sender_reference_number: '',
+    reference_date: '',
+    description: ''
+  }
+
+  const clearEditState = () => {
+    setEditMode(false)
+    setEditEntryId(null)
+    setLastModified(null)
+    setPatrakUniqueId(null)
+    setSelectedEntry(null)
+    setShowEntryDetails(false)
+    form.reset(BLANK_DEFAULTS)
+  }
+
   const handleCreateEntry = async (data) => {
     setCreating(true)
+    // Capture BEFORE any async state changes (avoids stale-closure bugs)
+    const wasEditMode = editMode
+    const wasEditEntryId = editEntryId
+
     try {
       const selectedDate = data.received_date;
       const now = new Date();
@@ -197,22 +265,38 @@ export default function Letters() {
         received_date: finalDate.toISOString(),
         reference_date: finalRefDate || undefined
       }
-      const res = await api.post('/api/entries', payload)
-      toast.success('Entry created successfully!')
 
-      const createdEntry = res.data?.entry || res.data
-      if (createdEntry?.id) {
-        setSelectedEntry(createdEntry)
-        setShowEntryDetails(true)
-        setTimeout(() => {
-          detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }, 400)
+      let res;
+      if (wasEditMode && wasEditEntryId) {
+        res = await api.put(`/api/entries/${wasEditEntryId}`, payload)
+
+        // ── Fully reset form and UI back to Create mode ────────────────
+        clearEditState()
+        // Replace history entry so browser-back doesn't re-trigger edit mode
+        navigate('/letters', { replace: true, state: {} })
+
+        toast.success(
+          '✅ Patrak updated successfully\nQR code remains unchanged and valid.',
+          { duration: 5000 }
+        )
+      } else {
+        res = await api.post('/api/entries', payload)
+        toast.success('Entry created successfully!')
+
+        const createdEntry = res.data?.entry || res.data
+        if (createdEntry?.id) {
+          setSelectedEntry(createdEntry)
+          setShowEntryDetails(true)
+          setTimeout(() => {
+            detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 400)
+        }
+        form.reset(BLANK_DEFAULTS)
       }
 
-      form.reset()
       fetchEntries()
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create entry')
+      toast.error(error.response?.data?.detail || (wasEditMode ? 'Failed to update entry' : 'Failed to create entry'))
     } finally {
       setCreating(false)
     }
@@ -266,11 +350,26 @@ export default function Letters() {
               {/* Form Header */}
               <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 sm:px-6 py-4 flex items-center gap-4">
                 <div className="p-2 bg-white/10 rounded-xl">
-                  <FileText size={20} className="text-white" />
+                  {editMode ? <History size={20} className="text-emerald-400" /> : <FileText size={20} className="text-white" />}
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-white font-semibold">New Tapal Entry</h2>
-                  <p className="text-slate-300 text-xs">Fill in the details below to create a new entry</p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-white font-semibold">
+                      {editMode ? 'Edit Patrak Entry' : 'New Tapal Entry'}
+                    </h2>
+                    {editMode && (
+                      <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Edit Mode</span>
+                    )}
+                  </div>
+                  <p className="text-slate-300 text-xs mt-0.5">
+                    {editMode ? 'Update patrak information and resubmit changes' : 'Fill in the details below to create a new entry'}
+                  </p>
+                  {editMode && patrakUniqueId && (
+                    <div className="flex items-center gap-3 mt-2 text-[10px] font-medium text-slate-400">
+                      <span>ID: {patrakUniqueId}</span>
+                      {lastModified && <span>• Modified: {formatShortDate(lastModified)}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -372,12 +471,12 @@ export default function Letters() {
                                   <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
                                     <Send size={14} /> Sender Organization / Unit / Department <span className="text-red-500">*</span>
                                   </label>
-                                  <select {...form.register('send_to')} className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all cursor-pointer">
-                                    <option value="">Select organization or department</option>
-                                    {DEPARTMENTS.map(dept => (
-                                      <option key={dept} value={dept}>{dept}</option>
-                                    ))}
-                                  </select>
+                                  <input
+                                    {...form.register('send_to')}
+                                    type="text"
+                                    placeholder="Enter organization, unit or department"
+                                    className="mt-1.5 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all placeholder:text-slate-400"
+                                  />
                                   {form.formState.errors.send_to && <p className="text-red-500 text-xs mt-1">{form.formState.errors.send_to.message}</p>}
                                 </div>
                               </motion.div>
@@ -444,11 +543,18 @@ export default function Letters() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => form.reset()}
+                    onClick={() => {
+                      if (editMode) {
+                        clearEditState()
+                        navigate('/letters', { replace: true, state: {} })
+                      } else {
+                        form.reset(BLANK_DEFAULTS)
+                      }
+                    }}
                     className="sm:w-auto !text-slate-600 !border !border-slate-300 !bg-white hover:!bg-slate-50"
                   >
                     <X size={16} className="mr-2" />
-                    Reset
+                    {editMode ? 'Cancel Edit' : 'Reset'}
                   </Button>
                   <Button
                     type="submit"
@@ -456,7 +562,7 @@ export default function Letters() {
                     className="sm:min-w-[200px] !bg-indigo-600 hover:!bg-indigo-700 shadow-sm"
                   >
                     <CheckCircle2 size={16} className="mr-2" />
-                    Create Entry
+                    {editMode ? 'Update Entry' : 'Create Entry'}
                   </Button>
                 </div>
               </form>
@@ -471,87 +577,168 @@ export default function Letters() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 40, scale: 0.98 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 overflow-hidden lg:sticky lg:top-6"
+                  className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 overflow-hidden lg:sticky lg:top-6 flex flex-col"
+                  style={{ maxHeight: 'calc(100vh - 120px)' }}
                 >
-                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center gap-3">
+                  {/* Panel Header */}
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center gap-3 shrink-0">
                     <div className="p-2 bg-white/10 rounded-xl">
-                      <UserRound size={18} className="text-white" />
+                      <FileText size={18} className="text-white" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold">Entry Details</h3>
-                      <p className="text-slate-300 text-xs">View and track this entry</p>
-                    </div>
-                    <button
-                      onClick={() => setShowEntryDetails(false)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                      <X size={18} className="text-white/70 hover:text-white" />
-                    </button>
-                  </div>
-
-                  <div className="p-5 space-y-4">
-                    {/* Patrak ID Card */}
-                    <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Patrak ID</p>
-                        <p className="text-lg font-bold text-slate-800 mt-1">{selectedEntry.unique_id}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-white font-semibold text-sm">Patrak Preview</h3>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${selectedEntry.priority === 'Urgent' ? 'bg-red-500 text-white' :
+                            selectedEntry.priority === 'Important' ? 'bg-amber-500 text-white' :
+                              'bg-emerald-500 text-white'
+                          }`}>{selectedEntry.priority}</span>
                       </div>
+                      <p className="text-slate-300 text-xs mt-0.5 truncate">{selectedEntry.unique_id}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => navigator.clipboard?.writeText(selectedEntry.unique_id || '')}
-                        className="p-2 bg-white rounded-lg shadow-sm text-slate-500 hover:text-red-600 transition-colors"
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                         title="Copy ID"
                       >
-                        <Copy size={16} />
+                        <Copy size={15} className="text-white/70 hover:text-white" />
+                      </button>
+                      <button
+                        onClick={() => setShowEntryDetails(false)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      >
+                        <X size={18} className="text-white/70 hover:text-white" />
                       </button>
                     </div>
+                  </div>
 
-                    {/* Subject */}
-                    <div>
-                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Subject</p>
-                      <p className="text-base font-semibold text-slate-800 mt-1">{selectedEntry.subject}</p>
-                    </div>
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-4 space-y-4">
 
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: 'Sender', value: selectedEntry.sender_name, icon: UserRound },
-                        { label: 'Designation', value: selectedEntry.sender_designation || 'Officer', icon: FileText },
-                        { label: 'Current Dept', value: selectedEntry.current_department, icon: Building2 },
-                        { label: 'Status', value: selectedEntry.status || 'Active', icon: Activity },
-                        { label: 'Date', value: formatShortDate(selectedEntry.received_date), icon: CalendarIcon },
-                        { label: 'Priority', value: selectedEntry.priority, icon: Clock },
-                      ].map(item => (
-                        <div key={item.label} className="bg-slate-50 rounded-xl p-3">
-                          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wide">
-                            <item.icon size={12} />
-                            {item.label}
+                      {/* ── Receiving Mode ─────────────────────────────── */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <div className="w-6 h-6 bg-indigo-50 rounded-lg flex items-center justify-center">
+                            <Send size={12} className="text-indigo-600" />
                           </div>
-                          <p className="text-sm font-semibold text-slate-800 mt-1 truncate">{item.value || 'N/A'}</p>
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Receiving Mode</p>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex items-center gap-2 px-3 py-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
+                          {selectedEntry.receiving_mode === 'Mails' ? <Mail size={14} className="text-indigo-600 shrink-0" /> :
+                            selectedEntry.receiving_mode === 'Fax' ? <Printer size={14} className="text-indigo-600 shrink-0" /> :
+                              selectedEntry.receiving_mode === 'Post' ? <Mail size={14} className="text-indigo-600 shrink-0" /> :
+                                <ArrowRight size={14} className="text-indigo-600 shrink-0" />}
+                          <span className="text-[12px] font-bold text-indigo-700">{selectedEntry.receiving_mode || 'By Hand'}</span>
+                          {selectedEntry.receiving_mode === 'Mails' && selectedEntry.sender_email && (
+                            <span className="text-[10px] text-indigo-500 ml-auto truncate">{selectedEntry.sender_email}</span>
+                          )}
+                          {selectedEntry.receiving_mode === 'Fax' && selectedEntry.fax_number && (
+                            <span className="text-[10px] text-indigo-500 ml-auto">{selectedEntry.fax_number}</span>
+                          )}
+                        </div>
+                      </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-2 pt-2">
-                      {canGenerateQR(user?.role) && (
-                        <Button onClick={() => handleGenerateQR(selectedEntry.id)} className="w-full !bg-emerald-600 hover:!bg-emerald-700">
-                          <QrCode size={16} className="mr-2" />
-                          Generate QR Code
-                        </Button>
-                      )}
-                      {/* <Button
-                        onClick={() => navigate(`/track-my-tapal?id=${encodeURIComponent(selectedEntry.unique_id || '')}`)}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        View Full Track
-                        <ArrowRight size={16} className="ml-2" />
-                      </Button> */}
+                      {/* ── Sender Details ─────────────────────────────── */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <div className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <UserRound size={12} className="text-blue-600" />
+                          </div>
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sender Details</p>
+                        </div>
+                        <div className="bg-slate-50 rounded-xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+                          {[
+                            { label: 'Sender Type', value: selectedEntry.sender_type, always: true },
+                            { label: 'Sender Name', value: selectedEntry.sender_name, always: true },
+                            { label: 'Address', value: selectedEntry.sender_address, always: true },
+                            { label: 'Unit / District', value: selectedEntry.unit_district, always: true },
+                            // Only show for non-Citizen
+                            ...(selectedEntry.sender_type !== 'Citizen' ? [
+                              { label: 'Organization', value: selectedEntry.send_to },
+                              { label: 'Designation', value: selectedEntry.sender_designation },
+                            ] : []),
+                          ].filter(f => f.value).map(f => (
+                            <div key={f.label} className="flex items-start justify-between gap-3 px-3 py-2">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider shrink-0 mt-0.5 w-24">{f.label}</p>
+                              <p className="text-[11px] font-semibold text-slate-700 text-right break-words">{f.value}</p>
+                            </div>
+                          ))}
+                          {![selectedEntry.sender_type, selectedEntry.sender_name, selectedEntry.sender_address, selectedEntry.unit_district].some(Boolean) && (
+                            <p className="text-[10px] text-slate-400 px-3 py-3 text-center">No sender information</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* ── Letter Details ─────────────────────────────── */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
+                            <FileText size={12} className="text-amber-600" />
+                          </div>
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Letter Details</p>
+                        </div>
+
+                        {/* Subject — full width */}
+                        <div className="mb-2 px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Subject</p>
+                          <p className="text-[12px] font-bold text-slate-800 leading-snug">{selectedEntry.subject || '—'}</p>
+                        </div>
+
+                        {/* 2-col grid for dates + priority */}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          {[
+                            { label: 'Received Date', value: selectedEntry.received_date ? new Date(selectedEntry.received_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null, icon: CalendarIcon },
+                            { label: 'Reference Date', value: selectedEntry.reference_date ? new Date(selectedEntry.reference_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null, icon: CalendarIcon },
+                          ].map(f => f.value && (
+                            <div key={f.label} className="bg-slate-50 rounded-xl border border-slate-100 px-3 py-2">
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <f.icon size={10} className="text-slate-400" />
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">{f.label}</p>
+                              </div>
+                              <p className="text-[11px] font-bold text-slate-700">{f.value}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Reference number */}
+                        {selectedEntry.sender_reference_number && (
+                          <div className="mb-2 flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
+                            <p className="text-[11px] font-bold text-slate-700">{selectedEntry.sender_reference_number}</p>
+                          </div>
+                        )}
+
+                        {/* Description — full width, multiline */}
+                        {selectedEntry.description && (
+                          <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
+                            <p className="text-[9px] font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
+                            <p className="text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap">{selectedEntry.description}</p>
+                          </div>
+                        )}
+                      </div>
+
+
+
                     </div>
+                  </div>
+
+                  {/* Sticky Footer Actions */}
+                  <div className="shrink-0 px-4 py-3 border-t border-slate-100 bg-white space-y-2">
+                    {canGenerateQR(user?.role) && (
+                      <Button onClick={() => handleGenerateQR(selectedEntry.id)} className="w-full !bg-emerald-600 hover:!bg-emerald-700 !text-sm">
+                        <QrCode size={15} className="mr-2" />
+                        Generate QR Code
+                      </Button>
+                    )}
+                    <p className="text-center text-[9px] text-slate-400">
+                      Patrak ID · <span className="font-mono font-bold text-slate-500">{selectedEntry.unique_id}</span>
+                    </p>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
+
           </div>
 
 

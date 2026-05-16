@@ -163,9 +163,23 @@ class TrackingNode(BaseModel):
     forwarded_by: Optional[str] = None
     remarks: Optional[str] = None
 
+class PatrakEditHistoryResponse(BaseModel):
+    id: int
+    entry_id: int
+    edited_by: int
+    edited_by_name: Optional[str] = None
+    edited_at: datetime
+    changed_fields: str
+    old_values: str
+    new_values: str
+
+    class Config:
+        from_attributes = True
+
 class TrackingResponse(BaseModel):
     entry: PatrakEntryResponse
     movements: List[PatrakMovementResponse]
+    edit_history: Optional[List[PatrakEditHistoryResponse]] = None
     current_department: str
     total_movements: int
 
