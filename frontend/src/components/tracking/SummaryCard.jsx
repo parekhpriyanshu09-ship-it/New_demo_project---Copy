@@ -81,18 +81,18 @@ const SummaryCard = ({ entry, timeline }) => {
           {/* Header Row */}
           <div className="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
             <div className="pr-2">
-              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
                 <FileTextIcon /> Patrak Overview
               </h2>
-              <div className="text-[14px] font-extrabold text-slate-800 leading-tight">{entry.subject}</div>
+              <div className="text-base font-extrabold text-slate-800 leading-tight">{entry.subject}</div>
             </div>
             <div className="flex flex-col items-end shrink-0 gap-1 mt-0.5">
               <div 
                 className="flex items-center gap-1.5 bg-red-50 border border-red-100 rounded-lg px-2 py-1 cursor-pointer hover:bg-red-100 transition-colors shadow-sm" 
                 onClick={handleCopy}
               >
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">ID</span>
-                <span className="text-[11px] font-black text-red-600 tracking-tight">{entry.patrak_id}</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">ID</span>
+                <span className="text-xs font-black text-red-600 tracking-tight">{entry.patrak_id}</span>
                 <Copy className="w-3 h-3 text-red-400 ml-0.5" />
               </div>
             </div>
@@ -101,15 +101,15 @@ const SummaryCard = ({ entry, timeline }) => {
           {/* Data Grid */}
           <div className="flex flex-wrap gap-y-4 gap-x-4">
             <div className="min-w-[40%] flex-1">
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Current Status</p>
-              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 text-slate-700 rounded-md text-[11px] font-bold border border-slate-200 shadow-sm">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Current Status</p>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 text-slate-700 rounded-md text-xs font-bold border border-slate-200 shadow-sm">
                 <Activity className="w-3 h-3 text-red-500" />
                 {entry.current_status}
               </div>
             </div>
             <div className="min-w-[40%] flex-1">
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Location</p>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Location</p>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                 <div className="w-5 h-5 rounded bg-red-50 flex items-center justify-center border border-red-100">
                   <Building2 className="w-3 h-3 text-red-500" />
                 </div>
@@ -117,8 +117,8 @@ const SummaryCard = ({ entry, timeline }) => {
               </div>
             </div>
             <div className="min-w-[40%] flex-1 mt-1 md:mt-0">
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Date</p>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Date</p>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                 <div className="w-5 h-5 rounded bg-red-50 flex items-center justify-center border border-red-100">
                   <CalendarIcon className="w-3 h-3 text-red-500" />
                 </div>
@@ -136,7 +136,7 @@ const SummaryCard = ({ entry, timeline }) => {
         transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
         className="bg-gradient-to-br from-[#cc181e] via-[#b3141a] to-[#8a1014] rounded-2xl pt-4 pb-4 shadow-xl shadow-red-900/20 w-full relative z-10 border border-red-500/20"
       >
-        <h3 className="text-[10px] text-red-100 font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 px-5 relative z-30">
+        <h3 className="text-xs text-red-100 font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 px-5 relative z-30">
            <MapPin size={12} className="text-red-300" /> Movement Path
         </h3>
         
@@ -192,27 +192,27 @@ const SummaryCard = ({ entry, timeline }) => {
                   isLast && timeline.length > 1 ? 'right-[-15px] left-auto' : 
                   'left-[50%] -translate-x-1/2'
                 }`}>
-                   <div className="text-[12px] font-black text-slate-800 mb-2 leading-tight text-center tracking-tight">{step.department}</div>
+                   <div className="text-sm font-black text-slate-800 mb-2 leading-tight text-center tracking-tight">{step.department}</div>
                    
                    <div className="flex items-center justify-center mb-2">
-                     <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shadow-sm ${isCompleted ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                     <span className={`px-2.5 py-1 rounded-md text-xs font-black uppercase tracking-widest shadow-sm ${isCompleted ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
                        {step.status}
                      </span>
                    </div>
                    
                    {isCompleted ? (
                      <div className="w-full flex flex-col">
-                       <div className="text-[10px] font-bold text-slate-500 mt-1 flex flex-col gap-1 items-center bg-slate-50 p-2 rounded-lg border border-slate-100 w-full">
+                       <div className="text-xs font-bold text-slate-500 mt-1 flex flex-col gap-1 items-center bg-slate-50 p-2 rounded-lg border border-slate-100 w-full">
                          <div className="flex items-center gap-1.5"><CalendarIcon size={12} className="text-red-500" /> {ttDate}</div>
                          <div className="flex items-center gap-1.5"><Clock size={12} className="text-red-500" /> {ttTime}</div>
                        </div>
                        
                        {step.status?.toLowerCase() === 'received' && (
                          <div className="mt-2 w-full bg-amber-50 border border-amber-100/60 rounded-lg p-2 flex flex-col items-center shadow-sm">
-                           <div className="text-[9px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1 mb-1">
+                           <div className="text-xs font-black text-amber-700 uppercase tracking-wider flex items-center gap-1 mb-1">
                              <Clock size={10} /> Pending Action
                            </div>
-                           <div className="text-[9px] text-amber-600/90 font-medium text-center leading-tight line-clamp-3 w-full">
+                           <div className="text-xs text-amber-600/90 font-medium text-center leading-tight line-clamp-3 w-full">
                              {step.remarks ? step.remarks : 'Awaiting review and forwarding'}
                            </div>
                          </div>
@@ -220,15 +220,15 @@ const SummaryCard = ({ entry, timeline }) => {
 
                        {step.status?.toLowerCase() === 'forwarded' && step.remarks && (
                          <div className="mt-2 w-full bg-slate-50 border border-slate-100 rounded-lg p-2 flex flex-col items-center">
-                           <div className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Remarks</div>
-                           <div className="text-[9px] text-slate-500 font-medium text-center leading-tight line-clamp-3 w-full">
+                           <div className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Remarks</div>
+                           <div className="text-xs text-slate-500 font-medium text-center leading-tight line-clamp-3 w-full">
                              {step.remarks}
                            </div>
                          </div>
                        )}
                      </div>
                    ) : (
-                     <div className="text-[10px] font-bold text-amber-600/80 mt-1 w-full text-center bg-amber-50 p-2 rounded-lg border border-amber-100/50">Awaiting arrival...</div>
+                     <div className="text-xs font-bold text-amber-600/80 mt-1 w-full text-center bg-amber-50 p-2 rounded-lg border border-amber-100/50">Awaiting arrival...</div>
                    )}
                    
                    {/* Tooltip Arrow pointing down */}
@@ -256,7 +256,7 @@ const SummaryCard = ({ entry, timeline }) => {
                 </div>
                 
                 {/* Label aligned normally in the flex column */}
-                <span className={`mt-2.5 text-[10px] font-black text-center leading-[1.3] transition-colors w-full break-words tracking-tight ${isCompleted ? 'text-white drop-shadow-sm' : 'text-red-200/50'}`}>
+                <span className={`mt-2.5 text-xs font-black text-center leading-[1.3] transition-colors w-full break-words tracking-tight ${isCompleted ? 'text-white drop-shadow-sm' : 'text-red-200/50'}`}>
                   {step.department}
                 </span>
 

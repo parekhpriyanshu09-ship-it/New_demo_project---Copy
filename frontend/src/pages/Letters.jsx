@@ -35,7 +35,8 @@ import {
   ArrowRight,
   ArrowLeftRight,
   History,
-  ChevronDown
+  ChevronDown,
+  Edit2
 } from 'lucide-react'
 
 const containerVariants = {
@@ -94,6 +95,7 @@ export default function Letters() {
   const navigate = useNavigate()
   const location = useLocation()
   const detailsRef = useRef(null)
+  const formRef = useRef(null)
   const [editMode, setEditMode] = useState(false)
   const [editEntryId, setEditEntryId] = useState(null)
   const [lastModified, setLastModified] = useState(null)
@@ -105,6 +107,15 @@ export default function Letters() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [pagination, setPagination] = useState({ page: 1, per_page: 10, total: 0, pages: 0 })
+  const [editHistory, setEditHistory] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null)
+  const [rowHistories, setRowHistories] = useState({})
+  const [loadingRowHistory, setLoadingRowHistory] = useState({})
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false)
+  const [historyDrawerEntry, setHistoryDrawerEntry] = useState(null)
+  const [drawerHistory, setDrawerHistory] = useState([])
+  const [loadingDrawerHistory, setLoadingDrawerHistory] = useState(false)
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -138,6 +149,8 @@ export default function Letters() {
 
   const [creating, setCreating] = useState(false)
 
+  const formTopRef = useRef(null)
+
   const debouncedSearch = useDebounce(search, 300)
 
   useEffect(() => {
@@ -151,6 +164,7 @@ export default function Letters() {
       setEditEntryId(data.id)
       setLastModified(data.updated_at)
       setPatrakUniqueId(data.unique_id)
+      fetchEditHistory(data.id)
 
       const rDate = data.received_date ? new Date(data.received_date).toISOString().split('T')[0] : ''
       const refDate = data.reference_date ? new Date(data.reference_date).toISOString().split('T')[0] : ''
@@ -213,7 +227,6 @@ export default function Letters() {
     }
   }
 
-  // ── Blank default values — used to fully reset the form ──────────────
   const BLANK_DEFAULTS = {
     receiving_mode: 'By Hand',
     sender_email: '',
@@ -232,6 +245,88 @@ export default function Letters() {
     description: ''
   }
 
+  // Fetch history for the main edit panel (used when edit mode loads)
+  const fetchEditHistory = async (entryId) => {
+    if (!entryId) return
+    setLoadingHistory(true)
+    try {
+      const res = await api.get(`/api/entries/${entryId}/tracking`)
+      setEditHistory(res.data.edit_history || [])
+    } catch {
+      setEditHistory([])
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  // Fetch history for an inline row expansion (per-row cache)
+  const fetchRowHistory = async (entryId) => {
+    if (rowHistories[entryId] !== undefined) return // already cached
+    setLoadingRowHistory(prev => ({ ...prev, [entryId]: true }))
+    try {
+      const res = await api.get(`/api/entries/${entryId}/tracking`)
+      setRowHistories(prev => ({ ...prev, [entryId]: res.data.edit_history || [] }))
+    } catch {
+      setRowHistories(prev => ({ ...prev, [entryId]: [] }))
+    } finally {
+      setLoadingRowHistory(prev => ({ ...prev, [entryId]: false }))
+    }
+  }
+
+  // Load entry into edit form + scroll to top (reuses existing edit machinery)
+  const handleInlineEdit = (entry) => {
+    const rDate = entry.received_date ? new Date(entry.received_date).toISOString().split('T')[0] : ''
+    const refDate = entry.reference_date ? new Date(entry.reference_date).toISOString().split('T')[0] : ''
+    setEditMode(true)
+    setEditEntryId(entry.id)
+    setLastModified(entry.updated_at)
+    setPatrakUniqueId(entry.unique_id)
+    fetchEditHistory(entry.id)
+    form.reset({
+      receiving_mode: entry.receiving_mode || 'By Hand',
+      sender_email: entry.sender_email || '',
+      fax_number: entry.fax_number || '',
+      sender_type: entry.sender_type || 'Citizen',
+      sender_name: entry.sender_name || '',
+      sender_address: entry.sender_address || '',
+      unit_district: entry.unit_district || '',
+      send_to: entry.send_to || '',
+      sender_designation: entry.sender_designation || '',
+      subject: entry.subject || '',
+      received_date: rDate,
+      priority: entry.priority || 'Normal',
+      sender_reference_number: entry.sender_reference_number || '',
+      reference_date: refDate,
+      description: entry.description || ''
+    })
+    // Scroll form into view
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  }
+
+  // Open the slide-over history drawer for a specific entry
+  const openHistoryDrawer = async (entry) => {
+    setHistoryDrawerEntry(entry)
+    setShowHistoryDrawer(true)
+    // Use cache if available, otherwise fetch
+    if (rowHistories[entry.id] !== undefined) {
+      setDrawerHistory(rowHistories[entry.id])
+      return
+    }
+    setLoadingDrawerHistory(true)
+    try {
+      const res = await api.get(`/api/entries/${entry.id}/tracking`)
+      const hist = res.data.edit_history || []
+      setRowHistories(prev => ({ ...prev, [entry.id]: hist }))
+      setDrawerHistory(hist)
+    } catch {
+      setDrawerHistory([])
+    } finally {
+      setLoadingDrawerHistory(false)
+    }
+  }
+
   const clearEditState = () => {
     setEditMode(false)
     setEditEntryId(null)
@@ -239,6 +334,7 @@ export default function Letters() {
     setPatrakUniqueId(null)
     setSelectedEntry(null)
     setShowEntryDetails(false)
+    setEditHistory([])
     form.reset(BLANK_DEFAULTS)
   }
 
@@ -316,8 +412,9 @@ export default function Letters() {
   }
 
   return (
-    <Layout>
-      <motion.div
+    <>
+      <Layout>
+        <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -344,6 +441,7 @@ export default function Letters() {
 
             {/* New Tapal Entry Form */}
             <motion.div
+              ref={formTopRef}
               layout
               className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
             >
@@ -358,14 +456,14 @@ export default function Letters() {
                       {editMode ? 'Edit Patrak Entry' : 'New Tapal Entry'}
                     </h2>
                     {editMode && (
-                      <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Edit Mode</span>
+                      <span className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Edit Mode</span>
                     )}
                   </div>
                   <p className="text-slate-300 text-xs mt-0.5">
                     {editMode ? 'Update patrak information and resubmit changes' : 'Fill in the details below to create a new entry'}
                   </p>
                   {editMode && patrakUniqueId && (
-                    <div className="flex items-center gap-3 mt-2 text-[10px] font-medium text-slate-400">
+                    <div className="flex items-center gap-3 mt-2 text-xs font-medium text-slate-400">
                       <span>ID: {patrakUniqueId}</span>
                       {lastModified && <span>• Modified: {formatShortDate(lastModified)}</span>}
                     </div>
@@ -566,6 +664,7 @@ export default function Letters() {
                   </Button>
                 </div>
               </form>
+
             </motion.div>
 
             {/* Selected Tapal Details Panel */}
@@ -588,7 +687,7 @@ export default function Letters() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="text-white font-semibold text-sm">Patrak Preview</h3>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${selectedEntry.priority === 'Urgent' ? 'bg-red-500 text-white' :
+                        <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-md ${selectedEntry.priority === 'Urgent' ? 'bg-red-500 text-white' :
                             selectedEntry.priority === 'Important' ? 'bg-amber-500 text-white' :
                               'bg-emerald-500 text-white'
                           }`}>{selectedEntry.priority}</span>
@@ -622,19 +721,19 @@ export default function Letters() {
                           <div className="w-6 h-6 bg-indigo-50 rounded-lg flex items-center justify-center">
                             <Send size={12} className="text-indigo-600" />
                           </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Receiving Mode</p>
+                          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Receiving Mode</p>
                         </div>
                         <div className="flex items-center gap-2 px-3 py-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
                           {selectedEntry.receiving_mode === 'Mails' ? <Mail size={14} className="text-indigo-600 shrink-0" /> :
                             selectedEntry.receiving_mode === 'Fax' ? <Printer size={14} className="text-indigo-600 shrink-0" /> :
                               selectedEntry.receiving_mode === 'Post' ? <Mail size={14} className="text-indigo-600 shrink-0" /> :
                                 <ArrowRight size={14} className="text-indigo-600 shrink-0" />}
-                          <span className="text-[12px] font-bold text-indigo-700">{selectedEntry.receiving_mode || 'By Hand'}</span>
+                          <span className="text-sm font-bold text-indigo-700">{selectedEntry.receiving_mode || 'By Hand'}</span>
                           {selectedEntry.receiving_mode === 'Mails' && selectedEntry.sender_email && (
-                            <span className="text-[10px] text-indigo-500 ml-auto truncate">{selectedEntry.sender_email}</span>
+                            <span className="text-xs text-indigo-500 ml-auto truncate">{selectedEntry.sender_email}</span>
                           )}
                           {selectedEntry.receiving_mode === 'Fax' && selectedEntry.fax_number && (
-                            <span className="text-[10px] text-indigo-500 ml-auto">{selectedEntry.fax_number}</span>
+                            <span className="text-xs text-indigo-500 ml-auto">{selectedEntry.fax_number}</span>
                           )}
                         </div>
                       </div>
@@ -645,7 +744,7 @@ export default function Letters() {
                           <div className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center">
                             <UserRound size={12} className="text-blue-600" />
                           </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sender Details</p>
+                          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Sender Details</p>
                         </div>
                         <div className="bg-slate-50 rounded-xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
                           {[
@@ -660,12 +759,12 @@ export default function Letters() {
                             ] : []),
                           ].filter(f => f.value).map(f => (
                             <div key={f.label} className="flex items-start justify-between gap-3 px-3 py-2">
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider shrink-0 mt-0.5 w-24">{f.label}</p>
-                              <p className="text-[11px] font-semibold text-slate-700 text-right break-words">{f.value}</p>
+                              <p className="text-xs font-black text-slate-400 uppercase tracking-wider shrink-0 mt-0.5 w-24">{f.label}</p>
+                              <p className="text-xs font-semibold text-slate-700 text-right break-words">{f.value}</p>
                             </div>
                           ))}
                           {![selectedEntry.sender_type, selectedEntry.sender_name, selectedEntry.sender_address, selectedEntry.unit_district].some(Boolean) && (
-                            <p className="text-[10px] text-slate-400 px-3 py-3 text-center">No sender information</p>
+                            <p className="text-xs text-slate-400 px-3 py-3 text-center">No sender information</p>
                           )}
                         </div>
                       </div>
@@ -676,13 +775,13 @@ export default function Letters() {
                           <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
                             <FileText size={12} className="text-amber-600" />
                           </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Letter Details</p>
+                          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Letter Details</p>
                         </div>
 
                         {/* Subject — full width */}
                         <div className="mb-2 px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Subject</p>
-                          <p className="text-[12px] font-bold text-slate-800 leading-snug">{selectedEntry.subject || '—'}</p>
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Subject</p>
+                          <p className="text-sm font-bold text-slate-800 leading-snug">{selectedEntry.subject || '—'}</p>
                         </div>
 
                         {/* 2-col grid for dates + priority */}
@@ -694,9 +793,9 @@ export default function Letters() {
                             <div key={f.label} className="bg-slate-50 rounded-xl border border-slate-100 px-3 py-2">
                               <div className="flex items-center gap-1 mb-0.5">
                                 <f.icon size={10} className="text-slate-400" />
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">{f.label}</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{f.label}</p>
                               </div>
-                              <p className="text-[11px] font-bold text-slate-700">{f.value}</p>
+                              <p className="text-xs font-bold text-slate-700">{f.value}</p>
                             </div>
                           ))}
                         </div>
@@ -704,16 +803,16 @@ export default function Letters() {
                         {/* Reference number */}
                         {selectedEntry.sender_reference_number && (
                           <div className="mb-2 flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
-                            <p className="text-[11px] font-bold text-slate-700">{selectedEntry.sender_reference_number}</p>
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
+                            <p className="text-xs font-bold text-slate-700">{selectedEntry.sender_reference_number}</p>
                           </div>
                         )}
 
                         {/* Description — full width, multiline */}
                         {selectedEntry.description && (
                           <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
-                            <p className="text-[9px] font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
-                            <p className="text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap">{selectedEntry.description}</p>
+                            <p className="text-xs font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
+                            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{selectedEntry.description}</p>
                           </div>
                         )}
                       </div>
@@ -731,7 +830,7 @@ export default function Letters() {
                         Generate QR Code
                       </Button>
                     )}
-                    <p className="text-center text-[9px] text-slate-400">
+                    <p className="text-center text-xs text-slate-400">
                       Patrak ID · <span className="font-mono font-bold text-slate-500">{selectedEntry.unique_id}</span>
                     </p>
                   </div>
@@ -750,7 +849,7 @@ export default function Letters() {
                   <Building2 size={18} className="text-slate-600" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-800">Tapal List</h2>
+                  <h2 className="text-lg font-semibold text-slate-800">Tapal List</h2>
                   <p className="text-xs text-slate-500">Showing {entries.length} of {pagination.total} records</p>
                 </div>
               </div>
@@ -767,58 +866,112 @@ export default function Letters() {
               ) : (
                 entries.map((entry, index) => {
                   const isSelected = selectedEntry?.id === entry.id
+                  const isHistoryOpen = expandedHistoryId === entry.id
+                  const rowHist = rowHistories[entry.id] || []
+                  const histLoading = loadingRowHistory[entry.id]
+
                   return (
-                    <motion.button
+                    <motion.div
                       key={entry.id}
-                      type="button"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.02 }}
-                      onClick={() => {
-                        setSelectedEntry(entry)
-                        setShowEntryDetails(true)
-                      }}
-                      className={`w-full text-left px-5 py-4 transition-all hover:bg-slate-50 ${isSelected && showEntryDetails ? 'bg-red-50 border-l-4 border-l-red-500' : ''
-                        }`}
+                      className={`transition-all ${
+                        isSelected && showEntryDetails ? 'bg-indigo-50/60 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent hover:bg-slate-50/80'
+                      }`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-semibold text-red-600">
-                              {entry.unique_id || `#${entry.id}`}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
-                              entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
-                                'bg-emerald-100 text-emerald-700'
+                      {/* Row flex wrapper */}
+                      <div className="flex items-stretch">
+
+                        {/* Main clickable area */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedEntry(entry)
+                            setShowEntryDetails(true)
+                          }}
+                          className="flex-1 text-left px-5 py-4 min-w-0"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-mono font-semibold text-indigo-600">
+                                  {entry.unique_id || `#${entry.id}`}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                  entry.priority === 'Urgent' ? 'bg-amber-100 text-amber-700' :
+                                  entry.priority === 'Confidential' ? 'bg-rose-100 text-rose-700' :
+                                  'bg-emerald-100 text-emerald-700'
+                                }`}>
+                                  {entry.priority}
+                                </span>
+                              </div>
+                              <h3 className="text-sm font-semibold text-slate-800 mt-1 truncate pr-2">{entry.subject}</h3>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                                <span className="flex items-center gap-1">
+                                  <UserRound size={12} />
+                                  {entry.sender_name || '—'}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Building2 size={12} />
+                                  {entry.current_department || 'Pending'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className={`text-xs px-2 py-1 rounded-lg font-medium ${
+                                entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
+                                entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
+                                'bg-amber-100 text-amber-700'
                               }`}>
-                              {entry.priority}
-                            </span>
+                                {entry.receiving_mode || 'By Hand'}
+                              </span>
+                              <p className="text-xs text-slate-400 mt-2">{formatShortDate(entry.received_date)}</p>
+                            </div>
                           </div>
-                          <h3 className="text-sm font-semibold text-slate-800 mt-1 truncate">{entry.subject}</h3>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <UserRound size={12} />
-                              {entry.sender_name}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Building2 size={12} />
-                              {entry.current_department || 'Pending'}
-                            </span>
-                          </div>
+                        </button>
+
+                        {/* ── Always-visible Action Column ── */}
+                        <div className="shrink-0 flex flex-col items-center justify-center gap-2 px-3 py-4 border-l border-slate-100 bg-slate-50/40">
+                          {/* Edit button */}
+                          <button
+                            type="button"
+                            title="Edit Patrak"
+                            onClick={(e) => { e.stopPropagation(); handleInlineEdit(entry) }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg w-full justify-center
+                                       bg-white border border-slate-200 shadow-sm
+                                       text-slate-600 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50
+                                       text-xs font-semibold transition-all"
+                          >
+                            <Edit2 size={12} />
+                            Edit
+                          </button>
+
+                          {/* History button */}
+                          <button
+                            type="button"
+                            title="View Edit History"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openHistoryDrawer(entry)
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg w-full justify-center
+                                        text-xs font-semibold transition-all border shadow-sm ${
+                              rowHistories[entry.id]?.length > 0
+                                ? 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100 hover:border-violet-300'
+                                : 'bg-white border-slate-200 text-slate-500 hover:text-violet-600 hover:border-violet-200 hover:bg-violet-50'
+                            }`}
+                          >
+                            <History size={12} />
+                            {loadingRowHistory[entry.id] ? '…' :
+                              rowHistories[entry.id]?.length > 0
+                                ? `${rowHistories[entry.id].length} Edit${rowHistories[entry.id].length > 1 ? 's' : ''}`
+                                : rowHistories[entry.id] !== undefined ? 'No Edits' : 'History'}
+                          </button>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className={`text-xs px-2 py-1 rounded-lg font-medium ${entry.receiving_mode === 'Mails' ? 'bg-blue-100 text-blue-700' :
-                            entry.receiving_mode === 'Fax' ? 'bg-purple-100 text-purple-700' :
-                              'bg-amber-100 text-amber-700'
-                            }`}>
-                            {entry.receiving_mode || 'By Hand'}
-                          </span>
-                          <p className="text-xs text-slate-400 mt-2">
-                            {formatShortDate(entry.received_date)}
-                          </p>
-                        </div>
+
                       </div>
-                    </motion.button>
+                    </motion.div>
                   )
                 })
               )}
@@ -850,5 +1003,224 @@ export default function Letters() {
         </motion.div>
       </motion.div>
     </Layout>
+
+      {/* ══ AUDIT HISTORY SLIDE-OVER DRAWER ══ */}
+      <AnimatePresence>
+        {showHistoryDrawer && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setShowHistoryDrawer(false)}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-[3px] z-40"
+            />
+
+            {/* Drawer panel — wider for readability */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed top-0 right-0 h-full w-full max-w-lg z-50 flex flex-col bg-white shadow-2xl"
+            >
+              {/* ── Sticky Header ── */}
+              <div className="shrink-0 bg-gradient-to-br from-violet-700 via-violet-600 to-violet-500 px-6 py-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 bg-white/15 rounded-2xl flex items-center justify-center shrink-0">
+                      <History size={22} className="text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-white font-bold text-xl tracking-tight leading-tight">Edit Audit Trail</h2>
+                      <p className="text-violet-200 text-sm font-medium mt-0.5 truncate max-w-[240px]">
+                        {historyDrawerEntry?.subject || 'Patrak History'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowHistoryDrawer(false)}
+                    className="p-2.5 bg-white/10 hover:bg-white/25 rounded-xl transition-colors shrink-0"
+                  >
+                    <X size={20} className="text-white" />
+                  </button>
+                </div>
+
+                {/* Meta strip */}
+                <div className="flex items-center gap-3 mt-4 flex-wrap">
+                  <span className="text-xs font-mono font-semibold text-violet-200 bg-white/10 px-3 py-1 rounded-lg">
+                    {historyDrawerEntry?.unique_id}
+                  </span>
+                  {drawerHistory.length > 0 && (
+                    <span className="text-xs font-bold text-white bg-white/20 px-3 py-1 rounded-full">
+                      {drawerHistory.length} edit{drawerHistory.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-teal-300">
+                    <span>🔒</span> QR unchanged
+                  </span>
+                </div>
+              </div>
+
+              {/* ── Scrollable content ── */}
+              <div className="flex-1 overflow-y-auto bg-slate-50/50">
+                {loadingDrawerHistory ? (
+                  <div className="py-20 text-center">
+                    <div className="w-14 h-14 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-violet-100">
+                      <History size={24} className="text-violet-300 animate-pulse" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-500">Loading audit trail…</p>
+                  </div>
+                ) : drawerHistory.length === 0 ? (
+                  <div className="py-20 text-center px-8">
+                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-5 border border-slate-100 shadow-sm">
+                      <History size={32} className="text-slate-300" />
+                    </div>
+                    <p className="text-base font-bold text-slate-500">No edits recorded yet</p>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed max-w-xs mx-auto">
+                      Changes to this patrak will appear here automatically after each successful update.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-6">
+                    {/* Timeline */}
+                    <div className="relative">
+                      {/* Connector line */}
+                      <div className="absolute left-[17px] top-5 bottom-5 w-0.5 bg-gradient-to-b from-violet-400 via-violet-200 to-transparent" />
+
+                      <div className="space-y-6">
+                        {drawerHistory.slice().reverse().map((edit, idx) => {
+                          let changedFields = []
+                          let oldValues = {}
+                          let newValues = {}
+                          try {
+                            changedFields = JSON.parse(edit.changed_fields)
+                            oldValues = JSON.parse(edit.old_values)
+                            newValues = JSON.parse(edit.new_values)
+                          } catch(e) {}
+
+                          const FIELD_LABELS = {
+                            subject: 'Subject', priority: 'Priority',
+                            sender_name: 'Sender Name', sender_type: 'Sender Type',
+                            sender_designation: 'Designation', sender_address: 'Address',
+                            sender_email: 'Email', sender_reference_number: 'Reference No.',
+                            reference_date: 'Reference Date', received_date: 'Received Date',
+                            unit_district: 'Unit / District', send_to: 'Organization',
+                            description: 'Description', fax_number: 'Fax Number',
+                            receiving_mode: 'Receiving Mode', status: 'Status',
+                          }
+                          const fmtVal = (field, val) => {
+                            if (!val || val === 'None') return '—'
+                            if (field.includes('date') && String(val).includes('T')) {
+                              try { return new Date(val).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return val }
+                            }
+                            return val
+                          }
+
+                          return (
+                            <motion.div
+                              key={edit.id || idx}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="relative flex gap-4"
+                            >
+                              {/* Timeline dot */}
+                              <div className="relative z-10 w-9 h-9 rounded-full bg-violet-500 ring-4 ring-violet-100 shrink-0 mt-0.5 flex items-center justify-center shadow-md shadow-violet-200">
+                                <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                              </div>
+
+                              {/* Card */}
+                              <div className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-1">
+
+                                {/* Card header */}
+                                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-violet-50 to-white border-b border-violet-100">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
+                                      <UserRound size={15} className="text-violet-600" />
+                                    </div>
+                                    <div>
+                                      <span className="text-base font-semibold text-slate-800 block">{edit.edited_by_name || 'System'}</span>
+                                      <span className="text-sm text-slate-500">edited this patrak</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-right shrink-0 ml-3">
+                                    <span className="text-sm font-semibold text-slate-700 block">
+                                      {new Date(edit.edited_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </span>
+                                    <span className="text-sm text-slate-400">
+                                      {new Date(edit.edited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Badges */}
+                                <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+                                  <span className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-lg border bg-violet-50 text-violet-700 border-violet-200">
+                                    {changedFields.length} field{changedFields.length > 1 ? 's' : ''} changed
+                                  </span>
+                                  <span className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
+                                    ✏ Edited
+                                  </span>
+                                </div>
+
+                                {/* Field diffs */}
+                                <div className="divide-y divide-slate-100">
+                                  {changedFields.map(field => (
+                                    <div key={field} className="px-5 py-4">
+                                      <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                                        {FIELD_LABELS[field] || field.replace(/_/g, ' ')}
+                                      </p>
+                                      <div className="space-y-2.5">
+                                        {/* OLD */}
+                                        <div className="flex items-start gap-3">
+                                          <span className="text-xs font-bold uppercase text-rose-500 shrink-0 mt-1 w-8 tracking-wide">OLD</span>
+                                          <span className="text-base text-rose-700 bg-rose-50 px-3 py-2 rounded-xl border border-rose-100 line-through break-words leading-relaxed flex-1">
+                                            {fmtVal(field, oldValues[field])}
+                                          </span>
+                                        </div>
+                                        {/* NEW */}
+                                        <div className="flex items-start gap-3">
+                                          <span className="text-xs font-bold uppercase text-emerald-600 shrink-0 mt-1 w-8 tracking-wide">NEW</span>
+                                          <span className="text-base font-semibold text-emerald-800 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 break-words leading-relaxed flex-1">
+                                            {fmtVal(field, newValues[field])}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Footer ── */}
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-400 font-medium">Patrak ID</p>
+                  <p className="text-sm font-mono font-semibold text-slate-600 mt-0.5">
+                    {historyDrawerEntry?.unique_id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowHistoryDrawer(false)}
+                  className="text-sm font-semibold text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 px-4 py-2 rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

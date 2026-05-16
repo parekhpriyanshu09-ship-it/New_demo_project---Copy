@@ -187,12 +187,12 @@ export default function Login() {
               />
               <div>
                 <h1 className="text-[#0f172a] font-bold text-base xl:text-lg leading-tight">SCRB Gujarat</h1>
-                <p className="text-slate-500 text-[10px] xl:text-xs font-medium leading-tight">State Crime Records Bureau</p>
+                <p className="text-slate-500 text-xs xl:text-xs font-medium leading-tight">State Crime Records Bureau</p>
               </div>
             </div>
 
             {/* Badge */}
-            <div className="inline-block bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] xl:text-xs font-semibold mb-3 flex items-center gap-1.5 w-max border border-red-100">
+            <div className="inline-block bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs xl:text-xs font-semibold mb-3 flex items-center gap-1.5 w-max border border-red-100">
               <ShieldCheck size={12} />
               Secure. Track. Simplify.
             </div>
@@ -203,7 +203,7 @@ export default function Login() {
               <span className="text-[#dc2626]">Patrak Tracking System</span>
             </h2>
             
-            <p className="text-slate-500 text-xs xl:text-[13px] max-w-md mb-5 leading-relaxed">
+            <p className="text-slate-500 text-xs xl:text-sm max-w-md mb-5 leading-relaxed">
               Track, manage and monitor internal courier letters securely and efficiently across all police departments.
             </p>
 
@@ -214,8 +214,8 @@ export default function Login() {
                   <ShieldCheck size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Secure & Reliable</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Enterprise grade security with role-based access</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Secure & Reliable</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Enterprise grade security with role-based access</p>
                 </div>
               </div>
 
@@ -224,8 +224,8 @@ export default function Login() {
                   <ScanLine size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Real-time Tracking</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Track every patrak movement in real-time</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Real-time Tracking</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Track every patrak movement in real-time</p>
                 </div>
               </div>
 
@@ -234,8 +234,8 @@ export default function Login() {
                   <BarChart3 size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Smart Dashboard</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Analytics and insights at your fingertips</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Smart Dashboard</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Analytics and insights at your fingertips</p>
                 </div>
               </div>
 
@@ -244,8 +244,8 @@ export default function Login() {
                   <Users size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Department Integration</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Unified system across all departments</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Department Integration</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Unified system across all departments</p>
                 </div>
               </div>
 
@@ -256,8 +256,8 @@ export default function Login() {
                     <ShieldCheck size={14} className="xl:w-4 xl:h-4" />
                   </div>
                   <div>
-                    <h3 className="text-slate-800 font-bold text-[10px] xl:text-[11px]">Enterprise Security</h3>
-                    <p className="text-slate-500 text-[8px] xl:text-[9px]">OWASP Top 10 Compliant System</p>
+                    <h3 className="text-slate-800 font-bold text-xs xl:text-xs">Enterprise Security</h3>
+                    <p className="text-slate-500 text-xs xl:text-xs">OWASP Top 10 Compliant System</p>
                   </div>
                 </div>
                 <div className="w-4 h-4 xl:w-5 xl:h-5 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-emerald-500 shrink-0 shadow-sm">
@@ -284,9 +284,9 @@ export default function Login() {
               </div>
               
               <h1 className="text-[#0f172a] font-black text-2xl sm:text-3xl mb-1 tracking-tight">SCRB Gujarat</h1>
-              <p className="text-slate-500 text-[13px] sm:text-sm font-medium mb-5">State Crime Records Bureau</p>
+              <p className="text-slate-500 text-sm sm:text-sm font-medium mb-5">State Crime Records Bureau</p>
               
-              <div className="bg-red-50/80 text-red-600 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold mb-6 flex items-center justify-center gap-1.5 border border-red-100 shadow-sm backdrop-blur-sm">
+              <div className="bg-red-50/80 text-red-600 px-4 py-1.5 rounded-full text-xs sm:text-xs font-bold mb-6 flex items-center justify-center gap-1.5 border border-red-100 shadow-sm backdrop-blur-sm">
                 <ShieldCheck size={14} strokeWidth={2.5} />
                 Secure. Track. Simplify.
               </div>
@@ -296,7 +296,7 @@ export default function Login() {
             <div className="w-full bg-slate-100/80 p-1.5 rounded-2xl flex items-center mb-6 border border-slate-200/60 shadow-inner backdrop-blur-sm">
               <button
                 onClick={() => setActiveTab('track')}
-                className={`flex-1 py-2.5 text-[12px] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                   activeTab === 'track' 
                     ? 'bg-white text-[#dc2626] shadow-sm border border-slate-200/50' 
                     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
@@ -307,7 +307,7 @@ export default function Login() {
               </button>
               <button
                 onClick={() => setActiveTab('login')}
-                className={`flex-1 py-2.5 text-[12px] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                   activeTab === 'login' 
                     ? 'bg-white text-[#dc2626] shadow-sm border border-slate-200/50' 
                     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
@@ -338,19 +338,19 @@ export default function Login() {
                               <Search size={24} />
                             </div>
                             <h2 className="font-bold text-xl lg:text-lg xl:text-xl text-slate-800 mb-1.5 tracking-tight">Track Document</h2>
-                            <p className="text-slate-500 text-[13px] lg:text-[11px] xl:text-[12px] text-center">Enter Patrak ID or search by details</p>
+                            <p className="text-slate-500 text-sm lg:text-xs xl:text-sm text-center">Enter Patrak ID or search by details</p>
                           </div>
 
                           <div className="space-y-4">
                             <div className="space-y-1">
-                              <label className="block text-[11px] font-bold text-slate-700 ml-1">Patrak ID</label>
+                              <label className="block text-xs font-bold text-slate-700 ml-1">Patrak ID</label>
                               <div className="relative flex gap-2">
                                 <input
                                   type="text"
                                   value={patrakId}
                                   onChange={(e) => setPatrakId(e.target.value)}
                                   placeholder="e.g. PAT-2026-001"
-                                  className="w-full pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-[13px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all font-medium"
+                                  className="w-full pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all font-medium"
                                   onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
                                 />
                                 <button 
@@ -365,7 +365,7 @@ export default function Login() {
 
                             <div className="flex items-center gap-4 py-2">
                               <div className="h-px bg-slate-200 flex-1"></div>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OR SEARCH BY</span>
+                              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">OR SEARCH BY</span>
                               <div className="h-px bg-slate-200 flex-1"></div>
                             </div>
 
@@ -379,7 +379,7 @@ export default function Login() {
                                   value={filters.subject}
                                   onChange={(e) => setFilters({...filters, subject: e.target.value})}
                                   placeholder="Subject keywords"
-                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-[12px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
                                 />
                               </div>
                               <div className="relative">
@@ -391,7 +391,7 @@ export default function Login() {
                                   value={filters.location}
                                   onChange={(e) => setFilters({...filters, location: e.target.value})}
                                   placeholder="Origin / Location"
-                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-[12px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
                                 />
                               </div>
                               <div className="relative">
@@ -402,7 +402,7 @@ export default function Login() {
                                   type="date"
                                   value={filters.date}
                                   onChange={(e) => setFilters({...filters, date: e.target.value})}
-                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-[12px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-400"
+                                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-slate-400"
                                 />
                               </div>
                             </div>
@@ -411,7 +411,7 @@ export default function Login() {
                               <div className="flex justify-end pt-1">
                                 <button 
                                   onClick={clearFilters}
-                                  className="text-[10px] font-bold text-slate-500 hover:text-red-600 transition-colors"
+                                  className="text-xs font-bold text-slate-500 hover:text-red-600 transition-colors"
                                 >
                                   Clear Filters
                                 </button>
@@ -422,7 +422,7 @@ export default function Login() {
                           {trackError && (
                             <div className="mt-4 bg-rose-50 border border-rose-100 p-3 rounded-lg flex items-start gap-2">
                               <AlertCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
-                              <p className="text-rose-600 text-[11px] font-medium leading-tight">{trackError}</p>
+                              <p className="text-rose-600 text-xs font-medium leading-tight">{trackError}</p>
                             </div>
                           )}
 
@@ -437,7 +437,7 @@ export default function Login() {
                                  setPatrakId('');
                                  setSearchParams({});
                                }}
-                               className="text-[11px] font-bold text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-slate-100 hover:bg-red-50 px-3 py-1.5 rounded-lg"
+                               className="text-xs font-bold text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-slate-100 hover:bg-red-50 px-3 py-1.5 rounded-lg"
                              >
                                <Search size={12} /> New Search
                              </button>
@@ -452,13 +452,13 @@ export default function Login() {
                       {searching && searchResults.length === 0 && (
                         <div className="flex flex-col items-center gap-3 py-6 text-slate-400">
                           <Loader2 className="w-8 h-8 animate-spin text-red-500" />
-                          <p className="text-[11px] font-medium">Searching entries...</p>
+                          <p className="text-xs font-medium">Searching entries...</p>
                         </div>
                       )}
 
                       {searchResults.length > 0 && !trackData && (
                         <div className="mt-6 space-y-3">
-                          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">
+                          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">
                             Matching Results ({searchResults.length}) {filters.location && <span className="normal-case text-slate-400 ml-1">[Searched in Origin/Sender Department]</span>}
                           </h3>
                           <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
@@ -469,21 +469,21 @@ export default function Login() {
                                 className="w-full text-left bg-slate-50 hover:bg-red-50 border border-slate-100 hover:border-red-100 p-3 rounded-xl transition-all group"
                               >
                                 <div className="flex items-center justify-between mb-1.5">
-                                  <span className="text-[10px] font-black text-red-600 bg-white border border-red-100 px-2 py-0.5 rounded shadow-sm">
+                                  <span className="text-xs font-black text-red-600 bg-white border border-red-100 px-2 py-0.5 rounded shadow-sm">
                                     {result.unique_id}
                                   </span>
-                                  <span className="text-[10px] font-medium text-slate-400">
+                                  <span className="text-xs font-medium text-slate-400">
                                     {new Date(result.received_date).toLocaleDateString()}
                                   </span>
                                 </div>
-                                <h4 className="font-bold text-[12px] text-slate-800 leading-tight mb-1 group-hover:text-red-700 transition-colors line-clamp-2">
+                                <h4 className="font-bold text-sm text-slate-800 leading-tight mb-1 group-hover:text-red-700 transition-colors line-clamp-2">
                                   {result.subject}
                                 </h4>
                                 <div className="flex items-center justify-between mt-2">
-                                   <p className="text-[10px] text-slate-500 flex items-center gap-1 truncate max-w-[150px]">
+                                   <p className="text-xs text-slate-500 flex items-center gap-1 truncate max-w-[150px]">
                                      <ShieldCheck size={12} /> {result.sender_name}
                                    </p>
-                                   <p className="text-[9px] font-bold text-slate-400 uppercase bg-slate-200/50 px-1.5 py-0.5 rounded">
+                                   <p className="text-xs font-bold text-slate-400 uppercase bg-slate-200/50 px-1.5 py-0.5 rounded">
                                      {result.current_department}
                                    </p>
                                 </div>
@@ -495,8 +495,8 @@ export default function Login() {
 
                       {(filters.subject || filters.date || filters.location) && searchResults.length === 0 && !searching && !trackData && (
                         <div className="text-center py-6 mt-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                          <p className="text-[12px] font-bold text-slate-600 mb-0.5">No Patraks Found</p>
-                          <p className="text-[10px] text-slate-400">Try adjusting your filters.</p>
+                          <p className="text-sm font-bold text-slate-600 mb-0.5">No Patraks Found</p>
+                          <p className="text-xs text-slate-400">Try adjusting your filters.</p>
                         </div>
                       )}
 
@@ -526,12 +526,12 @@ export default function Login() {
                           />
                         </div>
                         <h2 className="font-bold text-xl lg:text-lg xl:text-xl text-slate-800 mb-1.5 tracking-tight">Staff Login</h2>
-                        <p className="text-slate-500 text-[13px] lg:text-[11px] xl:text-[12px]">Enter credentials to access</p>
+                        <p className="text-slate-500 text-sm lg:text-xs xl:text-sm">Enter credentials to access</p>
                       </div>
 
                       <form onSubmit={handleLoginSubmit} className="space-y-3 xl:space-y-4">
                         <div className="space-y-1">
-                          <label className="block text-[11px] font-bold text-slate-700 ml-1">Username</label>
+                          <label className="block text-xs font-bold text-slate-700 ml-1">Username</label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                               <User size={14} />
@@ -542,13 +542,13 @@ export default function Login() {
                               onChange={(e) => setUsername(e.target.value)}
                               placeholder="Enter your username"
                               required
-                              className="w-full pl-8 pr-3 py-2 xl:py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[12px] xl:text-[13px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-slate-400"
+                              className="w-full pl-8 pr-3 py-2 xl:py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm xl:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-slate-400"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[11px] font-bold text-slate-700 ml-1">Password</label>
+                          <label className="block text-xs font-bold text-slate-700 ml-1">Password</label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                               <Lock size={14} />
@@ -559,7 +559,7 @@ export default function Login() {
                               onChange={(e) => setPassword(e.target.value)}
                               placeholder="Enter your password"
                               required
-                              className="w-full pl-8 pr-9 py-2 xl:py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[12px] xl:text-[13px] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-slate-400"
+                              className="w-full pl-8 pr-9 py-2 xl:py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm xl:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-slate-400"
                             />
                             <button
                               type="button"
@@ -571,7 +571,7 @@ export default function Login() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] pt-1">
+                        <div className="flex items-center justify-between text-xs pt-1">
                           <label className="flex items-center gap-1.5 cursor-pointer group ml-1">
                             <div className="relative flex items-center justify-center">
                               <input type="checkbox" className="peer appearance-none w-[14px] h-[14px] border-2 border-slate-200 rounded-[3px] cursor-pointer checked:bg-[#dc2626] checked:border-[#dc2626] transition-all" />
@@ -585,13 +585,13 @@ export default function Login() {
                         </div>
 
                         {error && (
-                          <p className="text-rose-500 text-[11px] font-medium text-center bg-rose-50 py-1.5 px-2 rounded-lg border border-rose-100">{error}</p>
+                          <p className="text-rose-500 text-xs font-medium text-center bg-rose-50 py-1.5 px-2 rounded-lg border border-rose-100">{error}</p>
                         )}
 
                         <button 
                           type="submit" 
                           disabled={loading}
-                          className="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold text-[12px] xl:text-[13px] py-2.5 xl:py-3 rounded-xl transition-all shadow-md shadow-red-200/50 flex items-center justify-center gap-1.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                          className="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold text-sm xl:text-sm py-2.5 xl:py-3 rounded-xl transition-all shadow-md shadow-red-200/50 flex items-center justify-center gap-1.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                           {loading ? (
                             <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
@@ -613,7 +613,7 @@ export default function Login() {
                         </button>
                       </form>
 
-                      <p className="text-center mt-6 xl:mt-8 text-slate-500 text-[12px]">
+                      <p className="text-center mt-6 xl:mt-8 text-slate-500 text-sm">
                         Don't have an account?{' '}
                         <Link to="/register" className="text-[#dc2626] font-bold hover:underline">
                           Register
@@ -633,8 +633,8 @@ export default function Login() {
                     <ShieldCheck size={18} strokeWidth={2.5} />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-slate-800 font-extrabold text-[13px]">Enterprise Security</h3>
-                    <p className="text-slate-500 text-[11px] font-medium mt-0.5">OWASP Top 10 Compliant System</p>
+                    <h3 className="text-slate-800 font-extrabold text-sm">Enterprise Security</h3>
+                    <p className="text-slate-500 text-xs font-medium mt-0.5">OWASP Top 10 Compliant System</p>
                   </div>
                 </div>
                 <div className="w-6 h-6 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-emerald-500 shrink-0 shadow-sm">
@@ -648,22 +648,22 @@ export default function Login() {
                       <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-[#dc2626] shadow-sm mb-2.5">
                         <Lock size={16} strokeWidth={2} />
                       </div>
-                      <h4 className="text-slate-800 font-extrabold text-[10px] sm:text-[11px] mb-1">Data Encryption</h4>
-                      <p className="text-slate-500 text-[9px] sm:text-[10px] leading-tight font-medium">End-to-end<br/>encrypted</p>
+                      <h4 className="text-slate-800 font-extrabold text-xs sm:text-xs mb-1">Data Encryption</h4>
+                      <p className="text-slate-500 text-xs sm:text-xs leading-tight font-medium">End-to-end<br/>encrypted</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
                       <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-[#dc2626] shadow-sm mb-2.5">
                         <Shield size={16} strokeWidth={2} />
                       </div>
-                      <h4 className="text-slate-800 font-extrabold text-[10px] sm:text-[11px] mb-1">Role Based Access</h4>
-                      <p className="text-slate-500 text-[9px] sm:text-[10px] leading-tight font-medium">Secure role<br/>management</p>
+                      <h4 className="text-slate-800 font-extrabold text-xs sm:text-xs mb-1">Role Based Access</h4>
+                      <p className="text-slate-500 text-xs sm:text-xs leading-tight font-medium">Secure role<br/>management</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
                       <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-[#dc2626] shadow-sm mb-2.5">
                         <FileText size={16} strokeWidth={2} />
                       </div>
-                      <h4 className="text-slate-800 font-extrabold text-[10px] sm:text-[11px] mb-1">Audit Logs</h4>
-                      <p className="text-slate-500 text-[9px] sm:text-[10px] leading-tight font-medium">Complete activity<br/>logs</p>
+                      <h4 className="text-slate-800 font-extrabold text-xs sm:text-xs mb-1">Audit Logs</h4>
+                      <p className="text-slate-500 text-xs sm:text-xs leading-tight font-medium">Complete activity<br/>logs</p>
                     </div>
                  </div>
                  
@@ -672,14 +672,14 @@ export default function Login() {
                       <ShieldCheck size={16} strokeWidth={2} />
                     </div>
                     <div className="text-left">
-                      <h4 className="text-slate-800 font-extrabold text-[12px] sm:text-[13px] mb-0.5">100% Secure</h4>
-                      <p className="text-slate-500 text-[10px] sm:text-[11px] font-medium">Your data is protected</p>
+                      <h4 className="text-slate-800 font-extrabold text-sm sm:text-sm mb-0.5">100% Secure</h4>
+                      <p className="text-slate-500 text-xs sm:text-xs font-medium">Your data is protected</p>
                     </div>
                  </div>
               </div>
               
               <div className="text-center pt-2 pb-6">
-                <p className="text-slate-500 text-[10px] font-medium">© 2026 Patrak Tracking System. All rights reserved.</p>
+                <p className="text-slate-500 text-xs font-medium">© 2026 Patrak Tracking System. All rights reserved.</p>
               </div>
             </div>
 
@@ -696,8 +696,8 @@ export default function Login() {
                 <Lock size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Data Encryption</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">End-to-end encrypted</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Data Encryption</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">End-to-end encrypted</p>
               </div>
             </div>
 
@@ -706,8 +706,8 @@ export default function Login() {
                 <Shield size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Role Based Access</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Secure role management</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Role Based Access</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Secure role management</p>
               </div>
             </div>
 
@@ -716,8 +716,8 @@ export default function Login() {
                 <FileText size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Audit Logs</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Complete activity logs</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Audit Logs</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Complete activity logs</p>
               </div>
             </div>
 
@@ -726,14 +726,14 @@ export default function Login() {
                 <ShieldCheck size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">100% Secure</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Your data is protected</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">100% Secure</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Your data is protected</p>
               </div>
             </div>
           </div>
           
           <div className="text-center">
-            <p className="text-slate-400 text-[8px] xl:text-[9px] font-medium">© 2026 Patrak Tracking System. All rights reserved.</p>
+            <p className="text-slate-400 text-xs xl:text-xs font-medium">© 2026 Patrak Tracking System. All rights reserved.</p>
           </div>
         </div>
       </div>

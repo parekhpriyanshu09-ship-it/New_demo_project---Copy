@@ -120,14 +120,7 @@
 }
 
 html {
-  font-size: 80%;
-}
-
-@media (min-width: 1920px) {
-  html {
-    font-size: 120%;
-    /* 80% × 1.5 = 120% → simulates 150% zoom on big monitors only */
-  }
+  font-size: 100%;
 }
 
 body {

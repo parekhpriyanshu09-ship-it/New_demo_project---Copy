@@ -66,7 +66,7 @@ export default function CalendarWidget({ markedDates = [], onDateClick, selected
       </div>
 
       {/* Day headers */}
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground font-semibold mb-1">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground font-semibold mb-1">
         {DAYS.map(d => <div key={d}>{d}</div>)}
       </div>
 

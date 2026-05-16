@@ -150,16 +150,16 @@ export default function Users() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-lg sm:text-xl font-black text-slate-800 font-heading tracking-tight leading-none">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight leading-none">
               User Management Directory
             </h1>
-            <p className="text-slate-400 font-bold text-[11px]">
+            <p className="text-slate-400 font-bold text-xs">
               Manage system access, roles, and departmental permissions.
             </p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl shadow-sm shadow-red-200 flex items-center justify-center gap-2 transition-all font-black text-[12px] tracking-tight whitespace-nowrap"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl shadow-sm shadow-red-200 flex items-center justify-center gap-2 transition-all font-black text-sm tracking-tight whitespace-nowrap"
           >
             <UserPlus size={16} />
             Create New User
@@ -173,7 +173,7 @@ export default function Users() {
               <UsersIcon size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Directory</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Directory</p>
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter">{pagination.total}</h3>
             </div>
           </motion.div>
@@ -182,7 +182,7 @@ export default function Users() {
               <UserCheck size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Status</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Active Status</p>
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter">{pagination.total}</h3>
             </div>
           </motion.div>
@@ -191,7 +191,7 @@ export default function Users() {
               <Shield size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Admins</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">System Admins</p>
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter">-</h3>
             </div>
           </motion.div>
@@ -200,7 +200,7 @@ export default function Users() {
               <Building2 size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Departments</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Departments</p>
               <h3 className="text-2xl font-black text-slate-800 tracking-tighter">{DEPARTMENTS.length}</h3>
             </div>
           </motion.div>
@@ -215,7 +215,7 @@ export default function Users() {
               placeholder="Search by username or email..."
               value={search}
               onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition-all placeholder:text-slate-400"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition-all placeholder:text-slate-400"
             />
           </div>
         </motion.div>
@@ -226,12 +226,12 @@ export default function Users() {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b border-slate-50">
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">User Details</th>
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Role Level</th>
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Department</th>
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Joined On</th>
-                  <th className="pb-3 px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest">User Details</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest">Role Level</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest">Department</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest">Joined On</th>
+                  <th className="pb-3 px-2 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -240,14 +240,14 @@ export default function Users() {
                     <tr>
                       <td colSpan={6} className="py-10 text-center">
                         <Activity className="animate-spin text-red-500 mx-auto mb-2" size={24} />
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Loading directory...</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading directory...</span>
                       </td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-10 text-center">
                         <UsersIcon className="text-slate-300 mx-auto mb-2" size={32} />
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No users found</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">No users found</span>
                       </td>
                     </tr>
                   ) : (
@@ -269,13 +269,13 @@ export default function Users() {
                               {user.role === 'admin' ? <Shield size={16} /> : <Eye size={16} />}
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-[12px] font-black text-slate-800 tracking-tight">{user.username}</span>
-                              <span className="text-[10px] font-bold text-slate-400">{user.email}</span>
+                              <span className="text-sm font-black text-slate-800 tracking-tight">{user.username}</span>
+                              <span className="text-xs font-bold text-slate-400">{user.email}</span>
                             </div>
                           </div>
                         </td>
                         <td className="py-3 px-2">
-                          <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                          <span className={`px-2 py-1 rounded-md text-xs font-black uppercase tracking-widest ${
                             user.role === 'admin' ? 'bg-red-50 text-red-600' :
                             user.role === 'dg_office' ? 'bg-blue-50 text-blue-600' :
                             user.role === 'department_user' ? 'bg-amber-50 text-amber-600' :
@@ -284,18 +284,18 @@ export default function Users() {
                             {getRoleLabel(user.role)}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-[11px] font-bold text-slate-500">
+                        <td className="py-3 px-2 text-xs font-bold text-slate-500">
                           {user.department || '-'}
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1.5">
                             <div className={`w-1.5 h-1.5 rounded-full ${user.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                            <span className="text-xs font-black text-slate-600 uppercase tracking-widest">
                               {user.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2 text-[10px] font-bold text-slate-400">
+                        <td className="py-3 px-2 text-xs font-bold text-slate-400">
                           {formatDate(user.created_at)}
                         </td>
                         <td className="py-3 px-2 text-right">
@@ -327,7 +327,7 @@ export default function Users() {
           {/* Pagination */}
           {!loading && pagination.pages > 1 && (
             <div className="flex items-center justify-between pt-6 border-t border-slate-50 mt-4">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
                 Showing {users.length} of {pagination.total} entries
               </span>
               <div className="flex items-center gap-1">
@@ -338,7 +338,7 @@ export default function Users() {
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <div className="px-3 py-1 bg-slate-50 rounded-lg text-[11px] font-black text-slate-700">
+                <div className="px-3 py-1 bg-slate-50 rounded-lg text-xs font-black text-slate-700">
                   {pagination.page} / {pagination.pages}
                 </div>
                 <button
@@ -362,11 +362,11 @@ export default function Users() {
           <Input label="Secure Password" type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder="••••••••" required />
           
           <div>
-            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-widest mb-1">Access Role</label>
+            <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-1">Access Role</label>
             <select
               value={addForm.role}
               onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-[13px] font-bold transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm font-bold transition-all"
             >
               <option value={ROLES.VIEWER}>Viewer (Read Only)</option>
               <option value={ROLES.DEPARTMENT_USER}>Department User</option>
@@ -376,11 +376,11 @@ export default function Users() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-widest mb-1">Department Assigned</label>
+            <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-1">Department Assigned</label>
             <select
               value={addForm.department}
               onChange={(e) => setAddForm({ ...addForm, department: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-[13px] font-bold transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm font-bold transition-all"
             >
               <option value="">No Department Assigned</option>
               {DEPARTMENTS.map((dept) => (
@@ -392,10 +392,10 @@ export default function Users() {
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
-            <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+            <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 shadow-sm shadow-red-200 transition-all disabled:opacity-50">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 shadow-sm shadow-red-200 transition-all disabled:opacity-50">
               {saving ? 'Creating...' : 'Create User'}
             </button>
           </div>
@@ -409,11 +409,11 @@ export default function Users() {
           <Input label="Email Address" type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} required />
           
           <div>
-            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-widest mb-1">Access Role</label>
+            <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-1">Access Role</label>
             <select
               value={addForm.role}
               onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-[13px] font-bold transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm font-bold transition-all"
             >
               <option value={ROLES.VIEWER}>Viewer (Read Only)</option>
               <option value={ROLES.DEPARTMENT_USER}>Department User</option>
@@ -423,11 +423,11 @@ export default function Users() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-widest mb-1">Department Assigned</label>
+            <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-1">Department Assigned</label>
             <select
               value={addForm.department}
               onChange={(e) => setAddForm({ ...addForm, department: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-[13px] font-bold transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm font-bold transition-all"
             >
               <option value="">No Department Assigned</option>
               {DEPARTMENTS.map((dept) => (
@@ -439,10 +439,10 @@ export default function Users() {
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
-            <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+            <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 shadow-sm shadow-red-200 transition-all disabled:opacity-50">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 shadow-sm shadow-red-200 transition-all disabled:opacity-50">
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>

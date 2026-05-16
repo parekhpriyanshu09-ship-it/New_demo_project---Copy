@@ -10,7 +10,7 @@ export function Topbar() {
   return (
     <header className="bg-[var(--background)]/60 border-b border-border/50 px-5 py-3 flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-5 w-full sm:w-auto">
-        <h1 className="text-xl md:text-2xl font-semibold tracking-tight whitespace-nowrap text-slate-900 dark:text-neutral-100 leading-none">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
           Welcome back, admin!
         </h1>
         {/* Compact Horizontal Quick Controls Capsule */}
@@ -22,7 +22,7 @@ export function Topbar() {
             <Bell className="h-3.5 w-3.5 text-slate-700 dark:text-neutral-300" />
             <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-[oklch(0.7_0.2_25)]" />
           </button>
-          <div className="flex items-center gap-2 px-2.5 border-l border-slate-200 dark:border-neutral-800/80 text-[10.5px] font-semibold text-slate-600 dark:text-neutral-400">
+          <div className="flex items-center gap-2 px-2.5 border-l border-slate-200 dark:border-neutral-800/80 text-sm font-semibold text-slate-600 dark:text-neutral-400">
             <Calendar className="h-3.5 w-3.5 text-primary" />
             <span>{date}</span>
             <span className="text-muted-foreground hidden md:inline">({day}, {time})</span>

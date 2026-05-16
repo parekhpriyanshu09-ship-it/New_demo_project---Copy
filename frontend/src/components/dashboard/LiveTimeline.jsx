@@ -95,11 +95,11 @@ export default function LiveTimeline({ movement }) {
                 <div>
                   <div className="font-semibold text-sm">{it.name}</div>
                   <div className="text-xs text-muted-foreground">{it.sub}</div>
-                  {it.time && <div className="text-[10px] text-muted-foreground mt-0.5">{it.time}</div>}
+                  {it.time && <div className="text-xs text-muted-foreground mt-0.5">{it.time}</div>}
                 </div>
                 {it.status && (
                   <span
-                    className="text-[10px] font-bold px-2 py-1 rounded-md"
+                    className="text-xs font-bold px-2 py-1 rounded-md"
                     style={{
                       background: it.status === 'Completed' ? 'oklch(0.70 0.17 165 / 0.15)' : 'oklch(0.62 0.18 250 / 0.15)',
                       color: it.status === 'Completed' ? 'var(--cat-green)' : 'var(--cat-blue)',

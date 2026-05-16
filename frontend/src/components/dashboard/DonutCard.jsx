@@ -46,8 +46,8 @@ export function DonutCard() {
     <div className="glass-strong rounded-2xl p-6 flex flex-col h-full justify-between w-full min-h-[220px] text-foreground">
       {/* Header Panel matching design */}
       <div className="flex items-center justify-between mb-5 w-full">
-        <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100 tracking-tight">Patrak Receiving Overview</h3>
-        <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider bg-indigo-50/50 dark:bg-indigo-900/20 px-2.5 py-0.5 rounded-md">
+        <h3 className="font-semibold text-lg text-slate-900 dark:text-neutral-100 tracking-tight">Patrak Receiving Overview</h3>
+        <span className="text-xs text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider bg-indigo-50/50 dark:bg-indigo-900/20 px-2.5 py-0.5 rounded-md">
           Channels Breakdown
         </span>
       </div>
@@ -76,14 +76,14 @@ export function DonutCard() {
                     style={{ width: `${pct}%` }}
                   >
                     <span 
-                      className={`text-[11px] font-extrabold text-muted-foreground/80 truncate pr-1 transition-opacity duration-300 ${
+                      className={`text-xs font-extrabold text-muted-foreground/80 truncate pr-1 transition-opacity duration-300 ${
                         showText ? "opacity-100" : "opacity-0"
                       }`}
                       title={m.label}
                     >
                       {m.label}
                     </span>
-                    <span className="text-[10px] font-black text-slate-300 dark:text-neutral-700/80 mt-1 leading-none">
+                    <span className="text-xs font-black text-slate-300 dark:text-neutral-700/80 mt-1 leading-none">
                       |
                     </span>
                   </div>

@@ -72,7 +72,6 @@ export default function Scanner() {
   const [arrivalConfirmed, setArrivalConfirmed] = useState(false)
   const [receiving, setReceiving] = useState(false)
   
-  const [editHistory, setEditHistory] = useState([])
 
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardForm, setForwardForm] = useState({ to_department: '', remarks: '' })
@@ -244,15 +243,13 @@ export default function Scanner() {
       const res = await api.get(`/api/entries/${entry_id}/tracking`)
       setEntryDetails(res.data.entry)
       setMovements(res.data.movements || [])
-      setEditHistory(res.data.edit_history || [])
-      
+
       setTimeout(() => {
         setVerificationComplete(true)
       }, 1500)
     } catch (error) {
       setEntryDetails(null)
       setMovements([])
-      setEditHistory([])
     } finally {
       setFetchingDetails(false)
     }
@@ -268,7 +265,6 @@ export default function Scanner() {
       try {
         const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
         setMovements(movesRes.data.movements || [])
-        setEditHistory(movesRes.data.edit_history || [])
       } catch(e) {}
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to confirm arrival')
@@ -356,17 +352,17 @@ export default function Scanner() {
       >
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-lg sm:text-xl font-black text-slate-800 font-heading tracking-tight leading-none">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight leading-none">
               Patrak Movement Terminal
             </h1>
-            <p className="text-slate-400 font-bold text-[11px]">
+            <p className="text-slate-400 font-bold text-xs">
               Scan patrak QR codes for verification and dynamic forwarding.
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-3 sm:px-4 py-2 shadow-sm flex items-center gap-2">
               <ShieldCheck size={14} className="text-emerald-500" />
-              <span className="text-[11px] font-black text-emerald-700 uppercase tracking-tight">Secured Terminal</span>
+              <span className="text-xs font-black text-emerald-700 uppercase tracking-tight">Secured Terminal</span>
             </div>
             <button onClick={resetScanner} className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-rose-600 shadow-sm transition-all hover:border-rose-100">
               <RefreshCw size={16} strokeWidth={3} />
@@ -382,7 +378,7 @@ export default function Scanner() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-slate-800 text-white shadow-lg shadow-slate-300'
                   : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-100'
@@ -404,9 +400,9 @@ export default function Scanner() {
                         <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                           <AlertCircle size={24} className="text-rose-400" />
                         </div>
-                        <p className="text-white font-black text-[11px] mb-1.5 uppercase tracking-wide">Access Denied</p>
-                        <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-5 leading-relaxed">{cameraError}</p>
-                        <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500/20 hover:!bg-rose-500/30 !text-rose-400 border border-rose-500/30 !rounded-xl !text-[9px] !py-2 !uppercase tracking-widest font-black transition-all">Retry</Button>
+                        <p className="text-white font-black text-xs mb-1.5 uppercase tracking-wide">Access Denied</p>
+                        <p className="text-slate-400 text-xs max-w-[200px] mx-auto mb-5 leading-relaxed">{cameraError}</p>
+                        <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500/20 hover:!bg-rose-500/30 !text-rose-400 border border-rose-500/30 !rounded-xl !text-xs !py-2 !uppercase tracking-widest font-black transition-all">Retry</Button>
                       </div>
                     ) : (
                       <>
@@ -420,13 +416,13 @@ export default function Scanner() {
                             <div className="w-14 h-14 bg-slate-800/50 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700/50">
                               <Camera size={24} className="text-teal-400" />
                             </div>
-                            <h3 className="text-white font-black text-[13px] tracking-tight mb-2">Scanner Ready</h3>
-                            <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-6 leading-relaxed">
+                            <h3 className="text-white font-black text-sm tracking-tight mb-2">Scanner Ready</h3>
+                            <p className="text-slate-400 text-xs max-w-[200px] mx-auto mb-6 leading-relaxed">
                               Position the QR code within the frame.
                             </p>
                             <button
                               onClick={handleStartCamera}
-                              className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all flex items-center gap-2 mx-auto"
+                              className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all flex items-center gap-2 mx-auto"
                             >
                               <Play size={14} fill="currentColor" />
                               Start Camera
@@ -436,7 +432,7 @@ export default function Scanner() {
                         {cameraStarted && !cameraReady && (
                           <div className="mt-6 flex flex-col items-center relative z-20 bg-slate-900/60 px-4 py-3 rounded-2xl backdrop-blur-sm border border-white/5">
                             <Loader2 size={18} className="text-teal-400 animate-spin mb-2" />
-                            <p className="text-slate-300 text-[8px] font-black uppercase tracking-widest">Initializing...</p>
+                            <p className="text-slate-300 text-xs font-black uppercase tracking-widest">Initializing...</p>
                           </div>
                         )}
                         {cameraStarted && cameraReady && (
@@ -468,9 +464,9 @@ export default function Scanner() {
                     <div className="w-14 h-14 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-700/50">
                       <Upload size={24} className="text-teal-400" />
                     </div>
-                    <p className="text-white font-black text-[13px] mb-1.5 tracking-tight">Upload QR Image</p>
-                    <p className="text-slate-400 text-[9px] mb-6 max-w-[200px] mx-auto leading-relaxed">Select a high-resolution image of the QR code.</p>
-                    <label className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-slate-900/20">
+                    <p className="text-white font-black text-sm mb-1.5 tracking-tight">Upload QR Image</p>
+                    <p className="text-slate-400 text-xs mb-6 max-w-[200px] mx-auto leading-relaxed">Select a high-resolution image of the QR code.</p>
+                    <label className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-slate-900/20">
                       Browse Files
                       <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                     </label>
@@ -481,12 +477,12 @@ export default function Scanner() {
                   <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/10 shadow-xl shadow-slate-950/50">
                     <div className="flex items-center gap-1.5">
                       <div className={`w-1.5 h-1.5 rounded-full ${cameraReady ? 'bg-teal-400 animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-slate-500'}`} />
-                      <span className="text-[7.5px] font-black text-slate-200 uppercase tracking-widest">
+                      <span className="text-xs font-black text-slate-200 uppercase tracking-widest">
                         {cameraReady ? 'Active' : 'Standby'}
                       </span>
                     </div>
                     <div className="w-px h-2.5 bg-white/10" />
-                    <div className="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       {activeTab === 'camera' ? 'Live Feed' : 'File Mode'}
                     </div>
                   </div>
@@ -508,8 +504,8 @@ export default function Scanner() {
                       <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-5">
                         <Search size={24} className="text-slate-300" />
                       </div>
-                      <p className="text-slate-800 font-black text-[13px] tracking-tight mb-1">Awaiting Scanner Input</p>
-                      <p className="text-slate-400 font-bold text-[11px] max-w-[220px]">Scan a QR code to reveal patrak details and forward.</p>
+                      <p className="text-slate-800 font-black text-sm tracking-tight mb-1">Awaiting Scanner Input</p>
+                      <p className="text-slate-400 font-bold text-xs max-w-[220px]">Scan a QR code to reveal patrak details and forward.</p>
                     </motion.div>
                   ) : result ? (
                     <motion.div
@@ -534,20 +530,20 @@ export default function Scanner() {
                       <h3 className={`text-lg font-black tracking-tight mb-2 ${result.success ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {result.success ? 'Patrak Successfully Forwarded' : 'Operation Failed'}
                       </h3>
-                      <p className="text-slate-500 font-bold text-[11px] mt-2 mb-6 leading-relaxed max-w-xs">{result.message}</p>
+                      <p className="text-slate-500 font-bold text-xs mt-2 mb-6 leading-relaxed max-w-xs">{result.message}</p>
                       {result.movement && (
                         <div className="bg-slate-50 rounded-2xl px-6 py-4 mb-8 border border-slate-100">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Movement Trail</p>
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Movement Trail</p>
                           <div className="flex items-center gap-3">
-                            <span className="px-3 py-1.5 bg-slate-800 text-white text-[10px] font-black rounded-lg">{result.movement.from}</span>
+                            <span className="px-3 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg">{result.movement.from}</span>
                             <ArrowRight size={16} className="text-emerald-500" />
-                            <span className="px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-black rounded-lg">{result.movement.to}</span>
+                            <span className="px-3 py-1.5 bg-emerald-500 text-white text-xs font-black rounded-lg">{result.movement.to}</span>
                           </div>
                         </div>
                       )}
                       <button 
                         onClick={resetScanner} 
-                        className="px-8 py-3 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all hover:bg-slate-700"
+                        className="px-8 py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg transition-all hover:bg-slate-700"
                       >
                         Initiate New Scan
                       </button>
@@ -570,89 +566,155 @@ export default function Scanner() {
                               <CheckCircle size={20} className="text-emerald-600" />
                             </motion.div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[11px] font-black text-emerald-600 tracking-tight">QR Verified</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                              <p className="text-xs font-black text-emerald-600 tracking-tight">QR Verified</p>
+                              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                                 Entry UID: {scannedData.unique_id?.startsWith('PTRK') ? scannedData.unique_id : `#${scannedData.unique_id?.slice(0, 8) || 'N/A'}`}
                               </p>
-                              {editHistory.length > 0 && (
-                                <p className="text-[9px] font-bold text-violet-500 mt-0.5">
-                                  ✏ Last updated by {editHistory[0]?.edited_by_name || 'Unknown'} · {new Date(editHistory[0]?.edited_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                              )}
                             </div>
                           </div>
 
                           {fetchingDetails ? (
                             <div className="py-12 text-center">
                               <Loader2 size={28} className="text-slate-400 animate-spin mx-auto mb-4" />
-                              <p className="text-slate-400 text-[10px] font-bold">Loading patrak details...</p>
+                              <p className="text-slate-400 text-xs font-bold">Loading patrak details...</p>
                             </div>
                           ) : entryDetails ? (
                             <div className="space-y-4">
-                              {/* Patrak Info Card */}
-                              <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl p-5 border border-slate-100">
-                                <div className="flex items-start justify-between gap-3 mb-4">
-                                  <div className="flex-1">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Subject</p>
-                                    <h4 className="text-[13px] font-black text-slate-800 leading-snug line-clamp-2">{entryDetails.subject}</h4>
+                              {/* ── Full Patrak Details Panel ────────────────────────── */}
+                              <div className="space-y-3">
+
+                                {/* Patrak ID strip */}
+                                <div className="flex items-center justify-between px-4 py-3 bg-slate-800 rounded-xl">
+                                  <div>
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Patrak ID</p>
+                                    <p className="text-xs font-mono font-black text-white mt-0.5">{entryDetails.unique_id}</p>
                                   </div>
-                                  <div className="flex flex-col items-end gap-1.5">
-                                    <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
                                       {entryDetails.priority}
                                     </span>
-                                    {editHistory.length > 0 && (
-                                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md bg-violet-100 text-violet-700 border border-violet-200">
-                                        ✏ Updated
-                                      </span>
+                                    <span className={`px-2 py-1 text-xs font-black uppercase tracking-wider rounded-lg border ${
+                                      entryDetails.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                      entryDetails.status === 'Closed' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                                      'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                      {entryDetails.status || 'Active'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* ── Receiving Mode ─────────────────────────── */}
+                                <div className="bg-indigo-50 rounded-xl border border-indigo-100 px-4 py-2.5">
+                                  <p className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Receiving Mode</p>
+                                  <div className="flex items-center gap-2">
+                                    {entryDetails.receiving_mode === 'Mails' ? <Send size={12} className="text-indigo-600 shrink-0" /> :
+                                     entryDetails.receiving_mode === 'Fax' ? <MapPin size={12} className="text-indigo-600 shrink-0" /> :
+                                     <ArrowRight size={12} className="text-indigo-600 shrink-0" />}
+                                    <span className="text-xs font-black text-indigo-700">{entryDetails.receiving_mode || 'By Hand'}</span>
+                                    {entryDetails.receiving_mode === 'Mails' && entryDetails.sender_email && (
+                                      <span className="text-xs text-indigo-500 ml-auto truncate">{entryDetails.sender_email}</span>
+                                    )}
+                                    {entryDetails.receiving_mode === 'Fax' && entryDetails.fax_number && (
+                                      <span className="text-xs text-indigo-500 ml-auto">{entryDetails.fax_number}</span>
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
-                                      <User size={14} className="text-slate-500" />
+
+                                {/* ── Sender Details ─────────────────────────── */}
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-5 h-5 bg-blue-50 rounded-md flex items-center justify-center border border-blue-100">
+                                      <User size={11} className="text-blue-600" />
                                     </div>
-                                    <div>
-                                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Originator</p>
-                                      <p className="text-[10px] font-black text-slate-700 truncate">{entryDetails.sender_name}</p>
-                                    </div>
+                                    <p className="text-lg font-semibold text-slate-800">Sender Details</p>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
-                                      <Building2 size={14} className="text-slate-500" />
-                                    </div>
-                                    <div>
-                                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Current</p>
-                                      <p className="text-[10px] font-black text-slate-700">{entryDetails.current_department}</p>
-                                    </div>
+                                  <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50 overflow-hidden">
+                                    {[
+                                      { label: 'Sender Type', value: entryDetails.sender_type },
+                                      { label: 'Sender Name', value: entryDetails.sender_name },
+                                      { label: 'Address', value: entryDetails.sender_address },
+                                      { label: 'Unit / District', value: entryDetails.unit_district },
+                                      ...(entryDetails.sender_type !== 'Citizen' ? [
+                                        { label: 'Organization', value: entryDetails.send_to },
+                                        { label: 'Designation', value: entryDetails.sender_designation },
+                                      ] : []),
+                                    ].map(f => (
+                                      <div key={f.label} className="flex items-start justify-between gap-3 px-3 py-2">
+                                        <p className="text-sm font-medium text-slate-500 shrink-0 w-24 mt-0.5">{f.label}</p>
+                                        <p className="text-base font-semibold text-slate-700 text-right break-words">{f.value || '—'}</p>
+                                      </div>
+                                    ))}
                                   </div>
-                                  <div className="flex items-center gap-2 col-span-2">
-                                    <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center">
-                                      <Clock size={14} className="text-slate-500" />
+                                </div>
+
+                                {/* ── Letter Details ─────────────────────────── */}
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-5 h-5 bg-amber-50 rounded-md flex items-center justify-center border border-amber-100">
+                                      <ArrowRight size={11} className="text-amber-600" />
                                     </div>
-                                    <div>
-                                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Received</p>
-                                      <p className="text-[10px] font-black text-slate-700">
-                                        {entryDetails.received_date ? new Date(entryDetails.received_date).toLocaleString() : 'N/A'}
+                                    <p className="text-lg font-semibold text-slate-800">Letter Details</p>
+                                  </div>
+
+                                  {/* Subject full width */}
+                                  <div className="mb-2 px-3 py-2.5 bg-white rounded-xl border border-slate-100">
+                                    <p className="text-sm font-medium text-slate-500 mb-1">Subject</p>
+                                    <p className="text-base font-bold text-slate-800 leading-snug">{entryDetails.subject || '—'}</p>
+                                  </div>
+
+                                  {/* 2-col date grid */}
+                                  <div className="grid grid-cols-2 gap-2 mb-2">
+                                    <div className="bg-white rounded-xl border border-slate-100 px-3 py-2">
+                                      <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-0.5">Received Date</p>
+                                      <p className="text-xs font-bold text-slate-700">
+                                        {entryDetails.received_date ? new Date(entryDetails.received_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                                      </p>
+                                    </div>
+                                    <div className="bg-white rounded-xl border border-slate-100 px-3 py-2">
+                                      <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-0.5">Reference Date</p>
+                                      <p className="text-xs font-bold text-slate-700">
+                                        {entryDetails.reference_date ? new Date(entryDetails.reference_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                                       </p>
                                     </div>
                                   </div>
-                                  {editHistory.length > 0 && (
-                                    <div className="flex items-center gap-2 col-span-2 pt-3 mt-1 border-t border-slate-200">
-                                      <div className="w-7 h-7 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
-                                        <Edit2 size={14} className="text-violet-500" />
-                                      </div>
-                                      <div className="min-w-0">
-                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Last Updated By</p>
-                                        <p className="text-[10px] font-black text-violet-700 truncate">
-                                          {editHistory[0]?.edited_by_name || 'Unknown'}
-                                          <span className="font-medium text-slate-400 ml-1">
-                                            · {new Date(editHistory[0]?.edited_at).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
-                                          </span>
-                                        </p>
-                                      </div>
+
+                                  {/* Reference number */}
+                                  {entryDetails.sender_reference_number && (
+                                    <div className="mb-2 flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-100">
+                                      <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
+                                      <p className="text-xs font-bold text-slate-700">{entryDetails.sender_reference_number}</p>
                                     </div>
                                   )}
+
+                                  {/* Description */}
+                                  {entryDetails.description && (
+                                    <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
+                                      <p className="text-xs font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
+                                      <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{entryDetails.description}</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* ── System / Tracking Info ──────────────────── */}
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-5 h-5 bg-emerald-50 rounded-md flex items-center justify-center border border-emerald-100">
+                                      <Building2 size={11} className="text-emerald-600" />
+                                    </div>
+                                    <p className="text-lg font-semibold text-slate-800">System Information</p>
+                                  </div>
+                                  <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50 overflow-hidden">
+                                    {[
+                                      { label: 'Current Dept', value: entryDetails.current_department },
+                                      { label: 'Created', value: entryDetails.created_at ? new Date(entryDetails.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null },
+                                      { label: 'Last Updated', value: entryDetails.updated_at ? new Date(entryDetails.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null },
+                                    ].filter(f => f.value).map(f => (
+                                      <div key={f.label} className="flex items-center justify-between px-3 py-2">
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{f.label}</p>
+                                        <p className="text-xs font-bold text-slate-700">{f.value}</p>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
 
@@ -666,15 +728,15 @@ export default function Scanner() {
                                         <Clock size={20} className="text-amber-600" />
                                       </div>
                                       <div>
-                                        <p className="text-[11px] font-black text-slate-800 tracking-tight">Pending Arrival</p>
-                                        <p className="text-[9px] font-medium text-slate-500">Review details or confirm immediately</p>
+                                        <p className="text-xs font-black text-slate-800 tracking-tight">Pending Arrival</p>
+                                        <p className="text-xs font-medium text-slate-500">Review details or confirm immediately</p>
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-3 w-full md:w-auto">
                                       <Button
                                         onClick={handleEditDetails}
                                         variant="outline"
-                                        className="flex-1 md:flex-none !border-teal-200 !text-teal-700 hover:!bg-teal-50 !font-black !text-[10px] px-5 shadow-sm transition-all"
+                                        className="flex-1 md:flex-none !border-teal-200 !text-teal-700 hover:!bg-teal-50 !font-black !text-xs px-5 shadow-sm transition-all"
                                       >
                                         <Edit2 size={14} className="mr-2" />
                                         Edit Details
@@ -682,7 +744,7 @@ export default function Scanner() {
                                       <Button
                                         onClick={handleConfirmArrival}
                                         loading={receiving}
-                                        className="flex-1 md:flex-none !bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 !text-white !shadow-lg !shadow-amber-200 !font-black !text-[10px] px-6 transition-all"
+                                        className="flex-1 md:flex-none !bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 !text-white !shadow-lg !shadow-amber-200 !font-black !text-xs px-6 transition-all"
                                       >
                                         <CheckCircle size={14} className="mr-2" />
                                         Confirm Arrival
@@ -695,14 +757,14 @@ export default function Scanner() {
                                   <Button
                                     variant="ghost"
                                     onClick={resetScanner}
-                                    className="!text-slate-400 !font-bold !text-[10px]"
+                                    className="!text-slate-400 !font-bold !text-xs"
                                   >
                                     <X size={14} className="mr-1.5" />
                                     Cancel
                                   </Button>
                                   <Button
                                     onClick={() => setShowForwardModal(true)}
-                                    className="flex-1 !bg-red-600 !text-white !shadow-lg !shadow-red-200 !font-black !text-[10px]"
+                                    className="flex-1 !bg-red-600 !text-white !shadow-lg !shadow-red-200 !font-black !text-xs"
                                   >
                                     <ArrowLeftRight size={14} className="mr-2" />
                                     Forward to Department
@@ -716,11 +778,11 @@ export default function Scanner() {
                                   <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
                                     <History size={16} className="text-indigo-600" />
                                   </div>
-                                  <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">Movement History</h3>
+                                  <h3 className="text-lg font-semibold text-slate-800">Movement History</h3>
                                 </div>
                                 <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 shadow-sm">
                                   {movements.length === 0 ? (
-                                    <div className="text-center py-6 text-slate-400 text-[11px] font-bold">No movement history recorded yet.</div>
+                                    <div className="text-center py-6 text-slate-400 text-xs font-bold">No movement history recorded yet.</div>
                                   ) : (
                                     <div className="relative">
                                       <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
@@ -748,24 +810,24 @@ export default function Scanner() {
                                               </div>
                                               <div className="flex-1 bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mb-1">
                                                 <div className="flex items-start justify-between gap-3 flex-wrap">
-                                                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${statusColor}`}>
+                                                  <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${statusColor}`}>
                                                     {statusText}
                                                   </span>
                                                   <div className="text-right">
-                                                    <span className="text-[9px] font-bold text-slate-400 block">
+                                                    <span className="text-xs font-bold text-slate-400 block">
                                                       {new Date(m.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </span>
-                                                    <span className="text-[9px] font-bold text-slate-500 block mt-0.5">
+                                                    <span className="text-xs font-bold text-slate-500 block mt-0.5">
                                                       {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                   </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-3">
-                                                  <span className="text-[11px] font-black text-slate-700">{m.from_department || 'Entry Created'}</span>
+                                                  <span className="text-xs font-black text-slate-700">{m.from_department || 'Entry Created'}</span>
                                                   {m.to_department && (
                                                     <>
                                                       <ArrowRight size={12} className="text-slate-400 shrink-0" />
-                                                      <span className="text-[11px] font-black text-slate-700">{m.to_department}</span>
+                                                      <span className="text-xs font-black text-slate-700">{m.to_department}</span>
                                                     </>
                                                   )}
                                                 </div>
@@ -773,11 +835,11 @@ export default function Scanner() {
                                                   <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
                                                     <User size={10} className="text-slate-500" />
                                                   </div>
-                                                  <span className="text-[10px] font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
+                                                  <span className="text-xs font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
                                                 </div>
                                                 {m.remarks && (
                                                   <div className="mt-3 px-3 py-2 bg-slate-50 rounded-lg border-l-2 border-slate-300">
-                                                    <p className="text-[10px] text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
+                                                    <p className="text-xs text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
                                                   </div>
                                                 )}
                                               </div>
@@ -790,149 +852,11 @@ export default function Scanner() {
                                 </div>
                               </div>
 
-                              {/* Edit History Timeline */}
-                              <div className="mt-6 pt-6 border-t border-slate-100">
-                                <div className="flex items-center justify-between mb-5">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center border border-violet-100">
-                                      <Edit2 size={16} className="text-violet-600" />
-                                    </div>
-                                    <div>
-                                      <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">Update History</h3>
-                                      <p className="text-[9px] font-bold text-slate-400">QR code identity unchanged after each edit</p>
-                                    </div>
-                                  </div>
-                                  {editHistory.length > 0 && (
-                                    <span className="text-[9px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
-                                      {editHistory.length} edit{editHistory.length > 1 ? 's' : ''}
-                                    </span>
-                                  )}
-                                </div>
-                                {/* QR Preservation Notice */}
-                                <div className="mb-4 flex items-start gap-2 px-3 py-2.5 bg-teal-50 border border-teal-100 rounded-xl">
-                                  <span className="text-teal-500 mt-0.5 shrink-0">🔒</span>
-                                  <p className="text-[9px] font-bold text-teal-700 leading-relaxed">
-                                    Editing patrak details does not regenerate the QR code. The existing QR remains permanently valid for tracking and movement.
-                                  </p>
-                                </div>
-                                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 shadow-sm">
-                                  {editHistory.length === 0 ? (
-                                    <div className="text-center py-6 text-slate-400 text-[11px] font-bold">No edits recorded yet.</div>
-                                  ) : (
-                                    <div className="relative">
-                                      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-violet-200 to-transparent" />
-                                      <div className="space-y-4">
-                                        {editHistory.map((edit, idx) => {
-                                          let changedFields = [];
-                                          let oldValues = {};
-                                          let newValues = {};
-                                          try {
-                                            changedFields = JSON.parse(edit.changed_fields);
-                                            oldValues = JSON.parse(edit.old_values);
-                                            newValues = JSON.parse(edit.new_values);
-                                          } catch(e) {}
 
-                                          // Human-readable field name map
-                                          const fieldLabels = {
-                                            subject: 'Subject',
-                                            priority: 'Priority',
-                                            sender_name: 'Sender Name',
-                                            sender_type: 'Sender Type',
-                                            sender_designation: 'Designation',
-                                            sender_address: 'Address',
-                                            sender_email: 'Email',
-                                            sender_reference_number: 'Reference No.',
-                                            reference_date: 'Reference Date',
-                                            received_date: 'Received Date',
-                                            unit_district: 'Unit / District',
-                                            send_to: 'Organization',
-                                            description: 'Description',
-                                            fax_number: 'Fax Number',
-                                            receiving_mode: 'Receiving Mode',
-                                            status: 'Status',
-                                          };
-
-                                          const formatValue = (field, val) => {
-                                            if (!val || val === 'None') return '—'
-                                            if (field.includes('date') && val.includes('T')) {
-                                              try { return new Date(val).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return val }
-                                            }
-                                            return val
-                                          }
-
-                                          return (
-                                            <motion.div
-                                              key={edit.id || idx}
-                                              initial={{ opacity: 0, y: 8 }}
-                                              animate={{ opacity: 1, y: 0 }}
-                                              transition={{ delay: idx * 0.05 }}
-                                              className="relative flex gap-4"
-                                            >
-                                              <div className="relative z-10 flex items-center justify-center w-[30px] h-[30px] rounded-full ring-4 ring-violet-100 shrink-0 mt-1 bg-violet-500">
-                                                <div className="w-2 h-2 bg-white rounded-full" />
-                                              </div>
-                                              <div className="flex-1 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md transition-shadow mb-1 overflow-hidden">
-                                                {/* Header */}
-                                                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border bg-violet-50 text-violet-700 border-violet-200">
-                                                      {changedFields.length} field{changedFields.length > 1 ? 's' : ''} changed
-                                                    </span>
-                                                  </div>
-                                                  <div className="text-right">
-                                                    <span className="text-[9px] font-bold text-slate-500 block">
-                                                      {new Date(edit.edited_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                    </span>
-                                                    <span className="text-[9px] text-slate-400 block">
-                                                      {new Date(edit.edited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                                {/* Editor info */}
-                                                <div className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-50">
-                                                  <div className="w-5 h-5 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
-                                                    <User size={10} className="text-violet-600" />
-                                                  </div>
-                                                  <span className="text-[10px] font-black text-slate-700">{edit.edited_by_name || 'System'}</span>
-                                                  <span className="text-[9px] text-slate-400">· edited this patrak</span>
-                                                </div>
-                                                {/* Field diffs */}
-                                                <div className="divide-y divide-slate-50">
-                                                  {changedFields.map(field => (
-                                                    <div key={field} className="px-4 py-3">
-                                                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                                                        {fieldLabels[field] || field.replace(/_/g, ' ')}
-                                                      </p>
-                                                      <div className="space-y-1.5">
-                                                        <div className="flex items-start gap-2">
-                                                          <span className="text-[8px] font-black uppercase text-rose-400 shrink-0 mt-0.5 w-7">OLD</span>
-                                                          <span className="text-[10px] text-rose-600 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100 line-through break-all leading-relaxed flex-1">
-                                                            {formatValue(field, oldValues[field])}
-                                                          </span>
-                                                        </div>
-                                                        <div className="flex items-start gap-2">
-                                                          <span className="text-[8px] font-black uppercase text-emerald-500 shrink-0 mt-0.5 w-7">NEW</span>
-                                                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 break-all leading-relaxed flex-1">
-                                                            {formatValue(field, newValues[field])}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              </div>
-                                            </motion.div>
-                                          )
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
                             </div>
                           ) : (
                             <div className="p-4 bg-rose-50 rounded-xl border border-rose-100">
-                              <p className="text-rose-600 text-[11px] font-bold">Unable to retrieve patrak details. Please try again.</p>
+                              <p className="text-rose-600 text-xs font-bold">Unable to retrieve patrak details. Please try again.</p>
                             </div>
                           )}
                         </>
@@ -950,8 +874,8 @@ export default function Scanner() {
                               <Loader2 size={32} className="text-orange-500" />
                             </motion.div>
                           </motion.div>
-                          <p className="text-slate-800 font-black text-[13px] tracking-tight mb-1">Verifying QR Code</p>
-                          <p className="text-slate-400 font-bold text-[11px]">Validating patrak identity and retrieving details...</p>
+                          <p className="text-slate-800 font-black text-sm tracking-tight mb-1">Verifying QR Code</p>
+                          <p className="text-slate-400 font-bold text-xs">Validating patrak identity and retrieving details...</p>
                         </div>
                       )}
                     </motion.div>

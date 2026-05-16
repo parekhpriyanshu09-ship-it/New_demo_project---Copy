@@ -160,14 +160,14 @@ export default function GlobalSearch() {
             <input
               ref={searchInputRef}
               placeholder="Search patraks, reports, dates..."
-              className="w-full bg-transparent pl-10 pr-12 py-2 text-[13.5px] font-semibold text-slate-800 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium outline-none rounded-2xl relative z-10"
+              className="w-full bg-transparent pl-10 pr-12 py-2 text-sm font-semibold text-slate-800 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium outline-none rounded-2xl relative z-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={handleSearchFocus}
             />
 
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none z-10">
-              <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-[10px] font-bold transition-colors ${isSearchFocused ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
+              <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-xs font-bold transition-colors ${isSearchFocused ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
                 /
               </span>
             </div>
@@ -215,11 +215,11 @@ export default function GlobalSearch() {
                         <button
                           key={page.path}
                           onClick={() => handleSuggestionClick(page.path)}
-                          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                         >
                           <page.icon className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                           <span className="flex-1 truncate">{page.label}</span>
-                          <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[10px] text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
+                          <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-xs text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
                             {shortcut}
                           </span>
                         </button>
@@ -230,7 +230,7 @@ export default function GlobalSearch() {
                   {searchResults.users?.length > 0 && (
                     <>
                       <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                      <div className="px-3.5 py-1.5 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                         Users
                       </div>
                       <div className="flex flex-col gap-0.5">
@@ -238,17 +238,17 @@ export default function GlobalSearch() {
                           <button
                             key={`user-${u.id}`}
                             onClick={() => handleSuggestionClick('/admin/users')}
-                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                           >
                             <Users className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold truncate">{u.username}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
+                              <div className="text-xs text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0 select-none">
-                              <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[9px] text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">⌘K</span>
-                              <span className="text-[10px] text-slate-400 dark:text-neutral-500">➔</span>
-                              <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[9px] text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">U</span>
+                              <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-xs text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">⌘K</span>
+                              <span className="text-xs text-slate-400 dark:text-neutral-500">➔</span>
+                              <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-xs text-slate-400 dark:text-neutral-500 font-bold h-[17px] flex items-center">U</span>
                             </div>
                           </button>
                         ))}
@@ -259,7 +259,7 @@ export default function GlobalSearch() {
                   {searchResults.entries?.length > 0 && (
                     <>
                       <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                      <div className="px-3.5 py-1.5 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                         Recent Entries
                       </div>
                       <div className="flex flex-col gap-0.5">
@@ -277,19 +277,19 @@ export default function GlobalSearch() {
                           >
                             <button
                               onClick={() => handleSuggestionClick(`/letters/${entry.id}`)}
-                              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                             >
                               <FilePenLine className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold truncate">{entry.subject}</div>
-                                <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
+                                <div className="text-xs text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
                                   <span>{entry.unique_id}</span>
                                   <span>•</span>
                                   <span className="truncate">{entry.sender_name}</span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0 select-none">
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
+                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
                                   entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
                                     'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
                                   }`}>
@@ -322,7 +322,7 @@ export default function GlobalSearch() {
           className="fixed pointer-events-none z-[10000] max-w-[280px] bg-slate-900/95 dark:bg-white/95 backdrop-blur-sm border border-slate-800 dark:border-white/20 p-3 rounded-xl shadow-2xl flex flex-col gap-2"
           style={{ top: hoveredEntry.y, left: hoveredEntry.x }}
         >
-          <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
             Matched On
           </div>
@@ -334,7 +334,7 @@ export default function GlobalSearch() {
               </div>
             ))}
             {hoveredEntry.entry.match_contexts.length > 3 && (
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+              <div className="text-xs text-slate-500 dark:text-slate-400 italic">
                 + {hoveredEntry.entry.match_contexts.length - 3} more matches
               </div>
             )}

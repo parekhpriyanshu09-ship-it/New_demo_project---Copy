@@ -102,10 +102,10 @@ export function AnalyticsCard({ selectedDate }) {
       {/* Card Header controls */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
         <div>
-          <CardTitle className="text-sm font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
+          <CardTitle className="text-lg font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
             Patrak Received Analysis
           </CardTitle>
-          <CardDescription className="text-[11px] text-muted-foreground mt-0.5">
+          <CardDescription className="text-sm text-muted-foreground mt-0.5">
             Inward vs Outward stacked volume
             {selectedDate && (
               <span className="ml-1 text-indigo-500 dark:text-indigo-400 font-semibold">
@@ -114,12 +114,12 @@ export function AnalyticsCard({ selectedDate }) {
             )}
           </CardDescription>
         </div>
-        <div className="flex items-center text-[10px] font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 text-slate-800 dark:text-neutral-100 2xl:hidden">
+        <div className="flex items-center text-xs font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 text-slate-800 dark:text-neutral-100 2xl:hidden">
           7 days
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="hidden 2xl:flex items-center gap-1.5 text-[10px] font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 focus:outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors text-slate-800 dark:text-neutral-100">
+            <button className="hidden 2xl:flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 focus:outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors text-slate-800 dark:text-neutral-100">
               <span>{days} days</span>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </button>
@@ -127,13 +127,13 @@ export function AnalyticsCard({ selectedDate }) {
           <DropdownMenuContent align="end" className="min-w-[85px] w-[85px] bg-white dark:bg-neutral-900 border border-border ring-0 shadow-md p-1">
             <DropdownMenuItem
               onClick={() => setDays(7)}
-              className={`text-[11px] cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 7 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 7 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
             >
               7 days
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setDays(14)}
-              className={`text-[11px] cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 14 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 14 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
             >
               14 days
             </DropdownMenuItem>
@@ -154,7 +154,7 @@ export function AnalyticsCard({ selectedDate }) {
                 </div>
                 {/* Right ItemContent: Dynamic values & labels */}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground truncate leading-none">
+                  <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground truncate leading-none">
                     {s.label}
                   </span>
                   <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-neutral-100 mt-0.5 leading-none">
@@ -200,7 +200,7 @@ export function AnalyticsCard({ selectedDate }) {
                     interval={0}
                     height={28}
                     padding={{ left: 10, right: 10 }}
-                    tick={{ fontSize: 9, fill: "var(--muted-foreground)", fontWeight: 600 }}
+                    tick={{ fontSize: 12, fill: "var(--muted-foreground)", fontWeight: 600 }}
                   />
                   <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                   <ChartLegend content={<ChartLegendContent />} />
