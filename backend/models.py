@@ -75,6 +75,7 @@ class PatrakEntry(Base):
 
     creator = relationship("User", back_populates="entries_created")
     movements = relationship("PatrakMovement", back_populates="entry", order_by="PatrakMovement.timestamp.asc()")
+    edit_history = relationship("PatrakEditHistory", back_populates="entry", order_by="PatrakEditHistory.edited_at.asc()")
 
 class PatrakMovement(Base):
     __tablename__ = "patrak_movements"
@@ -103,6 +104,20 @@ class AuditLog(Base):
     details = Column(Text, nullable=True)
 
     user = relationship("User", back_populates="audit_logs")
+
+class PatrakEditHistory(Base):
+    __tablename__ = "patrak_edit_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    entry_id = Column(Integer, ForeignKey("patrak_entries.id"), nullable=False)
+    edited_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    edited_at = Column(DateTime, default=datetime.utcnow)
+    changed_fields = Column(Text, nullable=False) # JSON array of field names
+    old_values = Column(Text, nullable=False) # JSON object
+    new_values = Column(Text, nullable=False) # JSON object
+
+    entry = relationship("PatrakEntry", back_populates="edit_history")
+    editor = relationship("User", foreign_keys=[edited_by])
 
 DEPARTMENTS = [
     "DG Office",

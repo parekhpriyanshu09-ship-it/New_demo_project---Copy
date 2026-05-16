@@ -29,7 +29,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Html5Qrcode } from 'html5-qrcode'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 
 const DEPARTMENTS = [
   'DG Office',
@@ -56,6 +56,7 @@ const itemVariants = {
 
 export default function Scanner() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'camera')
   const [cameraStarted, setCameraStarted] = useState(false)
@@ -70,10 +71,8 @@ export default function Scanner() {
   const [verificationComplete, setVerificationComplete] = useState(false)
   const [arrivalConfirmed, setArrivalConfirmed] = useState(false)
   const [receiving, setReceiving] = useState(false)
-
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({})
-  const [savingEdit, setSavingEdit] = useState(false)
+  
+  const [editHistory, setEditHistory] = useState([])
 
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardForm, setForwardForm] = useState({ to_department: '', remarks: '' })
@@ -242,24 +241,18 @@ export default function Scanner() {
   const fetchEntryDetails = async (entry_id) => {
     setFetchingDetails(true)
     try {
-      const res = await api.get(`/api/entries/${entry_id}`)
-      setEntryDetails(res.data)
-      
-      try {
-        const movesRes = await api.get(`/api/forward/entry/${entry_id}/movements`)
-        setMovements(movesRes.data || [])
-      } catch (moveErr) {
-        console.error('Failed to fetch movements', moveErr)
-        setMovements([])
-      }
+      const res = await api.get(`/api/entries/${entry_id}/tracking`)
+      setEntryDetails(res.data.entry)
+      setMovements(res.data.movements || [])
+      setEditHistory(res.data.edit_history || [])
       
       setTimeout(() => {
         setVerificationComplete(true)
       }, 1500)
     } catch (error) {
       setEntryDetails(null)
-    setMovements([])
       setMovements([])
+      setEditHistory([])
     } finally {
       setFetchingDetails(false)
     }
@@ -273,8 +266,9 @@ export default function Scanner() {
       setArrivalConfirmed(true)
       toast.success('Patrak received at current department!')
       try {
-        const movesRes = await api.get(`/api/forward/entry/${entryDetails.id}/movements`)
-        setMovements(movesRes.data || [])
+        const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
+        setMovements(movesRes.data.movements || [])
+        setEditHistory(movesRes.data.edit_history || [])
       } catch(e) {}
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to confirm arrival')
@@ -283,31 +277,10 @@ export default function Scanner() {
     }
   }
 
-  const openEditModal = () => {
-    setEditForm({
-      subject: entryDetails.subject || '',
-      priority: entryDetails.priority || 'NORMAL',
-      current_department: entryDetails.current_department || '',
-      sender_name: entryDetails.sender_name || '',
-      description: entryDetails.description || '',
-      status: entryDetails.status || 'Open'
+  const handleEditDetails = () => {
+    navigate('/without-qr-code', { 
+      state: { editMode: true, patrakData: entryDetails } 
     })
-    setShowEditModal(true)
-  }
-
-  const handleSaveEdit = async (e) => {
-    e.preventDefault()
-    setSavingEdit(true)
-    try {
-      const updated = await updateEntry(entryDetails.id, editForm)
-      setEntryDetails({ ...entryDetails, ...updated })
-      setShowEditModal(false)
-      toast.success('Tapal details updated successfully')
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update details')
-    } finally {
-      setSavingEdit(false)
-    }
   }
 
   const handleForward = async (e) => {
@@ -336,8 +309,9 @@ export default function Scanner() {
       setArrivalConfirmed(false)
       toast.success(`Patrak forwarded to ${forwardForm.to_department}`)
       try {
-        const movesRes = await api.get(`/api/forward/entry/${entryDetails.id}/movements`)
-        setMovements(movesRes.data || [])
+        const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
+        setMovements(movesRes.data.movements || [])
+        setEditHistory(movesRes.data.edit_history || [])
       } catch(e) {}
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to forward patrak')
@@ -350,6 +324,7 @@ export default function Scanner() {
     setScannedData(null)
     setEntryDetails(null)
     setMovements([])
+    setEditHistory([])
     setResult(null)
     setCameraReady(false)
     setCameraError('')
@@ -594,11 +569,16 @@ export default function Scanner() {
                             >
                               <CheckCircle size={20} className="text-emerald-600" />
                             </motion.div>
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="text-[11px] font-black text-emerald-600 tracking-tight">QR Verified</p>
                               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                                 Entry UID: {scannedData.unique_id?.startsWith('PTRK') ? scannedData.unique_id : `#${scannedData.unique_id?.slice(0, 8) || 'N/A'}`}
                               </p>
+                              {editHistory.length > 0 && (
+                                <p className="text-[9px] font-bold text-violet-500 mt-0.5">
+                                  ✏ Last updated by {editHistory[0]?.edited_by_name || 'Unknown'} · {new Date(editHistory[0]?.edited_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              )}
                             </div>
                           </div>
 
@@ -616,9 +596,16 @@ export default function Scanner() {
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Subject</p>
                                     <h4 className="text-[13px] font-black text-slate-800 leading-snug line-clamp-2">{entryDetails.subject}</h4>
                                   </div>
-                                  <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
-                                    {entryDetails.priority}
-                                  </span>
+                                  <div className="flex flex-col items-end gap-1.5">
+                                    <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
+                                      {entryDetails.priority}
+                                    </span>
+                                    {editHistory.length > 0 && (
+                                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md bg-violet-100 text-violet-700 border border-violet-200">
+                                        ✏ Updated
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                   <div className="flex items-center gap-2">
@@ -650,6 +637,22 @@ export default function Scanner() {
                                       </p>
                                     </div>
                                   </div>
+                                  {editHistory.length > 0 && (
+                                    <div className="flex items-center gap-2 col-span-2 pt-3 mt-1 border-t border-slate-200">
+                                      <div className="w-7 h-7 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
+                                        <Edit2 size={14} className="text-violet-500" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Last Updated By</p>
+                                        <p className="text-[10px] font-black text-violet-700 truncate">
+                                          {editHistory[0]?.edited_by_name || 'Unknown'}
+                                          <span className="font-medium text-slate-400 ml-1">
+                                            · {new Date(editHistory[0]?.edited_at).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                                          </span>
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -669,7 +672,7 @@ export default function Scanner() {
                                     </div>
                                     <div className="flex items-center gap-3 w-full md:w-auto">
                                       <Button
-                                        onClick={openEditModal}
+                                        onClick={handleEditDetails}
                                         variant="outline"
                                         className="flex-1 md:flex-none !border-teal-200 !text-teal-700 hover:!bg-teal-50 !font-black !text-[10px] px-5 shadow-sm transition-all"
                                       >
@@ -779,6 +782,146 @@ export default function Scanner() {
                                                 )}
                                               </div>
                                             </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Edit History Timeline */}
+                              <div className="mt-6 pt-6 border-t border-slate-100">
+                                <div className="flex items-center justify-between mb-5">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center border border-violet-100">
+                                      <Edit2 size={16} className="text-violet-600" />
+                                    </div>
+                                    <div>
+                                      <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">Update History</h3>
+                                      <p className="text-[9px] font-bold text-slate-400">QR code identity unchanged after each edit</p>
+                                    </div>
+                                  </div>
+                                  {editHistory.length > 0 && (
+                                    <span className="text-[9px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+                                      {editHistory.length} edit{editHistory.length > 1 ? 's' : ''}
+                                    </span>
+                                  )}
+                                </div>
+                                {/* QR Preservation Notice */}
+                                <div className="mb-4 flex items-start gap-2 px-3 py-2.5 bg-teal-50 border border-teal-100 rounded-xl">
+                                  <span className="text-teal-500 mt-0.5 shrink-0">🔒</span>
+                                  <p className="text-[9px] font-bold text-teal-700 leading-relaxed">
+                                    Editing patrak details does not regenerate the QR code. The existing QR remains permanently valid for tracking and movement.
+                                  </p>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 shadow-sm">
+                                  {editHistory.length === 0 ? (
+                                    <div className="text-center py-6 text-slate-400 text-[11px] font-bold">No edits recorded yet.</div>
+                                  ) : (
+                                    <div className="relative">
+                                      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-violet-200 to-transparent" />
+                                      <div className="space-y-4">
+                                        {editHistory.map((edit, idx) => {
+                                          let changedFields = [];
+                                          let oldValues = {};
+                                          let newValues = {};
+                                          try {
+                                            changedFields = JSON.parse(edit.changed_fields);
+                                            oldValues = JSON.parse(edit.old_values);
+                                            newValues = JSON.parse(edit.new_values);
+                                          } catch(e) {}
+
+                                          // Human-readable field name map
+                                          const fieldLabels = {
+                                            subject: 'Subject',
+                                            priority: 'Priority',
+                                            sender_name: 'Sender Name',
+                                            sender_type: 'Sender Type',
+                                            sender_designation: 'Designation',
+                                            sender_address: 'Address',
+                                            sender_email: 'Email',
+                                            sender_reference_number: 'Reference No.',
+                                            reference_date: 'Reference Date',
+                                            received_date: 'Received Date',
+                                            unit_district: 'Unit / District',
+                                            send_to: 'Organization',
+                                            description: 'Description',
+                                            fax_number: 'Fax Number',
+                                            receiving_mode: 'Receiving Mode',
+                                            status: 'Status',
+                                          };
+
+                                          const formatValue = (field, val) => {
+                                            if (!val || val === 'None') return '—'
+                                            if (field.includes('date') && val.includes('T')) {
+                                              try { return new Date(val).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return val }
+                                            }
+                                            return val
+                                          }
+
+                                          return (
+                                            <motion.div
+                                              key={edit.id || idx}
+                                              initial={{ opacity: 0, y: 8 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              transition={{ delay: idx * 0.05 }}
+                                              className="relative flex gap-4"
+                                            >
+                                              <div className="relative z-10 flex items-center justify-center w-[30px] h-[30px] rounded-full ring-4 ring-violet-100 shrink-0 mt-1 bg-violet-500">
+                                                <div className="w-2 h-2 bg-white rounded-full" />
+                                              </div>
+                                              <div className="flex-1 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md transition-shadow mb-1 overflow-hidden">
+                                                {/* Header */}
+                                                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border bg-violet-50 text-violet-700 border-violet-200">
+                                                      {changedFields.length} field{changedFields.length > 1 ? 's' : ''} changed
+                                                    </span>
+                                                  </div>
+                                                  <div className="text-right">
+                                                    <span className="text-[9px] font-bold text-slate-500 block">
+                                                      {new Date(edit.edited_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-400 block">
+                                                      {new Date(edit.edited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                                {/* Editor info */}
+                                                <div className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-50">
+                                                  <div className="w-5 h-5 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
+                                                    <User size={10} className="text-violet-600" />
+                                                  </div>
+                                                  <span className="text-[10px] font-black text-slate-700">{edit.edited_by_name || 'System'}</span>
+                                                  <span className="text-[9px] text-slate-400">· edited this patrak</span>
+                                                </div>
+                                                {/* Field diffs */}
+                                                <div className="divide-y divide-slate-50">
+                                                  {changedFields.map(field => (
+                                                    <div key={field} className="px-4 py-3">
+                                                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                                                        {fieldLabels[field] || field.replace(/_/g, ' ')}
+                                                      </p>
+                                                      <div className="space-y-1.5">
+                                                        <div className="flex items-start gap-2">
+                                                          <span className="text-[8px] font-black uppercase text-rose-400 shrink-0 mt-0.5 w-7">OLD</span>
+                                                          <span className="text-[10px] text-rose-600 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100 line-through break-all leading-relaxed flex-1">
+                                                            {formatValue(field, oldValues[field])}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex items-start gap-2">
+                                                          <span className="text-[8px] font-black uppercase text-emerald-500 shrink-0 mt-0.5 w-7">NEW</span>
+                                                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 break-all leading-relaxed flex-1">
+                                                            {formatValue(field, newValues[field])}
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            </motion.div>
                                           )
                                         })}
                                       </div>
@@ -918,141 +1061,7 @@ export default function Scanner() {
         )}
       </AnimatePresence>
 
-      {/* Edit Modal */}
-      <AnimatePresence>
-        {showEditModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setShowEditModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-[1.5rem] shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
-            >
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                    <Edit2 size={16} className="text-teal-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-800 text-[14px]">Edit Tapal Details</h3>
-                    <p className="text-[10px] font-bold text-slate-400">Update scanned entry information</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="p-2 hover:bg-slate-200/50 rounded-full transition-colors"
-                >
-                  <X size={18} className="text-slate-400 hover:text-slate-600" />
-                </button>
-              </div>
-              
-              <div className="p-6 overflow-y-auto no-scrollbar">
-                <form id="edit-tapal-form" onSubmit={handleSaveEdit} className="space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject</label>
-                    <input
-                      required
-                      type="text"
-                      value={editForm.subject}
-                      onChange={(e) => setEditForm({...editForm, subject: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                    />
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sender / Originator</label>
-                      <input
-                        type="text"
-                        value={editForm.sender_name}
-                        onChange={(e) => setEditForm({...editForm, sender_name: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Priority</label>
-                      <select
-                        value={editForm.priority}
-                        onChange={(e) => setEditForm({...editForm, priority: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
-                      >
-                        <option value="Normal">Normal</option>
-                        <option value="Important">Important</option>
-                        <option value="Urgent">Urgent</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Department</label>
-                      <select
-                        value={editForm.current_department}
-                        onChange={(e) => setEditForm({...editForm, current_department: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
-                      >
-                        {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</label>
-                      <select
-                        value={editForm.status}
-                        onChange={(e) => setEditForm({...editForm, status: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all cursor-pointer appearance-none"
-                      >
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Remarks / Description</label>
-                    <textarea
-                      value={editForm.description}
-                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                      rows={3}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-semibold text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all resize-none"
-                    />
-                  </div>
-                </form>
-              </div>
-
-              <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-                <div className="text-[9px] font-bold text-slate-400">
-                  Last verified by {user?.username || 'You'}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    onClick={openEditModal}
-                    className="!text-slate-500 !font-bold !text-[10px] hover:!bg-slate-200/50"
-                  >
-                    Reset
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    form="edit-tapal-form"
-                    loading={savingEdit}
-                    className="!bg-teal-600 hover:!bg-teal-700 !text-white !font-black !text-[10px] px-6 shadow-md shadow-teal-600/20"
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div id="hidden-qr-reader" style={{ display: "none" }}></div>
     </Layout>
