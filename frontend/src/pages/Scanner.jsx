@@ -71,7 +71,7 @@ export default function Scanner() {
   const [verificationComplete, setVerificationComplete] = useState(false)
   const [arrivalConfirmed, setArrivalConfirmed] = useState(false)
   const [receiving, setReceiving] = useState(false)
-  const [editHistory, setEditHistory] = useState([])
+
 
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardForm, setForwardForm] = useState({ to_department: '', remarks: '' })
@@ -243,7 +243,7 @@ export default function Scanner() {
       const res = await api.get(`/api/entries/${entry_id}/tracking`)
       setEntryDetails(res.data.entry)
       setMovements(res.data.movements || [])
-      setEditHistory(res.data.edit_history || [])
+
       setTimeout(() => {
         setVerificationComplete(true)
       }, 1500)
@@ -265,7 +265,7 @@ export default function Scanner() {
       try {
         const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
         setMovements(movesRes.data.movements || [])
-      } catch(e) {}
+      } catch (e) { }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to confirm arrival')
     } finally {
@@ -274,8 +274,8 @@ export default function Scanner() {
   }
 
   const handleEditDetails = () => {
-    navigate('/without-qr-code', { 
-      state: { editMode: true, patrakData: entryDetails } 
+    navigate('/without-qr-code', {
+      state: { editMode: true, patrakData: entryDetails }
     })
   }
 
@@ -308,7 +308,7 @@ export default function Scanner() {
         const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
         setMovements(movesRes.data.movements || [])
         setEditHistory(movesRes.data.edit_history || [])
-      } catch(e) {}
+      } catch (e) { }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to forward patrak')
     } finally {
@@ -378,10 +378,9 @@ export default function Scanner() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                activeTab === tab.id
-                  ? 'bg-slate-800 text-white shadow-lg shadow-slate-300'
-                  : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-100'
+              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
+                ? 'bg-slate-800 text-white shadow-lg shadow-slate-300'
+                : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-100'
                 }`}
             >
               <tab.icon size={14} />
@@ -400,9 +399,9 @@ export default function Scanner() {
                       <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                         <AlertCircle size={24} className="text-rose-400" />
                       </div>
-                      <p className="text-white font-black text-[11px] mb-1.5 uppercase tracking-wide">Access Denied</p>
-                      <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-5 leading-relaxed">{cameraError}</p>
-                      <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500/20 hover:!bg-rose-500/30 !text-rose-400 border border-rose-500/30 !rounded-xl !text-[9px] !py-2 !uppercase tracking-widest font-black transition-all">Retry</Button>
+                      <p className="text-white font-black text-xs mb-1.5 uppercase tracking-wide">Access Denied</p>
+                      <p className="text-slate-400 text-xs max-w-[200px] mx-auto mb-5 leading-relaxed">{cameraError}</p>
+                      <Button onClick={() => setCameraStarted(false)} className="!bg-rose-500/20 hover:!bg-rose-500/30 !text-rose-400 border border-rose-500/30 !rounded-xl !text-xs !py-2 !uppercase tracking-widest font-black transition-all">Retry</Button>
                     </div>
                   ) : (
                     <>
@@ -416,13 +415,13 @@ export default function Scanner() {
                           <div className="w-14 h-14 bg-slate-800/50 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700/50">
                             <Camera size={24} className="text-teal-400" />
                           </div>
-                          <h3 className="text-white font-black text-[13px] tracking-tight mb-2">Scanner Ready</h3>
-                          <p className="text-slate-400 text-[9px] max-w-[200px] mx-auto mb-6 leading-relaxed">
+                          <h3 className="text-white font-black text-sm tracking-tight mb-2">Scanner Ready</h3>
+                          <p className="text-slate-400 text-xs max-w-[200px] mx-auto mb-6 leading-relaxed">
                             Position the QR code within the frame.
                           </p>
                           <button
                             onClick={handleStartCamera}
-                            className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all flex items-center gap-2 mx-auto"
+                            className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(20,184,166,0.3)] transition-all flex items-center gap-2 mx-auto"
                           >
                             <Play size={14} fill="currentColor" />
                             Start Camera
@@ -432,17 +431,22 @@ export default function Scanner() {
                       {cameraStarted && !cameraReady && (
                         <div className="mt-6 flex flex-col items-center relative z-20 bg-slate-900/60 px-4 py-3 rounded-2xl backdrop-blur-sm border border-white/5">
                           <Loader2 size={18} className="text-teal-400 animate-spin mb-2" />
-                          <p className="text-slate-300 text-[8px] font-black uppercase tracking-widest">Initializing...</p>
+                          <p className="text-slate-300 text-xs font-black uppercase tracking-widest">Initializing...</p>
                         </div>
                       )}
                       {cameraStarted && cameraReady && (
                         <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
                           <div className="relative w-[180px] h-[180px] sm:w-[200px] sm:h-[200px]">
+                            {/* Dark overlay cutout */}
                             <div className="absolute inset-0 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] rounded-2xl transition-all duration-500" />
+
+                            {/* Corner Brackets */}
                             <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-teal-400 rounded-tl-2xl" />
                             <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-teal-400 rounded-tr-2xl" />
                             <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-teal-400 rounded-bl-2xl" />
                             <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-teal-400 rounded-br-2xl" />
+
+                            {/* Scanning Line Animation */}
                             <motion.div
                               className="absolute left-0 right-0 h-[1.5px] bg-teal-400 shadow-[0_0_12px_2px_rgba(45,212,191,0.6)] z-20"
                               animate={{ top: ['0%', '100%', '0%'] }}
@@ -459,9 +463,9 @@ export default function Scanner() {
                   <div className="w-14 h-14 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-700/50">
                     <Upload size={24} className="text-teal-400" />
                   </div>
-                  <p className="text-white font-black text-[13px] mb-1.5 tracking-tight">Upload QR Image</p>
-                  <p className="text-slate-400 text-[9px] mb-6 max-w-[200px] mx-auto leading-relaxed">Select a high-resolution image of the QR code.</p>
-                  <label className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-slate-900/20">
+                  <p className="text-white font-black text-sm mb-1.5 tracking-tight">Upload QR Image</p>
+                  <p className="text-slate-400 text-xs mb-6 max-w-[200px] mx-auto leading-relaxed">Select a high-resolution image of the QR code.</p>
+                  <label className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-slate-900/20">
                     Browse Files
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                   </label>
@@ -472,12 +476,12 @@ export default function Scanner() {
                 <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/10 shadow-xl shadow-slate-950/50">
                   <div className="flex items-center gap-1.5">
                     <div className={`w-1.5 h-1.5 rounded-full ${cameraReady ? 'bg-teal-400 animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-slate-500'}`} />
-                    <span className="text-[7.5px] font-black text-slate-200 uppercase tracking-widest">
+                    <span className="text-xs font-black text-slate-200 uppercase tracking-widest">
                       {cameraReady ? 'Active' : 'Standby'}
                     </span>
                   </div>
                   <div className="w-px h-2.5 bg-white/10" />
-                  <div className="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                     {activeTab === 'camera' ? 'Live Feed' : 'File Mode'}
                   </div>
                 </div>
@@ -499,8 +503,8 @@ export default function Scanner() {
                     <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-5">
                       <Search size={24} className="text-slate-300" />
                     </div>
-                    <p className="text-slate-800 font-black text-[13px] tracking-tight mb-1">Awaiting Scanner Input</p>
-                    <p className="text-slate-400 font-bold text-[11px] max-w-[220px]">Scan a QR code to reveal patrak details and forward.</p>
+                    <p className="text-slate-800 font-black text-sm tracking-tight mb-1">Awaiting Scanner Input</p>
+                    <p className="text-slate-400 font-bold text-xs max-w-[220px]">Scan a QR code to reveal patrak details and forward.</p>
                   </motion.div>
                 ) : result ? (
                   <motion.div
@@ -525,20 +529,20 @@ export default function Scanner() {
                     <h3 className={`text-lg font-black tracking-tight mb-2 ${result.success ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {result.success ? 'Patrak Successfully Forwarded' : 'Operation Failed'}
                     </h3>
-                    <p className="text-slate-500 font-bold text-[11px] mt-2 mb-6 leading-relaxed max-w-xs">{result.message}</p>
+                    <p className="text-slate-500 font-bold text-xs mt-2 mb-6 leading-relaxed max-w-xs">{result.message}</p>
                     {result.movement && (
                       <div className="bg-slate-50 rounded-2xl px-6 py-4 mb-8 border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Movement Trail</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Movement Trail</p>
                         <div className="flex items-center gap-3">
-                          <span className="px-3 py-1.5 bg-slate-800 text-white text-[10px] font-black rounded-lg">{result.movement.from}</span>
+                          <span className="px-3 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg">{result.movement.from}</span>
                           <ArrowRight size={16} className="text-emerald-500" />
-                          <span className="px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-black rounded-lg">{result.movement.to}</span>
+                          <span className="px-3 py-1.5 bg-emerald-500 text-white text-xs font-black rounded-lg">{result.movement.to}</span>
                         </div>
                       </div>
                     )}
                     <button
                       onClick={resetScanner}
-                      className="px-8 py-3 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all hover:bg-slate-700"
+                      className="px-8 py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg transition-all hover:bg-slate-700"
                     >
                       Initiate New Scan
                     </button>
@@ -561,8 +565,8 @@ export default function Scanner() {
                             <CheckCircle size={20} className="text-emerald-600" />
                           </motion.div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-black text-emerald-600 tracking-tight">QR Verified</p>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                            <p className="text-xs font-black text-emerald-600 tracking-tight">QR Verified</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                               Entry UID: {scannedData.unique_id?.startsWith('PTRK') ? scannedData.unique_id : `#${scannedData.unique_id?.slice(0, 8) || 'N/A'}`}
                             </p>
                           </div>
@@ -571,70 +575,123 @@ export default function Scanner() {
                         {fetchingDetails ? (
                           <div className="py-12 text-center">
                             <Loader2 size={28} className="text-slate-400 animate-spin mx-auto mb-4" />
-                            <p className="text-slate-400 text-[10px] font-bold">Loading patrak details...</p>
+                            <p className="text-slate-400 text-xs font-bold">Loading patrak details...</p>
                           </div>
                         ) : entryDetails ? (
                           <div className="space-y-4">
+                            {/* ── Full Patrak Details Panel ────────────────────────── */}
                             <div className="space-y-3">
+
+                              {/* Patrak ID strip */}
                               <div className="flex items-center justify-between px-4 py-3 bg-slate-800 rounded-xl">
                                 <div>
-                                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Patrak ID</p>
-                                  <p className="text-[10px] font-mono font-black text-white mt-0.5">{entryDetails.unique_id}</p>
+                                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Patrak ID</p>
+                                  <p className="text-xs font-mono font-black text-white mt-0.5">{entryDetails.unique_id}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
+                                  <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg border ${getPriorityColor(entryDetails.priority)}`}>
                                     {entryDetails.priority}
                                   </span>
-                                  {/* Reference number */}
-                                  {entryDetails.sender_reference_number && (
-                                    <div className="mb-2 flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-100">
-                                      <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
-                                      <p className="text-xs font-bold text-slate-700">{entryDetails.sender_reference_number}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Description */}
-                                  {entryDetails.description && (
-                                    <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
-                                      <p className="text-xs font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
-                                      <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{entryDetails.description}</p>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* ── System / Tracking Info ──────────────────── */}
-                                <div>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-5 h-5 bg-emerald-50 rounded-md flex items-center justify-center border border-emerald-100">
-                                      <Building2 size={11} className="text-emerald-600" />
-                                    </div>
-                                    <p className="text-lg font-semibold text-slate-800">System Information</p>
-                                  </div>
-                                  <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50 overflow-hidden">
-                                    {[
-                                      { label: 'Current Dept', value: entryDetails.current_department },
-                                      { label: 'Created', value: entryDetails.created_at ? new Date(entryDetails.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null },
-                                      { label: 'Last Updated', value: entryDetails.updated_at ? new Date(entryDetails.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null },
-                                    ].filter(f => f.value).map(f => (
-                                      <div key={f.label} className="flex items-center justify-between px-3 py-2">
+                                  <span className={`px-2 py-1 text-xs font-black uppercase tracking-wider rounded-lg border ${entryDetails.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                    entryDetails.status === 'Closed' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                                      'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                    {entryDetails.status || 'Active'}
+                                  </span>
                                 </div>
                               </div>
 
-                              {/* Reference number */}
-                              {entryDetails.sender_reference_number && (
-                                <div className="flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-100">
-                                  <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
-                                  <p className="text-xs font-bold text-slate-700">{entryDetails.sender_reference_number}</p>
+                              {/* ── Receiving Mode ─────────────────────────── */}
+                              <div className="bg-indigo-50 rounded-xl border border-indigo-100 px-4 py-2.5">
+                                <p className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Receiving Mode</p>
+                                <div className="flex items-center gap-2">
+                                  {entryDetails.receiving_mode === 'Mails' ? <Send size={12} className="text-indigo-600 shrink-0" /> :
+                                    entryDetails.receiving_mode === 'Fax' ? <MapPin size={12} className="text-indigo-600 shrink-0" /> :
+                                      <ArrowRight size={12} className="text-indigo-600 shrink-0" />}
+                                  <span className="text-xs font-black text-indigo-700">{entryDetails.receiving_mode || 'By Hand'}</span>
+                                  {entryDetails.receiving_mode === 'Mails' && entryDetails.sender_email && (
+                                    <span className="text-xs text-indigo-500 ml-auto truncate">{entryDetails.sender_email}</span>
+                                  )}
+                                  {entryDetails.receiving_mode === 'Fax' && entryDetails.fax_number && (
+                                    <span className="text-xs text-indigo-500 ml-auto">{entryDetails.fax_number}</span>
+                                  )}
                                 </div>
-                              )}
+                              </div>
 
-                              {/* Description */}
-                              {entryDetails.description && (
-                                <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
-                                  <p className="text-xs font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
-                                  <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{entryDetails.description}</p>
+                              {/* ── Sender Details ─────────────────────────── */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-5 h-5 bg-blue-50 rounded-md flex items-center justify-center border border-blue-100">
+                                    <User size={11} className="text-blue-600" />
+                                  </div>
+                                  <p className="text-lg font-semibold text-slate-800">Sender Details</p>
                                 </div>
-                              )}
+                                <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50 overflow-hidden">
+                                  {[
+                                    { label: 'Sender Type', value: entryDetails.sender_type },
+                                    { label: 'Sender Name', value: entryDetails.sender_name },
+                                    { label: 'Address', value: entryDetails.sender_address },
+                                    { label: 'Unit / District', value: entryDetails.unit_district },
+                                    ...(entryDetails.sender_type !== 'Citizen' ? [
+                                      { label: 'Organization', value: entryDetails.send_to },
+                                      { label: 'Designation', value: entryDetails.sender_designation },
+                                    ] : []),
+                                  ].map(f => (
+                                    <div key={f.label} className="flex items-start justify-between gap-3 px-3 py-2">
+                                      <p className="text-sm font-medium text-slate-500 shrink-0 w-24 mt-0.5">{f.label}</p>
+                                      <p className="text-base font-semibold text-slate-700 text-right break-words">{f.value || '—'}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* ── Letter Details ─────────────────────────── */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-5 h-5 bg-amber-50 rounded-md flex items-center justify-center border border-amber-100">
+                                    <ArrowRight size={11} className="text-amber-600" />
+                                  </div>
+                                  <p className="text-lg font-semibold text-slate-800">Letter Details</p>
+                                </div>
+
+                                {/* Subject full width */}
+                                <div className="mb-2 px-3 py-2.5 bg-white rounded-xl border border-slate-100">
+                                  <p className="text-sm font-medium text-slate-500 mb-1">Subject</p>
+                                  <p className="text-base font-bold text-slate-800 leading-snug">{entryDetails.subject || '—'}</p>
+                                </div>
+
+                                {/* 2-col date grid */}
+                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                  <div className="bg-white rounded-xl border border-slate-100 px-3 py-2">
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-0.5">Received Date</p>
+                                    <p className="text-xs font-bold text-slate-700">
+                                      {entryDetails.received_date ? new Date(entryDetails.received_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                                    </p>
+                                  </div>
+                                  <div className="bg-white rounded-xl border border-slate-100 px-3 py-2">
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-0.5">Reference Date</p>
+                                    <p className="text-xs font-bold text-slate-700">
+                                      {entryDetails.reference_date ? new Date(entryDetails.reference_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Reference number */}
+                                {entryDetails.sender_reference_number && (
+                                  <div className="mb-2 flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-100">
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Ref. Number</p>
+                                    <p className="text-xs font-bold text-slate-700">{entryDetails.sender_reference_number}</p>
+                                  </div>
+                                )}
+
+                                {/* Description */}
+                                {entryDetails.description && (
+                                  <div className="px-3 py-3 bg-amber-50 rounded-xl border border-amber-100">
+                                    <p className="text-xs font-black text-amber-600 uppercase tracking-wider mb-1.5">Description</p>
+                                    <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{entryDetails.description}</p>
+                                  </div>
+                                )}
+                              </div>
 
                               {/* ── System / Tracking Info ──────────────────── */}
                               <div>
@@ -776,11 +833,11 @@ export default function Scanner() {
                                                 <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
                                                   <User size={10} className="text-slate-500" />
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
+                                                <span className="text-xs font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
                                               </div>
                                               {m.remarks && (
                                                 <div className="mt-3 px-3 py-2 bg-slate-50 rounded-lg border-l-2 border-slate-300">
-                                                  <p className="text-[10px] text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
+                                                  <p className="text-xs text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
                                                 </div>
                                               )}
                                             </div>
@@ -792,10 +849,12 @@ export default function Scanner() {
                                 )}
                               </div>
                             </div>
+
+
                           </div>
                         ) : (
                           <div className="p-4 bg-rose-50 rounded-xl border border-rose-100">
-                            <p className="text-rose-600 text-[11px] font-bold">Unable to retrieve patrak details. Please try again.</p>
+                            <p className="text-rose-600 text-xs font-bold">Unable to retrieve patrak details. Please try again.</p>
                           </div>
                         )}
                       </>
@@ -813,8 +872,8 @@ export default function Scanner() {
                             <Loader2 size={32} className="text-orange-500" />
                           </motion.div>
                         </motion.div>
-                        <p className="text-slate-800 font-black text-[13px] tracking-tight mb-1">Verifying QR Code</p>
-                        <p className="text-slate-400 font-bold text-[11px]">Validating patrak identity and retrieving details...</p>
+                        <p className="text-slate-800 font-black text-sm tracking-tight mb-1">Verifying QR Code</p>
+                        <p className="text-slate-400 font-bold text-xs">Validating patrak identity and retrieving details...</p>
                       </div>
                     )}
                   </motion.div>
@@ -923,6 +982,7 @@ export default function Scanner() {
           </motion.div>
         )}
       </AnimatePresence>
+
 
 
       <div id="hidden-qr-reader" style={{ display: "none" }}></div>

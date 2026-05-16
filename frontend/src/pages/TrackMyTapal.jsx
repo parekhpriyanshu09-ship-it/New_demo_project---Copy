@@ -428,7 +428,6 @@ export default function TrackMyTapal() {
                         <div ref={advancedRef} className="absolute top-[60px] left-0 right-0 bg-white rounded-xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/80 p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                            <div className="grid grid-cols-2 gap-x-5 gap-y-4 max-h-[200px] overflow-y-auto pr-3 custom-scrollbar">
                               
-<<<<<<< HEAD
                               <div>
                                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Sender</label>
                                 <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
@@ -482,55 +481,11 @@ export default function TrackMyTapal() {
                                   <span className="text-slate-400 font-medium shrink-0">to</span>
                                   <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
                                 </div>
-=======
-                              <label className="text-sm font-medium text-slate-500 text-right">Sender</label>
-                              <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Department</label>
-                              <input value={advancedForm.receiverDepartment} onChange={e=>setAdvancedForm({...advancedForm, receiverDepartment: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Subject / Words</label>
-                              <input value={advancedForm.keyword} onChange={e=>setAdvancedForm({...advancedForm, keyword: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Location</label>
-                              <input value={advancedForm.senderLocation} onChange={e=>setAdvancedForm({...advancedForm, senderLocation: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Patrak ID</label>
-                              <input value={advancedForm.patrakId} onChange={e=>setAdvancedForm({...advancedForm, patrakId: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Status</label>
-                              <select value={advancedForm.status} onChange={e=>setAdvancedForm({...advancedForm, status: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors bg-white">
-                                <option value=""></option>
-                                <option value="Pending">Pending</option>
-                                <option value="Received">Received</option>
-                                <option value="Forwarded">Forwarded</option>
-                                <option value="Closed">Closed</option>
-                              </select>
-
-                              <label className="text-sm font-medium text-slate-500 text-right">Priority</label>
-                              <select value={advancedForm.priority} onChange={e=>setAdvancedForm({...advancedForm, priority: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors bg-white">
-                                <option value=""></option>
-                                <option value="NORMAL">Normal</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="HIGH">High</option>
-                              </select>
-                              
-                              <label className="text-sm font-medium text-slate-500 text-right">Date Within</label>
-                              <div className="flex gap-2">
-                                <input type="date" value={advancedForm.fromDate} onChange={e=>setAdvancedForm({...advancedForm, fromDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
-                                <span className="text-slate-400 mt-1">-</span>
-                                <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
->>>>>>> origin/shradha-feature-branch
                               </div>
-
                            </div>
                            
                            <div className="flex justify-end mt-6">
-<<<<<<< HEAD
                              <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2.5 rounded-lg font-bold text-[13px] hover:bg-[#092a3b] transition-colors flex items-center gap-2">
-=======
-                             <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2 rounded font-bold text-sm hover:bg-[#092a3b] transition-colors flex items-center gap-2">
->>>>>>> origin/shradha-feature-branch
                                Search
                              </button>
                            </div>
