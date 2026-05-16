@@ -29,8 +29,8 @@ function LiveClock() {
     <div className="flex items-center gap-3 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm">
       <Clock size={18} className="text-red-500" />
       <div className="flex flex-col">
-        <span className="font-bold text-[13px] text-slate-800 leading-tight">{time}</span>
-        <span className="text-[10px] text-slate-500 font-medium leading-tight">{date}</span>
+        <span className="font-bold text-sm text-slate-800 leading-tight">{time}</span>
+        <span className="text-xs text-slate-500 font-medium leading-tight">{date}</span>
       </div>
     </div>
   )
@@ -62,7 +62,7 @@ function PriorityBadge({ priority }) {
     Normal: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
   }
   return (
-    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${styles[priority] || styles.Normal}`}>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wide ${styles[priority] || styles.Normal}`}>
       {priority || 'Normal'}
     </span>
   )
@@ -71,7 +71,7 @@ function PriorityBadge({ priority }) {
 function MethodBadge({ method }) {
   const isUpload = method === 'upload'
   return (
-    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${isUpload ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${isUpload ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
       {method ? method.charAt(0).toUpperCase() + method.slice(1) : 'Unknown'}
     </span>
   )
@@ -139,10 +139,10 @@ export default function Logs() {
         {/* ─── Header ─── */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-5">
           <div>
-            <h1 className="font-heading font-black text-2xl text-slate-800 tracking-tight">System Logs</h1>
+            <h1 className="font-heading font-bold text-2xl text-slate-800 tracking-tight">System Logs</h1>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-slate-500 text-xs font-medium">Complete record of all patrak scan activities.</p>
-              <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-2 py-0.5 rounded-full">
+              <span className="text-xs text-slate-400 font-medium bg-slate-100 px-2 py-0.5 rounded-full">
                 (Last refreshed: {lastRefreshed.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })})
               </span>
             </div>
@@ -153,7 +153,7 @@ export default function Logs() {
             <button
               onClick={handleManualRefresh}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-bold text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 shadow-sm transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 shadow-sm transition-all disabled:opacity-50"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               Refresh
@@ -190,7 +190,7 @@ export default function Logs() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-tight">{stats.total}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Logs</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Logs</p>
             </div>
           </div>
 
@@ -200,7 +200,7 @@ export default function Logs() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-tight">{stats.camera}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Camera Scans</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Camera Scans</p>
             </div>
           </div>
 
@@ -210,7 +210,7 @@ export default function Logs() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-tight">{stats.upload}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Upload Scans</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Upload Scans</p>
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export default function Logs() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-tight">{stats.confidential}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Confidential</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Confidential</p>
             </div>
           </div>
 
@@ -230,7 +230,7 @@ export default function Logs() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-tight">{stats.urgent}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Urgent</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Urgent</p>
             </div>
           </div>
         </div>
@@ -241,14 +241,14 @@ export default function Logs() {
             <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest w-16">#</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Entry Details</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Priority</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Department Scanned</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Received By</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date &amp; Time</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Method</th>
-                  <th className="text-left px-3 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Remark</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest w-16">#</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Entry Details</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Priority</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Department Scanned</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Received By</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Date &amp; Time</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Method</th>
+                  <th className="text-left px-3 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Remark</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -286,7 +286,7 @@ export default function Logs() {
                             <p className="text-xs font-bold text-slate-800 leading-tight truncate" title={log.entry_subject}>
                               {log.entry_subject || 'Unknown Subject'}
                             </p>
-                            <p className="text-[10px] font-medium text-slate-400 mt-0.5 truncate">
+                            <p className="text-xs font-medium text-slate-400 mt-0.5 truncate">
                               {log.entry_sender}
                               {log.entry_sender_designation && ` - ${log.entry_sender_designation}`}
                             </p>
@@ -316,7 +316,7 @@ export default function Logs() {
                               <p className="text-xs font-bold text-slate-700 leading-tight">
                                 {log.received_by_username}
                               </p>
-                              <p className="text-[10px] font-medium text-slate-400 capitalize mt-0.5">
+                              <p className="text-xs font-medium text-slate-400 capitalize mt-0.5">
                                 {log.received_by_role === 'department_user' ? 'Department User' : log.received_by_role}
                               </p>
                             </div>
@@ -328,8 +328,8 @@ export default function Logs() {
                           <div className="flex items-center gap-2">
                             <Clock size={14} className="text-slate-400 shrink-0" />
                             <div className="flex flex-col">
-                              <p className="text-[11px] font-medium text-slate-700">{date}</p>
-                              <p className="text-[10px] font-bold text-slate-500 mt-0.5">{time}</p>
+                              <p className="text-xs font-medium text-slate-700">{date}</p>
+                              <p className="text-xs font-bold text-slate-500 mt-0.5">{time}</p>
                             </div>
                           </div>
                         </td>
@@ -342,7 +342,7 @@ export default function Logs() {
                         {/* Remarks */}
                         <td className="px-3 py-3 text-xs">
                           {log.remarks ? (
-                            <p className="text-[11px] font-medium text-slate-500 truncate max-w-[100px]" title={log.remarks}>
+                            <p className="text-xs font-medium text-slate-500 truncate max-w-[100px]" title={log.remarks}>
                               {log.remarks}
                             </p>
                           ) : (
@@ -371,7 +371,7 @@ export default function Logs() {
               >
                 <ChevronLeft size={14} className="text-slate-600" />
               </button>
-              <span className="text-[11px] font-bold text-slate-600 px-1">
+              <span className="text-xs font-bold text-slate-600 px-1">
                 Page {pagination.page} of {pagination.pages || 1}
               </span>
               <button

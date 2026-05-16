@@ -182,7 +182,7 @@ export default function Reports() {
       >
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-slate-600" />
-          <span className="text-sm font-semibold text-slate-800">Report Filters</span>
+          <span className="text-lg font-semibold text-slate-800">Report Filters</span>
         </div>
         <ChevronDown
           size={16}
@@ -201,7 +201,7 @@ export default function Reports() {
             <div className="px-4 pb-4 border-t border-slate-100">
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Date Range</label>
+                  <label className="text-sm font-medium text-slate-700">Date Range</label>
                   <div className="relative">
                     <select
                       value={filters.dateRange}
@@ -220,7 +220,7 @@ export default function Reports() {
                 {filters.dateRange === 'custom' && (
                   <>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">From Date</label>
+                      <label className="text-sm font-medium text-slate-700">From Date</label>
                       <input
                         type="date"
                         value={filters.startDate}
@@ -229,7 +229,7 @@ export default function Reports() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">To Date</label>
+                      <label className="text-sm font-medium text-slate-700">To Date</label>
                       <input
                         type="date"
                         value={filters.endDate}
@@ -241,7 +241,7 @@ export default function Reports() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Department</label>
+                  <label className="text-sm font-medium text-slate-700">Department</label>
                   <div className="relative">
                     <select
                       value={filters.department}
@@ -257,7 +257,7 @@ export default function Reports() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+                  <label className="text-sm font-medium text-slate-700">Priority</label>
                   <div className="relative">
                     <select
                       value={filters.priority}
@@ -273,7 +273,7 @@ export default function Reports() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                  <label className="text-sm font-medium text-slate-700">Status</label>
                   <div className="relative">
                     <select
                       value={filters.status}
@@ -310,7 +310,7 @@ export default function Reports() {
               <category.icon size={20} className={colors.text} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
                 {category.title}
               </h3>
               <p className="text-xs text-slate-500 mt-1 line-clamp-2">{category.description}</p>
@@ -320,7 +320,7 @@ export default function Reports() {
           <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
             <div className="flex gap-1.5">
               {category.format.map(fmt => (
-                <span key={fmt} className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
+                <span key={fmt} className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded">
                   {fmt}
                 </span>
               ))}
@@ -337,7 +337,7 @@ export default function Reports() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-blue-600" />
-          <h3 className="text-sm font-semibold text-slate-900">Report Preview</h3>
+          <h3 className="text-lg font-semibold text-slate-900">Report Preview</h3>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -512,10 +512,10 @@ export default function Reports() {
                   <FolderOpen size={16} className={activeTab === 'generate' ? 'text-white' : 'text-slate-500'} />
                 </div>
                 <div className="text-left">
-                  <span className={`block text-sm font-semibold ${activeTab === 'generate' ? 'text-[#2D4A35]' : 'text-slate-700'}`}>
+                  <span className={`block text-base font-semibold ${activeTab === 'generate' ? 'text-[#2D4A35]' : 'text-slate-700'}`}>
                     Generate Report
                   </span>
-                  <span className={`block text-[11px] ${activeTab === 'generate' ? 'text-[#5A7A63]' : 'text-slate-400'}`}>
+                  <span className={`block text-xs ${activeTab === 'generate' ? 'text-[#5A7A63]' : 'text-slate-400'}`}>
                     Create new reports
                   </span>
                 </div>
@@ -540,10 +540,10 @@ export default function Reports() {
                   <FileText size={16} className={activeTab === 'preview' ? 'text-white' : 'text-slate-500'} />
                 </div>
                 <div className="text-left">
-                  <span className={`block text-sm font-semibold ${activeTab === 'preview' ? 'text-[#3D3454]' : 'text-slate-700'}`}>
+                  <span className={`block text-base font-semibold ${activeTab === 'preview' ? 'text-[#3D3454]' : 'text-slate-700'}`}>
                     Report Preview
                   </span>
-                  <span className={`block text-[11px] ${activeTab === 'preview' ? 'text-[#7A6A96]' : 'text-slate-400'}`}>
+                  <span className={`block text-xs ${activeTab === 'preview' ? 'text-[#7A6A96]' : 'text-slate-400'}`}>
                     View generated output
                   </span>
                 </div>
@@ -568,10 +568,10 @@ export default function Reports() {
                   <History size={16} className={activeTab === 'history' ? 'text-white' : 'text-slate-500'} />
                 </div>
                 <div className="text-left">
-                  <span className={`block text-sm font-semibold ${activeTab === 'history' ? 'text-[#4A3F33]' : 'text-slate-700'}`}>
+                  <span className={`block text-base font-semibold ${activeTab === 'history' ? 'text-[#4A3F33]' : 'text-slate-700'}`}>
                     Report History
                   </span>
-                  <span className={`block text-[11px] ${activeTab === 'history' ? 'text-[#8B7355]' : 'text-slate-400'}`}>
+                  <span className={`block text-xs ${activeTab === 'history' ? 'text-[#8B7355]' : 'text-slate-400'}`}>
                     Past generated reports
                   </span>
                 </div>
@@ -588,7 +588,7 @@ export default function Reports() {
           {activeTab === 'generate' && (
             <motion.div variants={itemVariants}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-700 flex items-center gap-2">
                   <Archive size={16} className="text-slate-500" />
                   Available Report Templates
                 </h2>
@@ -619,7 +619,7 @@ export default function Reports() {
           <motion.div variants={itemVariants} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 size={18} className="text-slate-600" />
-              <h3 className="text-sm font-semibold text-slate-900">Quick Actions</h3>
+              <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors text-slate-700">

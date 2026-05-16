@@ -32,7 +32,7 @@ export default function ActivityFeed({ activities = [] }) {
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-900 tracking-tight font-heading">Activity Intelligence</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Real-time Operations</p>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Real-time Operations</p>
           </div>
         </div>
         <button className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors">
@@ -45,7 +45,7 @@ export default function ActivityFeed({ activities = [] }) {
         {!activities || activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-300">
             <Activity size={32} className="opacity-20 mb-2" />
-            <p className="text-[10px] font-bold uppercase tracking-widest">No Recent Activity</p>
+            <p className="text-xs font-bold uppercase tracking-widest">No Recent Activity</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-50">
@@ -67,15 +67,15 @@ export default function ActivityFeed({ activities = [] }) {
 
                   {/* Subject & Dept */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-[13px] font-bold text-slate-800 truncate group-hover:text-red-600 transition-colors">
+                    <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-red-600 transition-colors">
                       {activity.entry_subject || 'Scan Operation'}
                     </h4>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight">
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-tight">
                         {activity.department || 'N/A'}
                       </span>
                       <span className="w-1 h-1 rounded-full bg-slate-200" />
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-xs font-bold text-slate-500">
                         {activity.received_by || 'Staff'}
                       </span>
                     </div>
@@ -84,7 +84,7 @@ export default function ActivityFeed({ activities = [] }) {
                   {/* Time Badge */}
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-100 rounded-lg shadow-sm flex-shrink-0">
                     <Clock size={10} className="text-slate-400" />
-                    <span className="text-[10px] font-black text-slate-600 uppercase">
+                    <span className="text-xs font-black text-slate-600 uppercase">
                       {timeAgo(activity.received_at)}
                     </span>
                   </div>
@@ -97,10 +97,10 @@ export default function ActivityFeed({ activities = [] }) {
 
       {/* Minimal Footer */}
       <div className="px-6 py-3 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Audit Log v4.2</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Audit Log v4.2</span>
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Secure</span>
+          <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Secure</span>
         </div>
       </div>
     </motion.div>

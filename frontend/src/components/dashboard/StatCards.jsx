@@ -60,13 +60,13 @@ function CardItem({ s, loading }) {
         {/* Vertical Stack: Department Title on top, Workload Status Badge directly below */}
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           {/* Full department name (no truncate, wraps onto second line beautifully if space is narrow) */}
-          <span className="text-[13px] font-bold text-slate-800 dark:text-neutral-200 leading-tight transition-colors duration-200 group-hover:text-slate-900 dark:group-hover:text-white">
+          <span className="text-base font-bold text-slate-800 dark:text-neutral-200 leading-tight transition-colors duration-200 group-hover:text-slate-900 dark:group-hover:text-white">
             {s.title}
           </span>
           
           {/* Contextual Workload Status Pill Badge - shown only if action is needed to keep optimal states beautifully clean */}
           {s.status === 'Action Needed' && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full border bg-white dark:bg-neutral-900 border-yellow-200 text-yellow-600 dark:border-yellow-900/30 dark:text-yellow-400 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-950/20 select-none shrink-0 self-start transition-all duration-300">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full border bg-white dark:bg-neutral-900 border-yellow-200 text-yellow-600 dark:border-yellow-900/30 dark:text-yellow-400 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-950/20 select-none shrink-0 self-start transition-all duration-300">
               {s.status}
             </span>
           )}
@@ -74,7 +74,7 @@ function CardItem({ s, loading }) {
       </div>
 
       {/* Remaining Block Label */}
-      <div className="text-[11px] text-slate-400 dark:text-neutral-500 font-semibold mt-4 relative z-10">
+      <div className="text-sm text-slate-400 dark:text-neutral-500 font-semibold mt-4 relative z-10">
         Remaining
       </div>
       
@@ -84,10 +84,10 @@ function CardItem({ s, loading }) {
           <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
         ) : (
           <>
-            <span className="text-[24px] font-bold text-slate-800 dark:text-neutral-100 tracking-tight leading-none transition-all duration-300 group-hover:scale-[1.02] group-hover:text-slate-900 dark:group-hover:text-white">
+            <span className="text-2xl font-bold text-slate-800 dark:text-neutral-100 tracking-tight leading-none transition-all duration-300 group-hover:scale-[1.02] group-hover:text-slate-900 dark:group-hover:text-white">
               {s.value.toLocaleString("en-IN")}
             </span>
-            <span className="text-[12px] font-semibold text-slate-400 dark:text-neutral-500 ml-1.5 leading-none transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
+            <span className="text-sm font-semibold text-slate-400 dark:text-neutral-500 ml-1.5 leading-none transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
               {s.unit}
             </span>
           </>
@@ -107,7 +107,7 @@ function CardItem({ s, loading }) {
       </div>
 
       {/* Metric Sub-Details labels in perfectly arranged, solid format */}
-      <div className="flex items-center justify-between mt-2.5 text-[11px] font-semibold text-slate-400 dark:text-neutral-500 relative z-10 transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
+      <div className="flex items-center justify-between mt-2.5 text-sm font-semibold text-slate-400 dark:text-neutral-500 relative z-10 transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
         <span>{s.percent}% left</span>
         <span>{Math.max(s.maxCap - s.value, 0)} used of {s.maxCap} {s.unit}</span>
       </div>

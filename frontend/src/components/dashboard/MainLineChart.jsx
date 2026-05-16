@@ -22,7 +22,7 @@ export default function MainLineChart({ data }) {
               <s.icon className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <div className="text-[10px] text-muted-foreground font-medium">{s.label}</div>
+              <div className="text-xs text-muted-foreground font-medium">{s.label}</div>
               <div className="text-lg font-bold">{s.value}</div>
             </div>
           </div>

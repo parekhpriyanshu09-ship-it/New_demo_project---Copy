@@ -246,7 +246,7 @@ const TrackPage = () => {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden md:block">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Current Station</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase">Current Station</p>
                       <p className="text-sm font-bold text-slate-700">{result.current_department}</p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">

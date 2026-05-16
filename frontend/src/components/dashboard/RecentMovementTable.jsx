@@ -96,7 +96,7 @@ export default function RecentMovementTable({ onSelect, selectedMovementId }) {
                     <td className="py-3 pr-3 text-muted-foreground">{r.to}</td>
                     <td className="py-3 pr-3 text-muted-foreground">{r.time}</td>
                     <td className="py-3 pr-3">
-                      <span className="px-2 py-1 rounded-md text-[10px] font-bold" style={{ background: s.bg, color: s.color }}>
+                      <span className="px-2 py-1 rounded-md text-xs font-bold" style={{ background: s.bg, color: s.color }}>
                         {r.status?.toUpperCase()}
                       </span>
                     </td>

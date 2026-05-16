@@ -149,7 +149,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
         <div className="flex items-center gap-3">
           {/* Mini Calendar Date block icon */}
           <div className="flex flex-col items-center justify-center bg-slate-100/80 dark:bg-neutral-800/80 rounded-xl h-14 w-14 border border-slate-200/50 dark:border-neutral-700/30 shrink-0 shadow-sm">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/90">
+            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/90">
               {MONTHS[month - 1].slice(0, 3)}
             </span>
             <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 leading-none mt-0.5">
@@ -162,7 +162,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
               <span className="text-base font-extrabold text-slate-800 dark:text-neutral-100 tracking-tight leading-none">
                 {year}
               </span>
-              <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-neutral-800/80 text-muted-foreground px-1.5 py-0.5 rounded-md leading-none">
+              <span className="text-xs font-black uppercase tracking-wider bg-slate-100 dark:bg-neutral-800/80 text-muted-foreground px-1.5 py-0.5 rounded-md leading-none">
                 Week {Math.ceil((selectedDateObj.getDate() + firstDayOfMonth) / 7)}
               </span>
             </div>
@@ -202,7 +202,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
       {/* 2. Month Calendar Widget Grid */}
       <div className="flex flex-col gap-1.5">
-        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs font-black text-muted-foreground uppercase tracking-widest">
           {DAYS.map(d => <div key={d} className="py-1">{d}</div>)}
         </div>
 
@@ -220,7 +220,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                 }}
               >
                 <span
-                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-all cursor-pointer relative font-bold text-[10.5px] ${c.isSelected
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-all cursor-pointer relative font-bold text-xs ${c.isSelected
                       ? "bg-indigo-600 text-white font-black shadow-[0_4px_12px_-3px_rgba(79,70,229,0.5)] scale-105"
                       : c.isToday
                         ? "border-2 border-indigo-600 text-indigo-600 font-extrabold hover:bg-slate-100/50 dark:hover:bg-neutral-800/40"
@@ -249,11 +249,11 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
           <div className="flex-1 flex flex-col justify-between min-h-[220px]">
             {/* Header Summary Indicator */}
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/90 flex items-center gap-1.5">
+              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/90 flex items-center gap-1.5">
                 <Layers className="h-3 w-3 text-indigo-500" />
                 Selected Date Patrak
               </span>
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md">
                 {formattedSelectedDate}
               </span>
             </div>
@@ -262,7 +262,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
             {entriesLoading ? (
               <div className="flex-1 flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
                 <RefreshCw className="h-5 w-5 animate-spin text-indigo-500" />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Syncing Data...</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Syncing Data...</span>
               </div>
             ) : (
               <div className="flex-1 flex flex-col justify-between border border-slate-200/40 dark:border-neutral-800/50 rounded-2xl p-4 bg-slate-50/30 dark:bg-neutral-900/15">
@@ -270,11 +270,11 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                   {/* Carousel Item Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
+                      <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 leading-none">
                         {activeEntry.unique_id}
                       </span>
                       <h4
-                        className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
+                        className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-neutral-100 leading-snug mt-1 truncate max-w-[200px]"
                         title={activeEntry.subject}
                       >
                         {activeEntry.subject}
@@ -290,7 +290,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                         >
                           <ChevronLeft className="h-3 w-3" />
                         </button>
-                        <span className="text-[9px] font-black text-slate-500 tracking-wider">
+                        <span className="text-xs font-black text-slate-500 tracking-wider">
                           {entryIndex + 1}/{currentSelectedEntries.length}
                         </span>
                         <button
@@ -304,7 +304,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                   </div>
 
                   {/* Icon Info Rows */}
-                  <div className="space-y-2 text-[11px] font-bold text-slate-600 dark:text-neutral-300">
+                  <div className="space-y-2 text-xs font-bold text-slate-600 dark:text-neutral-300">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
                       <span>{formatDateStrFull(activeEntry.received_date)}</span>
@@ -319,7 +319,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                     </div>
                     <div className="flex items-center gap-2">
                       <Building className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                      <span className="uppercase tracking-widest text-[8px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
+                      <span className="uppercase tracking-widest text-xs font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 px-1.5 py-0.5 rounded leading-none">
                         {activeEntry.current_department}
                       </span>
                     </div>
@@ -328,9 +328,9 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
                 {/* About / Description Block */}
                 <div className="mt-3 border-t border-slate-100 dark:border-neutral-800/40 pt-2.5">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/90">About this patrak</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/90">About this patrak</span>
                   <p
-                    className="text-[11px] font-semibold text-slate-500 dark:text-neutral-400 leading-snug mt-1.5 line-clamp-2"
+                    className="text-xs font-semibold text-slate-500 dark:text-neutral-400 leading-snug mt-1.5 line-clamp-2"
                     title={activeEntry.description || "No description provided."}
                   >
                     {activeEntry.description || "No official description provided for this tracking correspondence."}

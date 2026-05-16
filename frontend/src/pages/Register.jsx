@@ -102,12 +102,12 @@ export default function Register() {
               />
               <div>
                 <h1 className="text-[#0f172a] font-bold text-base xl:text-lg leading-tight">SCRB Gujarat</h1>
-                <p className="text-slate-500 text-[10px] xl:text-xs font-medium leading-tight">State Crime Records Bureau</p>
+                <p className="text-slate-500 text-xs xl:text-xs font-medium leading-tight">State Crime Records Bureau</p>
               </div>
             </div>
 
             {/* Badge */}
-            <div className="inline-block bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] xl:text-xs font-semibold mb-3 flex items-center gap-1.5 w-max border border-red-100">
+            <div className="inline-block bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs xl:text-xs font-semibold mb-3 flex items-center gap-1.5 w-max border border-red-100">
               <ShieldCheck size={12} />
               Secure. Track. Simplify.
             </div>
@@ -118,7 +118,7 @@ export default function Register() {
               <span className="text-[#dc2626]">Patrak System</span>
             </h2>
             
-            <p className="text-slate-500 text-xs xl:text-[13px] max-w-md mb-5 leading-relaxed">
+            <p className="text-slate-500 text-xs xl:text-sm max-w-md mb-5 leading-relaxed">
               Create your viewer account to track and monitor letter movements across departments.
             </p>
 
@@ -129,8 +129,8 @@ export default function Register() {
                   <ShieldCheck size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Secure & Reliable</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Enterprise grade security with read-only access</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Secure & Reliable</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Enterprise grade security with read-only access</p>
                 </div>
               </div>
 
@@ -139,8 +139,8 @@ export default function Register() {
                   <ScanLine size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Real-time Tracking</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Track letter movements in real time</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Real-time Tracking</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Track letter movements in real time</p>
                 </div>
               </div>
 
@@ -149,8 +149,8 @@ export default function Register() {
                   <BarChart3 size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Smart Dashboard</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">Get insights and updates at your fingertips</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Smart Dashboard</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">Get insights and updates at your fingertips</p>
                 </div>
               </div>
 
@@ -159,8 +159,8 @@ export default function Register() {
                   <Users size={16} className="xl:w-5 xl:h-5" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold text-[11px] xl:text-[12px]">Department Access</h3>
-                  <p className="text-slate-500 text-[9px] xl:text-[10px]">View patrak entries across multiple departments</p>
+                  <h3 className="text-slate-800 font-bold text-xs xl:text-sm">Department Access</h3>
+                  <p className="text-slate-500 text-xs xl:text-xs">View patrak entries across multiple departments</p>
                 </div>
               </div>
 
@@ -171,8 +171,8 @@ export default function Register() {
                     <UserPlus size={14} className="xl:w-4 xl:h-4" />
                   </div>
                   <div>
-                    <h3 className="text-slate-800 font-bold text-[10px] xl:text-[11px]">Viewer Registration</h3>
-                    <p className="text-slate-500 text-[8px] xl:text-[9px]">Read-only access to track entries</p>
+                    <h3 className="text-slate-800 font-bold text-xs xl:text-xs">Viewer Registration</h3>
+                    <p className="text-slate-500 text-xs xl:text-xs">Read-only access to track entries</p>
                   </div>
                 </div>
                 <div className="w-4 h-4 xl:w-5 xl:h-5 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-emerald-500 shrink-0 shadow-sm">
@@ -228,12 +228,12 @@ export default function Register() {
                   />
                 </div>
                 <h2 className="font-bold text-base xl:text-lg text-slate-800 mb-0.5 tracking-tight">Create Your Account</h2>
-                <p className="text-slate-500 text-[9px] xl:text-[10px]">Register as a Viewer to track patrak</p>
+                <p className="text-slate-500 text-xs xl:text-xs">Register as a Viewer to track patrak</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-2 xl:space-y-2.5">
                 <div className="space-y-0.5">
-                  <label className="block text-[10px] xl:text-[11px] font-bold text-slate-700 ml-1">Username</label>
+                  <label className="block text-xs xl:text-xs font-bold text-slate-700 ml-1">Username</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <User size={13} />
@@ -246,13 +246,13 @@ export default function Register() {
                       placeholder="Choose a username"
                       required
                       minLength={3}
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[10px] xl:text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs xl:text-xs focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="block text-[10px] xl:text-[11px] font-bold text-slate-700 ml-1">Email</label>
+                  <label className="block text-xs xl:text-xs font-bold text-slate-700 ml-1">Email</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Mail size={13} />
@@ -264,13 +264,13 @@ export default function Register() {
                       onChange={handleChange}
                       placeholder="Enter your email"
                       required
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[10px] xl:text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs xl:text-xs focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="block text-[10px] xl:text-[11px] font-bold text-slate-700 ml-1">Department (Optional)</label>
+                  <label className="block text-xs xl:text-xs font-bold text-slate-700 ml-1">Department (Optional)</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Building size={13} />
@@ -279,7 +279,7 @@ export default function Register() {
                       name="department"
                       value={formData.department}
                       onChange={handleChange}
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[10px] xl:text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all appearance-none cursor-pointer"
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs xl:text-xs focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all appearance-none cursor-pointer"
                     >
                       <option value="">Select Department</option>
                       {DEPARTMENTS.map((dept) => (
@@ -295,7 +295,7 @@ export default function Register() {
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="block text-[10px] xl:text-[11px] font-bold text-slate-700 ml-1">Password</label>
+                  <label className="block text-xs xl:text-xs font-bold text-slate-700 ml-1">Password</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Lock size={13} />
@@ -308,7 +308,7 @@ export default function Register() {
                       placeholder="Create a strong password"
                       required
                       minLength={8}
-                      className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[10px] xl:text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
+                      className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs xl:text-xs focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -321,7 +321,7 @@ export default function Register() {
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="block text-[10px] xl:text-[11px] font-bold text-slate-700 ml-1">Confirm Password</label>
+                  <label className="block text-xs xl:text-xs font-bold text-slate-700 ml-1">Confirm Password</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                       <Lock size={13} />
@@ -333,7 +333,7 @@ export default function Register() {
                       onChange={handleChange}
                       placeholder="Confirm your password"
                       required
-                      className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[10px] xl:text-[11px] focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
+                      className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs xl:text-xs focus:outline-none focus:ring-1 focus:ring-red-500/30 focus:border-red-500 transition-all placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -348,7 +348,7 @@ export default function Register() {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold text-[11px] xl:text-[12px] py-2 rounded-xl transition-all shadow-md shadow-red-200/50 flex items-center justify-center gap-1.5 mt-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold text-xs xl:text-sm py-2 rounded-xl transition-all shadow-md shadow-red-200/50 flex items-center justify-center gap-1.5 mt-3 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@ export default function Register() {
                 </button>
               </form>
 
-              <p className="text-center mt-4 xl:mt-5 text-slate-500 text-[10px] xl:text-[11px]">
+              <p className="text-center mt-4 xl:mt-5 text-slate-500 text-xs xl:text-xs">
                 Already have an account?{' '}
                 <Link to="/login" className="text-[#dc2626] font-bold hover:underline">
                   Sign In
@@ -384,8 +384,8 @@ export default function Register() {
                 <Lock size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Data Encryption</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">End-to-end encrypted</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Data Encryption</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">End-to-end encrypted</p>
               </div>
             </div>
 
@@ -394,8 +394,8 @@ export default function Register() {
                 <Shield size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Role Based Access</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Secure role management</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Role Based Access</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Secure role management</p>
               </div>
             </div>
 
@@ -404,8 +404,8 @@ export default function Register() {
                 <FileText size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">Audit Logs</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Complete activity logs</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">Audit Logs</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Complete activity logs</p>
               </div>
             </div>
 
@@ -414,14 +414,14 @@ export default function Register() {
                 <ShieldCheck size={10} />
               </div>
               <div>
-                <h4 className="text-slate-800 font-bold text-[8px] xl:text-[9px] mb-0.5">100% Secure</h4>
-                <p className="text-slate-500 text-[7px] xl:text-[8px]">Your data is protected</p>
+                <h4 className="text-slate-800 font-bold text-xs xl:text-xs mb-0.5">100% Secure</h4>
+                <p className="text-slate-500 text-xs xl:text-xs">Your data is protected</p>
               </div>
             </div>
           </div>
           
           <div className="text-center">
-            <p className="text-slate-400 text-[8px] xl:text-[9px] font-medium">© 2025 Patrak Tracking System. All rights reserved.</p>
+            <p className="text-slate-400 text-xs xl:text-xs font-medium">© 2025 Patrak Tracking System. All rights reserved.</p>
           </div>
         </div>
       </div>

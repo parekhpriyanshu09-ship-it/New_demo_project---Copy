@@ -11,7 +11,7 @@ const Timeline = ({ timeline }) => {
 
   return (
     <div className="w-full">
-      <h3 className="text-[12px] font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-1.5 px-1">
+      <h3 className="text-lg font-semibold text-slate-800 mb-5 flex items-center gap-2 px-1">
         <MapPin size={14} className="text-red-500" />
         Movement History
       </h3>
@@ -57,10 +57,10 @@ const Timeline = ({ timeline }) => {
                 {/* Content */}
                 <div className={`ml-6 flex-1 bg-white hover:bg-slate-50/80 rounded-xl p-3 border transition-colors ${isLast ? 'border-red-100 shadow-sm shadow-red-50' : 'border-slate-100 shadow-sm'}`}>
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <h4 className="text-[13px] font-bold text-slate-800 leading-tight">
+                    <h4 className="text-base font-bold text-slate-800 leading-tight">
                       {step.department}
                     </h4>
-                    <span className={`shrink-0 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                    <span className={`shrink-0 px-2 py-0.5 rounded text-sm font-black uppercase tracking-wider ${
                       isCompleted ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
                     }`}>
                       {step.status}
@@ -68,7 +68,7 @@ const Timeline = ({ timeline }) => {
                   </div>
                   
                   {isCompleted && (
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-500 font-medium mt-1.5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium mt-1.5">
                       {dateStr && (
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="w-3 h-3 text-slate-400" />

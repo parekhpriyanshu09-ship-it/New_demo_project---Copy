@@ -41,7 +41,7 @@ export default function HowItWorks() {
               >
                 <step.icon className="h-6 w-6 text-blue-200" />
               </motion.div>
-              <div className="mb-2 text-[11px] font-black uppercase tracking-widest text-blue-300">Step {index + 1}</div>
+              <div className="mb-2 text-xs font-black uppercase tracking-widest text-blue-300">Step {index + 1}</div>
               <h2 className="text-sm font-black text-white">{step.title}</h2>
               <p className="mt-2 text-xs font-semibold leading-5 text-slate-400">{step.text}</p>
             </motion.div>

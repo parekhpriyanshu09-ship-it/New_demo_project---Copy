@@ -147,7 +147,7 @@ export default function EntryDetail() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-4">
              <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-             <p className="text-slate-400 font-bold text-[11px] uppercase tracking-widest">Synchronizing records...</p>
+             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Synchronizing records...</p>
           </div>
         </div>
       </Layout>
@@ -172,14 +172,14 @@ export default function EntryDetail() {
            <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto order-1 sm:order-2">
               <button
                 onClick={() => navigate('/letters')}
-                className="text-[#b71c1c] font-bold text-[13px] sm:text-sm flex items-center gap-1.5 sm:px-4 sm:py-2 sm:border sm:border-[#b71c1c] sm:rounded-md sm:bg-white hover:bg-red-50 transition-colors"
+                className="text-[#b71c1c] font-bold text-sm sm:text-sm flex items-center gap-1.5 sm:px-4 sm:py-2 sm:border sm:border-[#b71c1c] sm:rounded-md sm:bg-white hover:bg-red-50 transition-colors"
               >
                 <ArrowLeft size={16} />
                 Back to List
               </button>
               <button 
                 onClick={handlePrintQR}
-                className="px-4 py-2 bg-[#b71c1c] text-white rounded-md font-bold text-[13px] sm:text-sm hover:bg-red-800 transition-colors flex items-center gap-2 shadow-sm"
+                className="px-4 py-2 bg-[#b71c1c] text-white rounded-md font-bold text-sm sm:text-sm hover:bg-red-800 transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Printer size={16} />
                 Print
@@ -195,12 +195,12 @@ export default function EntryDetail() {
            <button onClick={() => setActiveTab('details')} className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 relative z-10 transition-all ${activeTab === 'details' ? 'text-[#b71c1c]' : 'text-slate-400'}`}>
               <div className={`absolute top-0 left-0 right-0 h-[3px] bg-[#b71c1c] transition-opacity ${activeTab === 'details' ? 'opacity-100' : 'opacity-0'}`} />
               <FileText size={18} />
-              <span className="text-[11px] font-bold">Details</span>
+              <span className="text-xs font-bold">Details</span>
            </button>
            <button onClick={() => setActiveTab('status')} className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 relative z-10 transition-all border-x border-slate-100 ${activeTab === 'status' ? 'text-[#b71c1c]' : 'text-slate-400'}`}>
               <div className={`absolute top-0 left-0 right-0 h-[3px] bg-[#b71c1c] transition-opacity ${activeTab === 'status' ? 'opacity-100' : 'opacity-0'}`} />
               <MapPin size={18} />
-              <span className="text-[11px] font-bold">Status</span>
+              <span className="text-xs font-bold">Status</span>
            </button>
         </div>
 
@@ -249,7 +249,7 @@ export default function EntryDetail() {
                    <div className="flex justify-between items-start sm:grid sm:grid-cols-3">
                       <span className="text-xs sm:text-sm text-slate-400 sm:text-slate-500 font-medium w-1/3 sm:w-auto">Receiving Mode</span>
                       <div className="text-right sm:text-left sm:col-span-2">
-                         <span className={`px-2 py-1 text-[10px] sm:text-xs font-black rounded uppercase tracking-wider border ${
+                         <span className={`px-2 py-1 text-xs sm:text-xs font-black rounded uppercase tracking-wider border ${
                            entry.receiving_mode === 'Mails' ? 'bg-green-50 text-green-600 border-green-100' :
                            entry.receiving_mode === 'Fax' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                            'bg-amber-50 text-amber-600 border-amber-100'
@@ -277,7 +277,7 @@ export default function EntryDetail() {
                    <div className="flex justify-between items-center sm:grid sm:grid-cols-3">
                       <span className="text-xs sm:text-sm text-slate-400 sm:text-slate-500 font-medium w-1/3 sm:w-auto">Priority</span>
                       <div className="text-right sm:text-left sm:col-span-2">
-                         <span className="px-3 py-1 bg-[#b71c1c] text-white text-[10px] sm:text-xs font-bold rounded shadow-sm tracking-wide">
+                         <span className="px-3 py-1 bg-[#b71c1c] text-white text-xs sm:text-xs font-bold rounded shadow-sm tracking-wide">
                             {entry.priority.toUpperCase()}
                          </span>
                       </div>
@@ -318,7 +318,7 @@ export default function EntryDetail() {
                          <QrCode className="text-[#b71c1c] sm:hidden" size={20} />
                          <h4 className="text-sm font-bold text-[#b71c1c]">Scan to Track this Patrak</h4>
                       </div>
-                      <p className="text-[11px] sm:text-xs text-slate-600 mb-4 leading-relaxed max-w-[250px] sm:max-w-none">
+                      <p className="text-xs sm:text-xs text-slate-600 mb-4 leading-relaxed max-w-[250px] sm:max-w-none">
                          Use this QR Code to track or update movement status of this patrak.
                       </p>
                       <div className="p-2 border border-slate-200 rounded-lg bg-white mb-4 sm:hidden">
@@ -345,7 +345,7 @@ export default function EntryDetail() {
                       </div>
                       <button 
                         onClick={handleDownloadQR}
-                        className="w-full sm:w-auto px-4 py-2 sm:py-1.5 border border-[#b71c1c] text-[#b71c1c] bg-white rounded-md text-[12px] sm:text-xs font-bold hover:bg-red-50 transition-colors flex justify-center items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 sm:py-1.5 border border-[#b71c1c] text-[#b71c1c] bg-white rounded-md text-sm sm:text-xs font-bold hover:bg-red-50 transition-colors flex justify-center items-center gap-2"
                       >
                          <Download size={14} />
                          Download QR Code
@@ -415,7 +415,7 @@ export default function EntryDetail() {
                        <div className="sm:hidden flex-1">
                           <div className="flex items-center gap-2 mb-1">
                              <p className="text-xs text-slate-500 font-medium">Current Status</p>
-                             <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded">
+                             <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded">
                                 {entry.status === 'Active' ? 'In Transit' : entry.status}
                              </span>
                           </div>
@@ -435,23 +435,23 @@ export default function EntryDetail() {
                        <div className="hidden sm:block">
                           <p className="text-xs text-slate-400 font-bold mb-1">Current Status</p>
                           <div className="flex flex-col items-start gap-1">
-                             <span className="px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded">
+                             <span className="px-2 py-0.5 bg-red-50 text-red-600 text-xs font-bold rounded">
                                 {entry.status === 'Active' ? 'In Transit' : entry.status}
                              </span>
-                             <p className="text-[11px] font-bold text-slate-800">At {entry.current_department}</p>
+                             <p className="text-xs font-bold text-slate-800">At {entry.current_department}</p>
                           </div>
                        </div>
                        
                        <div className="flex flex-col gap-1">
-                          <p className="text-[11px] sm:text-xs text-slate-400 font-bold">Priority</p>
+                          <p className="text-xs sm:text-xs text-slate-400 font-bold">Priority</p>
                           <div>
-                             <span className="px-3 py-1 bg-[#b71c1c] text-white text-[10px] font-bold rounded shadow-sm">
+                             <span className="px-3 py-1 bg-[#b71c1c] text-white text-xs font-bold rounded shadow-sm">
                                 {entry.priority.toUpperCase()}
                              </span>
                           </div>
                        </div>
                        <div className="flex flex-col gap-1">
-                          <p className="text-[11px] sm:text-xs text-slate-400 font-bold">Total Movements</p>
+                          <p className="text-xs sm:text-xs text-slate-400 font-bold">Total Movements</p>
                           <p className="text-xs sm:text-sm font-bold text-slate-800">{completedSteps} / {totalSteps} Completed</p>
                        </div>
                     </div>
@@ -464,7 +464,7 @@ export default function EntryDetail() {
                             <User size={14} className="text-slate-500" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">From (Sender)</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-0.5">From (Sender)</p>
                             <p className="text-xs font-bold text-slate-800">{entry.sender_name} <span className="text-slate-500 font-medium">({entry.sender_designation || tracking?.timeline?.[0]?.department || 'Origin'})</span></p>
                         </div>
                     </div>
@@ -480,7 +480,7 @@ export default function EntryDetail() {
                             <MapPin size={14} className="text-[#b71c1c]" />
                         </div>
                         <div className="text-left sm:text-right sm:order-1">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">To (Final Destination)</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-0.5">To (Final Destination)</p>
                             <p className="text-xs font-bold text-slate-800">{tracking?.timeline?.[tracking.timeline.length - 1]?.department || 'Final Destination'}</p>
                         </div>
                     </div>
@@ -508,7 +508,7 @@ export default function EntryDetail() {
                               <div key={node.department} className="flex items-start sm:items-center gap-4 sm:gap-6 relative">
                                  {/* Interactive Dot Wrapper */}
                                  <div className="w-10 flex justify-center shrink-0 mt-2 sm:mt-0 relative z-10">
-                                    <div className={`w-6 h-6 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm border-2 border-white ${
+                                    <div className={`w-6 h-6 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 border-white ${
                                        isCompleted ? 'bg-emerald-600 text-white' : 
                                        isCurrent ? 'bg-[#b71c1c] text-white' : 
                                        'bg-slate-200 text-slate-500'
@@ -524,7 +524,7 @@ export default function EntryDetail() {
                                     <div className="w-full">
                                        <div className="flex items-center justify-between sm:justify-start gap-3 mb-1.5 w-full">
                                           <h4 className="text-sm font-bold text-slate-800">{node.department}</h4>
-                                          <span className={`px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold ${
+                                          <span className={`px-2 py-0.5 rounded text-xs sm:text-xs font-bold ${
                                              isCompleted ? 'bg-emerald-50 text-emerald-600' : 
                                              isCurrent ? 'bg-red-50 text-red-600' : 
                                              'bg-slate-100 text-slate-500'
@@ -532,23 +532,23 @@ export default function EntryDetail() {
                                              {isCompleted ? 'Received' : isCurrent ? 'In Transit' : 'Pending'}
                                           </span>
                                        </div>
-                                       <p className="text-[12px] sm:text-[13px] text-slate-500 mb-2 sm:mb-0">
+                                       <p className="text-sm sm:text-sm text-slate-500 mb-2 sm:mb-0">
                                           {isCompleted ? 'Patrak received and registered' : 
                                            isCurrent ? 'Patrak is currently with this department' : 
                                            'Awaiting patrak'}
                                        </p>
                                        <div className="flex sm:hidden items-center gap-1.5 text-slate-400 mt-2">
                                           <CalendarIcon size={12} />
-                                          <p className="text-[10px] font-medium">
+                                          <p className="text-xs font-medium">
                                              {((isCompleted || isCurrent) && node.log) ? `${formatDate(node.log.received_at)}, ${formatTime(node.log.received_at)}` : '--/--/----, --:--'}
                                           </p>
                                        </div>
                                     </div>
                                     <div className="hidden sm:block text-right shrink-0">
-                                       <p className="text-[13px] text-slate-500 font-medium">
+                                       <p className="text-sm text-slate-500 font-medium">
                                           {(isCompleted || isCurrent) && node.log ? formatDate(node.log.received_at) : '--'}
                                        </p>
-                                       <p className="text-[13px] text-slate-500 font-medium mt-0.5">
+                                       <p className="text-sm text-slate-500 font-medium mt-0.5">
                                           {(isCompleted || isCurrent) && node.log ? formatTime(node.log.received_at) : '--:-- --'}
                                        </p>
                                     </div>
@@ -595,7 +595,7 @@ export default function EntryDetail() {
                                 
                                 <div className="space-y-5">
                                    <div>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Department</p>
+                                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Department</p>
                                       <p className="text-sm font-bold text-slate-800">{currentNode ? currentNode.department : (lastLogNode ? lastLogNode.department : entry.current_department)}</p>
                                    </div>
                                    
@@ -606,17 +606,17 @@ export default function EntryDetail() {
 
                                    <div className="border-t border-slate-200 pt-5 space-y-4">
                                       <div>
-                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Received On</p>
+                                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Received On</p>
                                          <p className="text-xs font-bold text-slate-800">
                                             {lastLogNode?.log ? `${formatDate(lastLogNode.log.received_at)}, ${formatTime(lastLogNode.log.received_at)}` : 'N/A'}
                                          </p>
                                       </div>
                                       <div>
-                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Received By</p>
+                                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Received By</p>
                                          <p className="text-xs font-bold text-slate-800">{lastLogNode?.log?.received_by || 'System Automated'}</p>
                                       </div>
                                       <div>
-                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Remarks</p>
+                                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Remarks</p>
                                          <p className="text-xs font-bold text-slate-600">{lastLogNode?.log?.remarks || 'Patrak is under process.'}</p>
                                       </div>
                                    </div>
@@ -641,13 +641,13 @@ export default function EntryDetail() {
 
                                 <div className="space-y-5">
                                    <div>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Department</p>
+                                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Department</p>
                                       <p className="text-sm font-bold text-slate-800">{nextNode ? nextNode.department : 'Final Destination Reached'}</p>
                                    </div>
 
                                    {nextNode && (
                                       <div>
-                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Expected Next Movement</p>
+                                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Expected Next Movement</p>
                                          <p className="text-xs font-bold text-slate-800">Upon Process Completion</p>
                                       </div>
                                    )}

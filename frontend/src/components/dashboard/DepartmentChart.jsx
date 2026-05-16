@@ -26,9 +26,9 @@ export default function DepartmentChart({ data = [], title = "Operational Volume
           <div className="flex flex-col items-end gap-1">
             <div className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 flex items-center gap-1.5 text-emerald-600">
               <TrendingUp size={10} strokeWidth={3} />
-              <span className="text-[10px] font-black uppercase tracking-widest">+8.4%</span>
+              <span className="text-xs font-black uppercase tracking-widest">+8.4%</span>
             </div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Efficiency</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Efficiency</span>
           </div>
         </div>
       </div>
@@ -84,14 +84,14 @@ export default function DepartmentChart({ data = [], title = "Operational Volume
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Units</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Active Units</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stable Sync</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Stable Sync</span>
           </div>
         </div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Node: SCRB_SRV_01</p>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Node: SCRB_SRV_01</p>
       </div>
     </motion.div>
   )

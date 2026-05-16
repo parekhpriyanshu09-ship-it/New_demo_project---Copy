@@ -256,7 +256,7 @@ export default function TrackMyTapal() {
               <div className="flex items-end">
                 <button
                   onClick={() => { setActiveTab('id'); stopScanner() }}
-                  className={`flex items-center gap-2.5 px-6 py-3.5 text-[13.5px] font-bold rounded-t-2xl transition-all ${activeTab === 'id'
+                  className={`flex items-center gap-2.5 px-6 py-3.5 text-sm font-bold rounded-t-2xl transition-all ${activeTab === 'id'
                     ? 'bg-[#00C896] text-white shadow-sm'
                     : 'bg-white text-slate-600 border border-b-0 border-slate-100 hover:bg-slate-50'
                     }`}
@@ -266,7 +266,7 @@ export default function TrackMyTapal() {
                 </button>
                 <button
                   onClick={() => setActiveTab('qr')}
-                  className={`flex items-center gap-2.5 px-6 py-3.5 text-[13.5px] font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'qr'
+                  className={`flex items-center gap-2.5 px-6 py-3.5 text-sm font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'qr'
                     ? 'bg-[#00C896] text-white shadow-sm'
                     : 'bg-white text-slate-600 border border-b-0 border-slate-100 hover:bg-slate-50'
                     }`}
@@ -276,7 +276,7 @@ export default function TrackMyTapal() {
                 </button>
                 <button
                   onClick={() => { setActiveTab('search'); stopScanner() }}
-                  className={`flex items-center gap-2.5 px-6 py-3.5 text-[13.5px] font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'search'
+                  className={`flex items-center gap-2.5 px-6 py-3.5 text-sm font-bold rounded-t-2xl transition-all ml-1 ${activeTab === 'search'
                     ? 'bg-[#00C896] text-white shadow-sm'
                     : 'bg-white text-slate-600 border border-b-0 border-slate-100 hover:bg-slate-50'
                     }`}
@@ -291,7 +291,7 @@ export default function TrackMyTapal() {
                 {activeTab === 'id' ? (
                   <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <h2 className="text-xl font-bold text-slate-800 mb-1.5">Enter Patrak ID</h2>
-                    <p className="text-[13.5px] text-slate-500 mb-8">Enter the unique Patrak ID to track the current status</p>
+                    <p className="text-sm text-slate-500 mb-8">Enter the unique Patrak ID to track the current status</p>
 
                     <form onSubmit={(e) => { e.preventDefault(); fetchTracking() }} className="space-y-4">
                       <div className="relative">
@@ -299,7 +299,7 @@ export default function TrackMyTapal() {
                           value={patrakId}
                           onChange={(e) => setPatrakId(e.target.value)}
                           placeholder="e.g. PATRK/2026/05/000123"
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-[14px] text-slate-800 font-semibold outline-none bg-white placeholder:text-slate-400 focus:border-[#00C896] focus:ring-4 focus:ring-[#00C896]/10 transition-all shadow-sm"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-3.5 pr-12 text-base text-slate-800 font-semibold outline-none bg-white placeholder:text-slate-400 focus:border-[#00C896] focus:ring-4 focus:ring-[#00C896]/10 transition-all shadow-sm"
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                           <FileText size={18} />
@@ -309,7 +309,7 @@ export default function TrackMyTapal() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 bg-[#00C896] hover:bg-[#00b386] text-white font-bold rounded-xl py-3.5 text-[14px] transition-colors disabled:opacity-60 shadow-[0_2px_8px_-2px_rgba(0,200,150,0.4)]"
+                        className="w-full flex items-center justify-center gap-2 bg-[#00C896] hover:bg-[#00b386] text-white font-bold rounded-xl py-3.5 text-base transition-colors disabled:opacity-60 shadow-[0_2px_8px_-2px_rgba(0,200,150,0.4)]"
                       >
                         {loading
                           ? <Loader2 size={18} className="animate-spin" />
@@ -330,7 +330,7 @@ export default function TrackMyTapal() {
                 ) : activeTab === 'qr' ? (
                   <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <h2 className="text-xl font-bold text-slate-800 mb-1.5">Scan QR Code</h2>
-                    <p className="text-[13.5px] text-slate-500 mb-8">Use camera or upload a QR image to track your tapal</p>
+                    <p className="text-sm text-slate-500 mb-8">Use camera or upload a QR image to track your tapal</p>
 
                     <div className="rounded-xl border border-slate-200 bg-slate-50 min-h-[240px] flex items-center justify-center overflow-hidden mb-4">
                       {cameraError ? (
@@ -378,14 +378,14 @@ export default function TrackMyTapal() {
                   <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
                     <div className="flex items-center justify-between mb-8">
                       <div>
-                        <h2 className="text-[22px] font-bold text-slate-800 flex items-center gap-2 mb-1.5">
+                        <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2 mb-1.5">
                           <Sparkles size={22} className="text-[#00C896]" />
                           Smart Search
                         </h2>
-                        <p className="text-[13.5px] text-slate-500">Use natural language to find tapals instantly</p>
+                        <p className="text-sm text-slate-500">Use natural language to find tapals instantly</p>
                       </div>
                       {(smartQuery || Object.values(advancedForm).some(v => v)) && (
-                        <button type="button" onClick={resetSearch} className="text-[12px] font-bold text-[#00C896] bg-[#e6f9f4] px-3 py-1.5 rounded-lg hover:bg-[#00C896]/20 transition-colors">
+                        <button type="button" onClick={resetSearch} className="text-sm font-bold text-[#00C896] bg-[#e6f9f4] px-3 py-1.5 rounded-lg hover:bg-[#00C896]/20 transition-colors">
                           Clear Search
                         </button>
                       )}
@@ -401,7 +401,7 @@ export default function TrackMyTapal() {
                            <input
                              value={smartQuery}
                              onChange={(e) => setSmartQuery(e.target.value)}
-                             className="flex-1 bg-transparent border-none outline-none text-slate-800 text-[15px] font-medium placeholder:text-slate-400 h-full"
+                             className="flex-1 bg-transparent border-none outline-none text-slate-800 text-base font-medium placeholder:text-slate-400 h-full"
                              placeholder={placeholders[placeholderIdx]}
                            />
                            
@@ -428,6 +428,7 @@ export default function TrackMyTapal() {
                         <div ref={advancedRef} className="absolute top-[60px] left-0 right-0 bg-white rounded-xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/80 p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                            <div className="grid grid-cols-2 gap-x-5 gap-y-4 max-h-[200px] overflow-y-auto pr-3 custom-scrollbar">
                               
+<<<<<<< HEAD
                               <div>
                                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Sender</label>
                                 <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
@@ -481,12 +482,55 @@ export default function TrackMyTapal() {
                                   <span className="text-slate-400 font-medium shrink-0">to</span>
                                   <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
                                 </div>
+=======
+                              <label className="text-sm font-medium text-slate-500 text-right">Sender</label>
+                              <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Department</label>
+                              <input value={advancedForm.receiverDepartment} onChange={e=>setAdvancedForm({...advancedForm, receiverDepartment: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Subject / Words</label>
+                              <input value={advancedForm.keyword} onChange={e=>setAdvancedForm({...advancedForm, keyword: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Location</label>
+                              <input value={advancedForm.senderLocation} onChange={e=>setAdvancedForm({...advancedForm, senderLocation: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Patrak ID</label>
+                              <input value={advancedForm.patrakId} onChange={e=>setAdvancedForm({...advancedForm, patrakId: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Status</label>
+                              <select value={advancedForm.status} onChange={e=>setAdvancedForm({...advancedForm, status: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="Pending">Pending</option>
+                                <option value="Received">Received</option>
+                                <option value="Forwarded">Forwarded</option>
+                                <option value="Closed">Closed</option>
+                              </select>
+
+                              <label className="text-sm font-medium text-slate-500 text-right">Priority</label>
+                              <select value={advancedForm.priority} onChange={e=>setAdvancedForm({...advancedForm, priority: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="NORMAL">Normal</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                              </select>
+                              
+                              <label className="text-sm font-medium text-slate-500 text-right">Date Within</label>
+                              <div className="flex gap-2">
+                                <input type="date" value={advancedForm.fromDate} onChange={e=>setAdvancedForm({...advancedForm, fromDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+                                <span className="text-slate-400 mt-1">-</span>
+                                <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="flex-1 border-b border-slate-200 hover:border-slate-300 py-1.5 text-sm outline-none focus:border-[#00C896] transition-colors" />
+>>>>>>> origin/shradha-feature-branch
                               </div>
 
                            </div>
                            
                            <div className="flex justify-end mt-6">
+<<<<<<< HEAD
                              <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2.5 rounded-lg font-bold text-[13px] hover:bg-[#092a3b] transition-colors flex items-center gap-2">
+=======
+                             <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2 rounded font-bold text-sm hover:bg-[#092a3b] transition-colors flex items-center gap-2">
+>>>>>>> origin/shradha-feature-branch
                                Search
                              </button>
                            </div>
@@ -495,14 +539,14 @@ export default function TrackMyTapal() {
 
                       {/* Quick Search Chips */}
                       <div className="pt-2">
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Suggested Quick Searches</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Suggested Quick Searches</p>
                         <div className="flex flex-wrap gap-2.5">
                           {['Urgent tapals today', 'Pending from Surat', 'Crime Branch', 'Received yesterday', 'High priority'].map(chip => (
                             <button
                               key={chip}
                               type="button"
                               onClick={() => { setSmartQuery(chip); handleSmartSearch(null, chip) }}
-                              className="px-3.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[12px] font-bold text-slate-600 hover:bg-[#00C896]/10 hover:text-[#00C896] hover:border-[#00C896]/30 transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
+                              className="px-3.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-sm font-bold text-slate-600 hover:bg-[#00C896]/10 hover:text-[#00C896] hover:border-[#00C896]/30 transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
                             >
                               {chip}
                             </button>
@@ -516,13 +560,13 @@ export default function TrackMyTapal() {
                       <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500 flex-1">
                         <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                           <h3 className="text-sm font-bold text-slate-800">Search Results</h3>
-                          <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">{searchResults.length} found</span>
+                          <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">{searchResults.length} found</span>
                         </div>
                         {searchResults.length === 0 ? (
                           <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
                             <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                            <p className="text-[13px] font-bold text-slate-600">No records found matching filters</p>
-                            <p className="text-[12px] text-slate-400 mt-1">Try adjusting your search criteria</p>
+                            <p className="text-sm font-bold text-slate-600">No records found matching filters</p>
+                            <p className="text-sm text-slate-400 mt-1">Try adjusting your search criteria</p>
                           </div>
                         ) : (
                           <div className="space-y-3 pb-2 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
@@ -531,24 +575,24 @@ export default function TrackMyTapal() {
                                 <div className="absolute top-0 left-0 w-1 h-full bg-[#00C896] opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div className="flex flex-col gap-0.5">
-                                    <span className="text-[13.5px] font-bold text-[#0D3D56]">{result.unique_id}</span>
-                                    <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1"><CalendarIcon size={10} /> {formatDate(result.received_date)}</span>
+                                    <span className="text-sm font-bold text-[#0D3D56]">{result.unique_id}</span>
+                                    <span className="text-xs font-medium text-slate-500 flex items-center gap-1"><CalendarIcon size={10} /> {formatDate(result.received_date)}</span>
                                   </div>
-                                  <button onClick={() => { fetchTracking(result.unique_id); toast.success('Tracking loaded!') }} className="shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-[#00C896] hover:text-white hover:border-[#00C896] text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5">
+                                  <button onClick={() => { fetchTracking(result.unique_id); toast.success('Tracking loaded!') }} className="shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-[#00C896] hover:text-white hover:border-[#00C896] text-xs font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1.5">
                                     <LocateFixed size={12} /> View Tracking
                                   </button>
                                 </div>
-                                <p className="text-[13px] font-semibold text-slate-800 line-clamp-1 mb-3" title={result.subject}>{result.subject}</p>
+                                <p className="text-sm font-semibold text-slate-800 line-clamp-1 mb-3" title={result.subject}>{result.subject}</p>
                                 <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100">
-                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.sender_name}>
+                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-xs font-bold text-slate-600 truncate max-w-[140px]" title={result.sender_name}>
                                     <User size={10} className="text-slate-400" /> {result.sender_name}
                                   </span>
-                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-[10.5px] font-bold text-slate-600 truncate max-w-[140px]" title={result.current_department}>
+                                  <span className="flex items-center gap-1 bg-[#f8fafc] border border-slate-200 px-2 py-1 rounded text-xs font-bold text-slate-600 truncate max-w-[140px]" title={result.current_department}>
                                     <MapPin size={10} className="text-slate-400" /> {result.current_department}
                                   </span>
                                   <div className="flex-1 flex justify-end gap-2">
-                                    <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${result.priority === 'HIGH' ? 'bg-red-50 text-red-600 border border-red-100' : result.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>{result.priority}</span>
-                                    <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${statusClass[result.status?.toLowerCase()] || 'bg-blue-50 text-blue-600 border-blue-100'}`}>{result.status}</span>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${result.priority === 'HIGH' ? 'bg-red-50 text-red-600 border border-red-100' : result.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>{result.priority}</span>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider border ${statusClass[result.status?.toLowerCase()] || 'bg-blue-50 text-blue-600 border-blue-100'}`}>{result.status}</span>
                                   </div>
                                 </div>
                               </div>
@@ -579,8 +623,8 @@ export default function TrackMyTapal() {
                       className="w-64 h-64 lg:w-72 lg:h-72 object-contain"
                     />
                   </div>
-                  <h3 className="text-[22px] font-bold text-slate-900 mb-2.5">Track your Tapal in real-time</h3>
-                  <p className="text-[13.5px] text-slate-500 max-w-[280px] leading-relaxed">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2.5">Track your Tapal in real-time</h3>
+                  <p className="text-sm text-slate-500 max-w-[280px] leading-relaxed">
                     Enter Patrak ID or scan QR Code to get instant tracking updates.
                   </p>
                 </div>
@@ -595,40 +639,40 @@ export default function TrackMyTapal() {
                     </div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Patrak ID</p>
-                        <p className="text-[13px] font-bold text-slate-800 break-all">{trackingData.patrak_id}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Patrak ID</p>
+                        <p className="text-sm font-bold text-slate-800 break-all">{trackingData.patrak_id}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Status</p>
-                        <span className={`inline-flex px-2.5 py-1 text-[10px] font-bold rounded-md tracking-wide uppercase ${statusClass[normStatus] || 'bg-slate-100 text-slate-600'}`}>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Status</p>
+                        <span className={`inline-flex px-2.5 py-1 text-xs font-bold rounded-md tracking-wide uppercase ${statusClass[normStatus] || 'bg-slate-100 text-slate-600'}`}>
                           {currentStatus === 'Active' ? 'In Transit' : currentStatus}
                         </span>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Subject</p>
-                        <p className="text-[13px] font-semibold text-slate-800 line-clamp-2" title={trackingData.subject}>{trackingData.subject}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Subject</p>
+                        <p className="text-sm font-semibold text-slate-800 line-clamp-2" title={trackingData.subject}>{trackingData.subject}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Priority</p>
-                        <span className="inline-flex px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-md tracking-wide uppercase border border-red-100/50">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Priority</p>
+                        <span className="inline-flex px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-md tracking-wide uppercase border border-red-100/50">
                           {trackingData.priority.toUpperCase()}
                         </span>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Sender</p>
-                        <p className="text-[13px] font-semibold text-slate-800">{trackingData.sender_name}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Sender</p>
+                        <p className="text-sm font-semibold text-slate-800">{trackingData.sender_name}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Designation</p>
-                        <p className="text-[13px] font-semibold text-slate-800">{trackingData.sender_designation || 'N/A'}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Designation</p>
+                        <p className="text-sm font-semibold text-slate-800">{trackingData.sender_designation || 'N/A'}</p>
                       </div>
                       <div className="col-span-2 bg-white p-3 rounded-lg border border-slate-100 shadow-sm mt-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Current Department</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Current Department</p>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded bg-[#e6f9f4] flex items-center justify-center shrink-0">
                             <MapPin size={12} className="text-[#00C896]" />
                           </div>
-                          <p className="text-[13px] font-bold text-slate-800">{trackingData.current_department}</p>
+                          <p className="text-sm font-bold text-slate-800">{trackingData.current_department}</p>
                         </div>
                       </div>
                     </div>
@@ -644,7 +688,7 @@ export default function TrackMyTapal() {
                     {movements.length === 0 ? (
                       <div className="bg-slate-50 rounded-xl p-8 text-center border border-slate-100 h-full flex flex-col items-center justify-center">
                         <Clock size={28} className="mb-3 text-slate-300" />
-                        <p className="text-[13px] font-semibold text-slate-500">No movements recorded yet</p>
+                        <p className="text-sm font-semibold text-slate-500">No movements recorded yet</p>
                       </div>
                     ) : (
                       <div className="space-y-3.5 relative before:absolute before:inset-y-0 before:left-[17px] before:w-px before:bg-slate-200/70">
@@ -656,28 +700,28 @@ export default function TrackMyTapal() {
                                 <div className="absolute left-[9px] top-1 w-[17px] h-[17px] rounded-full bg-white border-[3px] border-[#00C896] shadow-sm z-10" />
                                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
                                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                                    <p className="text-[13.5px] font-bold text-slate-800 truncate">{movement.to_department}</p>
-                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md uppercase shrink-0 tracking-wide ${mStatus === 'received' || mStatus === 'created' ? 'bg-emerald-50 text-emerald-600' :
+                                    <p className="text-sm font-bold text-slate-800 truncate">{movement.to_department}</p>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md uppercase shrink-0 tracking-wide ${mStatus === 'received' || mStatus === 'created' ? 'bg-emerald-50 text-emerald-600' :
                                       mStatus === 'closed' ? 'bg-purple-50 text-purple-600' :
                                         'bg-blue-50 text-blue-600'
                                       }`}>{movement.status}</span>
                                   </div>
                                   <div className="flex flex-col gap-1 mt-2">
-                                    <p className="text-[12px] text-slate-500 flex items-center gap-1.5">
+                                    <p className="text-sm text-slate-500 flex items-center gap-1.5">
                                       <span className="text-slate-400">From:</span>
                                       <span className="font-semibold text-slate-700">{movement.from_department || 'Origin'}</span>
                                     </p>
-                                    <p className="text-[12px] text-slate-500 flex items-center gap-1.5">
+                                    <p className="text-sm text-slate-500 flex items-center gap-1.5">
                                       <span className="text-slate-400">By:</span>
                                       <span className="font-semibold text-slate-700">{movement.forwarded_by || 'System'}</span>
                                     </p>
                                   </div>
                                   {movement.remarks && (
                                     <div className="mt-2.5 p-2 rounded-lg bg-slate-50 border border-slate-100">
-                                      <p className="text-[11.5px] text-slate-600 italic">"{movement.remarks}"</p>
+                                      <p className="text-xs text-slate-600 italic">"{movement.remarks}"</p>
                                     </div>
                                   )}
-                                  <p className="text-[11px] font-medium text-slate-400 mt-2.5 flex items-center gap-1.5">
+                                  <p className="text-xs font-medium text-slate-400 mt-2.5 flex items-center gap-1.5">
                                     <CalendarIcon size={12} />
                                     {movement.timestamp ? `${formatDate(movement.timestamp)}, ${formatTime(movement.timestamp)}` : '--/--/----'}
                                   </p>
@@ -701,8 +745,8 @@ export default function TrackMyTapal() {
                   <Icon size={22} className="text-[#00C896]" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-bold text-slate-800 mb-1">{title}</p>
-                  <p className="text-[12.5px] text-slate-500 leading-relaxed">{desc}</p>
+                  <p className="text-base font-bold text-slate-800 mb-1">{title}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}

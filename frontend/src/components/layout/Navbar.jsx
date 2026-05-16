@@ -78,10 +78,10 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
 
         {/* Stacked Date & Time Text Column */}
         <div className="hidden sm:flex flex-col text-left pr-1">
-          <span className="font-extrabold text-[12.5px] text-slate-800 dark:text-neutral-200 tracking-tight leading-none whitespace-nowrap">
+          <span className="font-extrabold text-sm text-slate-800 dark:text-neutral-200 tracking-tight leading-none whitespace-nowrap">
             {dateStr}
           </span>
-          <span className="text-[10px] text-slate-400 dark:text-neutral-400 font-bold tracking-tight mt-0.5 leading-none whitespace-nowrap">
+          <span className="text-xs text-slate-400 dark:text-neutral-400 font-bold tracking-tight mt-0.5 leading-none whitespace-nowrap">
             {dayName}, {timeStr}
           </span>
         </div>

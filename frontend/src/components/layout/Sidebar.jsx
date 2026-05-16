@@ -141,7 +141,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             navigate(item.path)
           }
         }}
-        className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-[13.5px]'} transition-all duration-200 select-none ${nested ? (mobile ? 'ml-6' : compact ? 'mx-auto justify-center' : 'ml-6') : compact ? 'mx-auto justify-center h-10 w-10 px-0' : ''
+        className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-sm'} transition-all duration-200 select-none ${nested ? (mobile ? 'ml-6' : compact ? 'mx-auto justify-center' : 'ml-6') : compact ? 'mx-auto justify-center h-10 w-10 px-0' : ''
           } ${active
             ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
             : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
@@ -175,7 +175,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
           type="button"
           title={compact ? item.label : undefined}
           onClick={() => toggleGroup(item.label)}
-          className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-[13.5px]'} transition-all duration-200 select-none text-left ${compact ? 'mx-auto h-10 w-10 justify-center px-0' : ''
+          className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-sm'} transition-all duration-200 select-none text-left ${compact ? 'mx-auto h-10 w-10 justify-center px-0' : ''
             } ${groupActive
               ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
               : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
@@ -236,7 +236,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
           {/* Floating Label */}
           <div className="px-2 mb-2 flex items-center gap-1.5 opacity-90">
             <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse" />
-            <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 tracking-[0.15em] uppercase">Global Search</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-neutral-400 tracking-[0.15em] uppercase">Global Search</span>
           </div>
 
           <div className="relative group">
@@ -254,7 +254,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
               <input
                 ref={searchInputRef}
                 placeholder="Search by ID, Title..."
-                className="w-full bg-transparent pl-10 pr-12 py-3 text-[13.5px] font-semibold text-slate-800 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium outline-none rounded-2xl relative z-10"
+                className="w-full bg-transparent pl-10 pr-12 py-3 text-sm font-semibold text-slate-800 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium outline-none rounded-2xl relative z-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={handleSearchFocus}
@@ -262,7 +262,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
 
               {/* Command Hint */}
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none z-10">
-                <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-[10px] font-bold transition-colors ${isSearchFocused ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
+                <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-xs font-bold transition-colors ${isSearchFocused ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
                   /
                 </span>
               </div>
@@ -312,11 +312,11 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                         <button
                           key={page.path}
                           onClick={() => handleSuggestionClick(page.path)}
-                          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm font-medium text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                         >
                           <page.icon className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                           <span className="flex-1 truncate">{page.label}</span>
-                          <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-[10px] text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
+                          <span className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 text-xs text-slate-400 dark:text-neutral-500 font-semibold select-none tracking-wide h-[18px] flex items-center">
                             {shortcut}
                           </span>
                         </button>
@@ -327,7 +327,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                   {searchResults.users?.length > 0 && (
                     <>
                       <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                      <div className="px-3.5 py-1.5 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                         Users
                       </div>
                       <div className="flex flex-col gap-0.5">
@@ -335,12 +335,12 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                           <button
                             key={`user-${u.id}`}
                             onClick={() => handleSuggestionClick('/admin/users')}
-                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                           >
                             <Users className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold truncate">{u.username}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
+                              <div className="text-xs text-slate-400 dark:text-neutral-500 truncate mt-0.5">{u.email}</div>
                             </div>
                           </button>
                         ))}
@@ -351,7 +351,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                   {searchResults.entries?.length > 0 && (
                     <>
                       <div className="my-1 border-t border-slate-100 dark:border-neutral-800/60" />
-                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
+                      <div className="px-3.5 py-1.5 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                         Recent Entries
                       </div>
                       <div className="flex flex-col gap-0.5">
@@ -369,18 +369,18 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                           >
                             <button
                               onClick={() => handleSuggestionClick(`/letters/${entry.id}`)}
-                              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-[13.5px] text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
+                              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/40 text-sm text-left transition-all duration-150 text-slate-700 dark:text-neutral-300"
                             >
                               <FilePenLine className="h-[18px] w-[18px] text-slate-400 dark:text-neutral-500 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold truncate">{entry.subject}</div>
-                                <div className="text-[10px] text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
+                                <div className="text-xs text-slate-400 dark:text-neutral-500 truncate flex items-center gap-1.5 mt-0.5">
                                   <span>{entry.unique_id}</span>
                                   <span>-</span>
                                   <span className="truncate">{entry.sender_name}</span>
                                 </div>
                               </div>
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
+                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded border h-[17px] flex items-center tracking-wide ${entry.priority === 'HIGH' ? 'bg-red-50/50 border-red-100 text-red-600 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400' :
                                 entry.priority === 'MEDIUM' ? 'bg-yellow-50/50 border-yellow-100 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30 dark:text-yellow-400' :
                                   'bg-slate-50 border-slate-100 text-slate-500 dark:bg-neutral-800/40 dark:border-neutral-800 dark:text-slate-400'
                                 }`}>
@@ -411,13 +411,13 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
       {visibleItems.map(item => (
         <div key={item.path || item.label} className="flex flex-col gap-1">
           {item.children ? renderNavGroup(item, { mobile }) : renderNavItem(item, { mobile })}
-          
+
         </div>
       ))}
       {visibleAdminItems.length > 0 && (
         <>
           {!isCollapsed || mobile ? (
-            <div className="text-[10px] font-bold text-slate-400/85 dark:text-neutral-500 uppercase tracking-widest px-1 mt-3 mb-1">
+            <div className="text-xs font-bold text-slate-400/85 dark:text-neutral-500 uppercase tracking-widest px-1 mt-3 mb-1">
               Administration
             </div>
           ) : (
@@ -429,7 +429,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
     </>
   )
 
-  const searchInputClass = "w-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-slate-200 dark:border-neutral-800 rounded-2xl pl-10 pr-4 py-3 text-[13.5px] font-semibold text-slate-800 dark:text-neutral-200 outline-none placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/20 focus:shadow-lg focus:-translate-y-[1px] hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-[1px] transition-all duration-300 shadow-sm"
+  const searchInputClass = "w-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-slate-200 dark:border-neutral-800 rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-800 dark:text-neutral-200 outline-none placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/20 focus:shadow-lg focus:-translate-y-[1px] hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-[1px] transition-all duration-300 shadow-sm"
 
   return (
     <>
@@ -467,15 +467,15 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
 
           {!isCollapsed && (
             <div className="flex-1 flex flex-col text-left min-w-0">
-              <span className="text-[13.5px] font-bold text-slate-800 dark:text-neutral-200 truncate leading-none">Patrak Tracking</span>
-              <span className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-semibold">System</span>
+              <span className="text-sm font-bold text-slate-800 dark:text-neutral-200 truncate leading-none">Patrak Tracking</span>
+              <span className="text-xs text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-semibold">System</span>
             </div>
           )}
         </div>
 
         {/* Section label matches reference text: Platform */}
         {!isCollapsed && (
-          <div className="text-[10px] font-bold text-slate-400/85 dark:text-neutral-500 uppercase tracking-widest px-1 mt-2 mb-1">
+          <div className="text-xs font-bold text-slate-400/85 dark:text-neutral-500 uppercase tracking-widest px-1 mt-2 mb-1">
             Platform
           </div>
         )}
@@ -496,7 +496,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 className={`absolute bottom-full left-0 right-0 mb-2 p-1.5 bg-white dark:bg-[#121214] border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 flex flex-col`}
               >
-                <div className="px-3 py-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+                <div className="px-3 py-2 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
                   Account Options
                 </div>
                 <button
@@ -504,7 +504,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                     setIsProfileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left"
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
                   <span>Log out</span>
@@ -527,8 +527,8 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             {!isCollapsed && (
               <div className="flex-1 flex items-center justify-between min-w-0">
                 <div className="flex flex-col text-left">
-                  <span className="text-[13.5px] font-bold text-slate-800 dark:text-neutral-200 truncate leading-none">{user?.username || 'admin'}</span>
-                  <span className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-semibold">{user?.email || 'admin@scrb.gov.in'}</span>
+                  <span className="text-sm font-bold text-slate-800 dark:text-neutral-200 truncate leading-none">{user?.username || 'admin'}</span>
+                  <span className="text-xs text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-semibold">{user?.email || 'admin@scrb.gov.in'}</span>
                 </div>
                 <ChevronsUpDown className={`h-4 w-4 text-slate-400 dark:text-neutral-500 shrink-0 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
               </div>
@@ -570,7 +570,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-sm font-semibold text-slate-800 dark:text-neutral-200 leading-none">Patrak Tracking</span>
-                  <span className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1 font-medium leading-none">System</span>
+                  <span className="text-xs text-slate-500 dark:text-neutral-400 mt-1 font-medium leading-none">System</span>
                 </div>
               </div>
               <button
@@ -612,7 +612,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="absolute bottom-full left-0 right-0 mb-2 p-1.5 bg-white dark:bg-[#121214] border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 flex flex-col"
                   >
-                    <div className="px-3 py-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+                    <div className="px-3 py-2 text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
                       Account Options
                     </div>
                     <button
@@ -621,7 +621,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                         handleNavClick();
                         logout();
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
                       <span>Log out</span>
@@ -640,7 +640,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
                 <div className="flex-1 flex items-center justify-between min-w-0">
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-semibold text-slate-800 dark:text-neutral-200 truncate leading-none">{user?.username || 'admin'}</span>
-                    <span className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-medium">{user?.email || 'admin@scrb.gov.in'}</span>
+                    <span className="text-xs text-slate-500 dark:text-neutral-400 truncate mt-1 leading-none font-medium">{user?.email || 'admin@scrb.gov.in'}</span>
                   </div>
                   <ChevronsUpDown className="h-4 w-4 text-slate-400 dark:text-neutral-500 shrink-0 transition-transform" />
                 </div>

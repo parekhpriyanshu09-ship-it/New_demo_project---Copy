@@ -86,7 +86,7 @@ export function QuickActions() {
             <button
               key={a.id}
               onClick={() => navigate(a.path)}
-              className="snap-start shrink-0 rounded-xl px-5 py-2 text-[13px] sm:text-[14px] font-bold tracking-tight transition-all duration-200 border border-slate-200/80 dark:border-neutral-800 cursor-pointer flex items-center gap-2 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 active:scale-95"
+              className="snap-start shrink-0 rounded-xl px-5 py-2 text-sm sm:text-base font-bold tracking-tight transition-all duration-200 border border-slate-200/80 dark:border-neutral-800 cursor-pointer flex items-center gap-2 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 active:scale-95"
             >
               <a.icon className="h-4 w-4 shrink-0" />
               <span>{a.label}</span>
