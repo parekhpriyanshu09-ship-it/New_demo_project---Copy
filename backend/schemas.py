@@ -16,6 +16,8 @@ class Priority(str, Enum):
 
 class EntryStatus(str, Enum):
     ACTIVE = "Active"
+    ASSIGNED = "Assigned"
+    IN_PROGRESS = "In Progress"
     CLOSED = "Closed"
     ARCHIVED = "Archived"
 
@@ -24,6 +26,7 @@ class MovementStatus(str, Enum):
     FORWARDED = "Forwarded"
     RECEIVED = "Received"
     PENDING = "Pending"
+    ASSIGNED = "Assigned"
     CLOSED = "Closed"
 
 class UserBase(BaseModel):
@@ -133,6 +136,8 @@ class PatrakMovementResponse(BaseModel):
     timestamp: datetime
     remarks: Optional[str] = None
     status: MovementStatus
+    assigned_to: Optional[str] = None
+    assigned_designation: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -153,6 +158,12 @@ class QRUploadRequest(BaseModel):
 class ForwardRequest(BaseModel):
     entry_id: int
     to_department: str = Field(..., min_length=1)
+    remarks: Optional[str] = None
+
+class AssignRequest(BaseModel):
+    entry_id: int
+    assigned_to: str = Field(..., min_length=1)
+    assigned_designation: str = Field(..., min_length=1)
     remarks: Optional[str] = None
 
 class TrackingNode(BaseModel):

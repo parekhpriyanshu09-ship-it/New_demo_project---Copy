@@ -17,6 +17,8 @@ class Priority(str, enum.Enum):
 
 class EntryStatus(str, enum.Enum):
     ACTIVE = "Active"
+    ASSIGNED = "Assigned"
+    IN_PROGRESS = "In Progress"
     CLOSED = "Closed"
     ARCHIVED = "Archived"
 
@@ -25,6 +27,7 @@ class MovementStatus(str, enum.Enum):
     FORWARDED = "Forwarded"
     RECEIVED = "Received"
     PENDING = "Pending"
+    ASSIGNED = "Assigned"
     CLOSED = "Closed"
 
 class User(Base):
@@ -88,6 +91,8 @@ class PatrakMovement(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     remarks = Column(Text, nullable=True)
     status = Column(SQLEnum(MovementStatus), default=MovementStatus.FORWARDED)
+    assigned_to = Column(String(100), nullable=True)
+    assigned_designation = Column(String(100), nullable=True)
     
     entry = relationship("PatrakEntry", back_populates="movements")
     forwarded_by_user = relationship("User", back_populates="movements")

@@ -82,6 +82,8 @@ def init_db():
                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         remarks TEXT,
                         status VARCHAR(20) DEFAULT 'Forwarded',
+                        assigned_to VARCHAR(100),
+                        assigned_designation VARCHAR(100),
                         FOREIGN KEY (entry_id) REFERENCES patrak_entries (id),
                         FOREIGN KEY (forwarded_by) REFERENCES users (id)
                     )
@@ -112,6 +114,12 @@ def init_db():
                 if "status" not in movement_columns:
                     cursor.execute("ALTER TABLE patrak_movements ADD COLUMN status VARCHAR(20) DEFAULT 'Forwarded'")
                     movement_migrations.append("status")
+                if "assigned_to" not in movement_columns:
+                    cursor.execute("ALTER TABLE patrak_movements ADD COLUMN assigned_to VARCHAR(100) NULL")
+                    movement_migrations.append("assigned_to")
+                if "assigned_designation" not in movement_columns:
+                    cursor.execute("ALTER TABLE patrak_movements ADD COLUMN assigned_designation VARCHAR(100) NULL")
+                    movement_migrations.append("assigned_designation")
                 
                 for col in movement_migrations:
                     print(f"Migration: Added column {col} to patrak_movements table")

@@ -2,20 +2,23 @@ import { useState, useEffect, useRef } from 'react'
 import Layout from '../components/layout/Layout'
 import { Card, Button } from '../components/common'
 import api from '../services/api'
-import { forwardPatrak, receivePatrak } from '../api/forwardApi'
+import { forwardPatrak, receivePatrak, assignPatrak } from '../api/forwardApi'
 import { updateEntry } from '../api/entriesApi'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import {
   Camera,
   Upload,
-  CheckCircle,
   AlertCircle,
-  Building2,
   Loader2,
   Play,
   RefreshCw,
   ShieldCheck,
+  Shield,
+  Info,
+  Calendar,
+  FileText,
+  UserPlus,
   ArrowRight,
   X,
   Send,
@@ -25,7 +28,9 @@ import {
   Search,
   Edit2,
   History,
-  MapPin
+  MapPin,
+  CheckCircle,
+  Building2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Html5Qrcode } from 'html5-qrcode'
@@ -76,6 +81,9 @@ export default function Scanner() {
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardForm, setForwardForm] = useState({ to_department: '', remarks: '' })
   const [forwarding, setForwarding] = useState(false)
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [assignForm, setAssignForm] = useState({ assigned_to: '', assigned_designation: '', remarks: '' })
+  const [assigning, setAssigning] = useState(false)
 
   const scannerRef = useRef(null)
   const isMountedRef = useRef(true)
@@ -273,6 +281,22 @@ export default function Scanner() {
     }
   }
 
+  const handleAssign = async (e) => {
+    e.preventDefault()
+    setAssigning(true)
+    try {
+      await assignPatrak({ ...assignForm, entry_id: entryDetails.id })
+      toast.success('Entry Assigned Successfully')
+      setShowAssignModal(false)
+      setAssignForm({ assigned_to: '', assigned_designation: '', remarks: '' })
+      fetchEntryDetails(entryDetails.id)
+    } catch (error) {
+      toast.error('Failed to assign patrak')
+    } finally {
+      setAssigning(false)
+    }
+  }
+
   const handleEditDetails = () => {
     navigate('/without-qr-code', {
       state: { editMode: true, patrakData: entryDetails }
@@ -281,16 +305,10 @@ export default function Scanner() {
 
   const handleForward = async (e) => {
     e.preventDefault()
-    if (!forwardForm.to_department || !entryDetails) return
-
     setForwarding(true)
     try {
-      const response = await forwardPatrak({
-        entry_id: entryDetails.id,
-        to_department: forwardForm.to_department,
-        remarks: forwardForm.remarks || undefined
-      })
-
+      await forwardPatrak({ ...forwardForm, entry_id: entryDetails.id })
+      toast.success('Forwarded to ' + forwardForm.to_department)
       setShowForwardModal(false)
       setForwardForm({ to_department: '', remarks: '' })
 
@@ -307,7 +325,6 @@ export default function Scanner() {
       try {
         const movesRes = await api.get(`/api/entries/${entryDetails.id}/tracking`)
         setMovements(movesRes.data.movements || [])
-        setEditHistory(movesRes.data.edit_history || [])
       } catch (e) { }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to forward patrak')
@@ -320,7 +337,6 @@ export default function Scanner() {
     setScannedData(null)
     setEntryDetails(null)
     setMovements([])
-    setEditHistory([])
     setResult(null)
     setCameraReady(false)
     setCameraError('')
@@ -751,7 +767,7 @@ export default function Scanner() {
                                 </div>
                               </>
                             ) : (
-                              <div className="flex gap-3 pt-2">
+                              <div className="flex flex-wrap gap-3 pt-2">
                                 <Button
                                   variant="ghost"
                                   onClick={resetScanner}
@@ -761,87 +777,155 @@ export default function Scanner() {
                                   Cancel
                                 </Button>
                                 <Button
+                                  onClick={() => setShowAssignModal(true)}
+                                  className="flex-1 !bg-white !text-slate-700 !border !border-slate-200 !shadow-sm !font-black !text-xs hover:!bg-slate-50 transition-all"
+                                >
+                                  <UserPlus size={14} className="mr-2 text-blue-500" />
+                                  Assign
+                                </Button>
+                                <Button
                                   onClick={() => setShowForwardModal(true)}
-                                  className="flex-1 !bg-red-600 !text-white !shadow-lg !shadow-red-200 !font-black !text-xs"
+                                  className="flex-1 !bg-red-600 !text-white !shadow-lg !shadow-red-200 !font-black !text-xs hover:!bg-red-700 transition-all"
                                 >
                                   <ArrowLeftRight size={14} className="mr-2" />
-                                  Forward to Department
+                                  Forward to Next Department
                                 </Button>
                               </div>
                             )}
 
                             {/* Movement History Timeline */}
-                            <div className="mt-6 pt-6 border-t border-slate-100">
-                              <div className="flex items-center gap-2 mb-5">
-                                <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
-                                  <History size={16} className="text-indigo-600" />
+                            <div className="mt-8 pt-8 border-t border-slate-100">
+                              <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
+                                    <History size={20} className="text-white" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-xl font-bold text-slate-800">Movement History</h3>
+                                    <p className="text-slate-400 text-xs font-medium">Tracking the journey of this patrak</p>
+                                  </div>
                                 </div>
-                                <h3 className="text-lg font-semibold text-slate-800">Movement History</h3>
+                                <div className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                  {movements.length} Events
+                                </div>
                               </div>
-                              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 shadow-sm">
+
+                              <div className="space-y-0 relative">
                                 {movements.length === 0 ? (
-                                  <div className="text-center py-6 text-slate-400 text-xs font-bold">No movement history recorded yet.</div>
+                                  <div className="text-center py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                                    <History size={32} className="text-slate-200 mx-auto mb-3" />
+                                    <p className="text-slate-400 text-sm font-bold">No movement history recorded yet.</p>
+                                  </div>
                                 ) : (
-                                  <div className="relative">
-                                    <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
-                                    <div className="space-y-5">
+                                  <div className="relative ml-2">
+                                    {/* Continuous vertical line */}
+                                    <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100" />
+
+                                    <div className="space-y-8">
                                       {movements.map((m, idx) => {
-                                        let statusColor = "bg-blue-100 text-blue-700 border-blue-200"
-                                        let dotBg = "bg-blue-500"
-                                        let dotRing = "ring-blue-100"
-                                        let statusText = "Created"
-                                        if (m.from_department && arrivalConfirmed && idx === movements.length - 1) {
-                                          statusColor = "bg-emerald-100 text-emerald-700 border-emerald-200"
-                                          dotBg = "bg-emerald-500"
-                                          dotRing = "ring-emerald-100"
-                                          statusText = "Received"
-                                        } else if (m.from_department) {
-                                          statusColor = "bg-orange-100 text-orange-700 border-orange-200"
-                                          dotBg = "bg-orange-500"
-                                          dotRing = "ring-orange-100"
-                                          statusText = "Forwarded"
+                                        const isLast = idx === movements.length - 1;
+                                        const isFirst = idx === 0;
+
+                                        let icon = <CheckCircle size={16} />;
+                                        let iconBg = "bg-blue-500";
+                                        let statusLabel = m.status;
+
+                                        if (m.status === 'Created') {
+                                          icon = <FileText size={16} />;
+                                          iconBg = "bg-indigo-500";
+                                        } else if (m.status === 'Received') {
+                                          icon = <CheckCircle size={16} />;
+                                          iconBg = "bg-emerald-500";
+                                        } else if (m.status === 'Forwarded') {
+                                          icon = <ArrowRight size={16} />;
+                                          iconBg = "bg-amber-500";
+                                        } else if (m.status === 'Assigned') {
+                                          icon = <UserPlus size={16} />;
+                                          iconBg = "bg-blue-600";
+                                          statusLabel = "Assigned";
                                         }
+
                                         return (
-                                          <div key={m.id || idx} className="relative flex gap-4">
-                                            <div className={`relative z-10 flex items-center justify-center w-[30px] h-[30px] rounded-full ring-4 ${dotRing} shrink-0 mt-1 ${dotBg}`}>
-                                              <div className="w-2 h-2 bg-white rounded-full" />
+                                          <motion.div
+                                            key={m.id || idx}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: idx * 0.1 }}
+                                            className="relative pl-12 group"
+                                          >
+                                            {/* Status Dot / Icon */}
+                                            <div className={`absolute left-0 top-0 w-10 h-10 ${iconBg} rounded-2xl flex items-center justify-center z-10 shadow-lg shadow-${iconBg.split('-')[1]}-200 text-white transition-transform group-hover:scale-110`}>
+                                              {icon}
                                             </div>
-                                            <div className="flex-1 bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mb-1">
-                                              <div className="flex items-start justify-between gap-3 flex-wrap">
-                                                <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${statusColor}`}>
-                                                  {statusText}
-                                                </span>
-                                                <div className="text-right">
-                                                  <span className="text-xs font-bold text-slate-400 block">
-                                                    {new Date(m.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+
+                                            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all group-hover:border-slate-200">
+                                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                                                <div className="flex items-center gap-2">
+                                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${m.status === 'Assigned' ? 'bg-blue-50 text-blue-700' :
+                                                    m.status === 'Received' ? 'bg-emerald-50 text-emerald-700' :
+                                                      m.status === 'Forwarded' ? 'bg-amber-50 text-amber-700' :
+                                                        'bg-indigo-50 text-indigo-700'
+                                                    }`}>
+                                                    {statusLabel}
                                                   </span>
-                                                  <span className="text-xs font-bold text-slate-500 block mt-0.5">
-                                                    {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                  <div className="h-4 w-px bg-slate-100" />
+                                                  <span className="text-xs font-bold text-slate-400">
+                                                    {new Date(m.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} • {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                   </span>
                                                 </div>
                                               </div>
-                                              <div className="flex items-center gap-2 mt-3">
-                                                <span className="text-xs font-black text-slate-700">{m.from_department || 'Entry Created'}</span>
-                                                {m.to_department && (
-                                                  <>
-                                                    <ArrowRight size={12} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs font-black text-slate-700">{m.to_department}</span>
-                                                  </>
+
+                                              {/* Movement Context */}
+                                              <div className="space-y-3">
+                                                <div className="flex items-center gap-3">
+                                                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                                                    <MapPin size={12} className="text-slate-400" />
+                                                    <span className="text-xs font-black text-slate-700">{m.from_department || 'Origin'}</span>
+                                                  </div>
+                                                  {m.to_department && m.to_department !== m.from_department && (
+                                                    <>
+                                                      <ArrowRight size={14} className="text-slate-300" />
+                                                      <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                                                        <Building2 size={12} className="text-slate-400" />
+                                                        <span className="text-xs font-black text-slate-700">{m.to_department}</span>
+                                                      </div>
+                                                    </>
+                                                  )}
+                                                </div>
+
+                                                {/* Assignment Details */}
+                                                {m.status === 'Assigned' && m.assigned_to && (
+                                                  <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50 flex items-start gap-3">
+                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                                                      <UserPlus size={16} className="text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-0.5">Assigned To</p>
+                                                      <p className="text-sm font-bold text-slate-800">{m.assigned_to}</p>
+                                                      <p className="text-xs font-medium text-slate-500">{m.assigned_designation}</p>
+                                                    </div>
+                                                  </div>
+                                                )}
+
+                                                {/* Action By */}
+                                                <div className="flex items-center gap-2 pt-1">
+                                                  <div className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center">
+                                                    <User size={12} className="text-slate-400" />
+                                                  </div>
+                                                  <p className="text-xs font-bold text-slate-500">
+                                                    By <span className="text-slate-700">{m.forwarded_by_name || 'System'}</span>
+                                                  </p>
+                                                </div>
+
+                                                {/* Remarks */}
+                                                {m.remarks && (
+                                                  <div className="mt-3 p-4 bg-slate-50 rounded-2xl border-l-4 border-slate-200">
+                                                    <p className="text-xs text-slate-600 italic font-medium leading-relaxed">&ldquo;{m.remarks}&rdquo;</p>
+                                                  </div>
                                                 )}
                                               </div>
-                                              <div className="flex items-center gap-1.5 mt-2">
-                                                <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
-                                                  <User size={10} className="text-slate-500" />
-                                                </div>
-                                                <span className="text-xs font-bold text-slate-500">{m.forwarded_by_name || 'System'}</span>
-                                              </div>
-                                              {m.remarks && (
-                                                <div className="mt-3 px-3 py-2 bg-slate-50 rounded-lg border-l-2 border-slate-300">
-                                                  <p className="text-xs text-slate-500 italic">&ldquo;{m.remarks}&rdquo;</p>
-                                                </div>
-                                              )}
                                             </div>
-                                          </div>
+                                          </motion.div>
                                         )
                                       })}
                                     </div>
@@ -984,6 +1068,107 @@ export default function Scanner() {
       </AnimatePresence>
 
 
+
+      {/* Assign Modal */}
+      <AnimatePresence>
+        {showAssignModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowAssignModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100"
+            >
+              <div className="bg-slate-50 px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
+                    <UserPlus size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-slate-800 font-bold text-lg leading-tight">Assign Task</h3>
+                    <p className="text-slate-400 text-xs font-medium">Assign entry to specific officer</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAssignModal(false)}
+                  className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAssign} className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                    Officer Name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={assignForm.assigned_to}
+                    onChange={(e) => setAssignForm({ ...assignForm, assigned_to: e.target.value })}
+                    placeholder="Enter officer name..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                    Designation
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={assignForm.assigned_designation}
+                    onChange={(e) => setAssignForm({ ...assignForm, assigned_designation: e.target.value })}
+                    placeholder="Enter designation..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                    Instructions / Notes
+                  </label>
+                  <textarea
+                    value={assignForm.remarks}
+                    onChange={(e) => setAssignForm({ ...assignForm, remarks: e.target.value })}
+                    placeholder="Add any specific instructions..."
+                    rows={3}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none placeholder:text-slate-300"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowAssignModal(false)}
+                    className="flex-1 !text-slate-500 !bg-slate-50 hover:!bg-slate-100 !rounded-xl !font-bold"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    loading={assigning}
+                    className="flex-1 !bg-blue-600 hover:!bg-blue-700 !text-white !rounded-xl !font-black !shadow-lg !shadow-blue-200"
+                  >
+                    <CheckCircle size={16} className="mr-2" />
+                    Confirm Assignment
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div id="hidden-qr-reader" style={{ display: "none" }}></div>
     </Layout>

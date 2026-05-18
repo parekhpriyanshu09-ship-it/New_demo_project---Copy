@@ -8,6 +8,9 @@ import api from '../services/api'
 export const forwardPatrak = (data) =>
   api.post('/api/forward', data).then(r => r.data)
 
+export const assignPatrak = (data) =>
+  api.post('/api/forward/assign', data).then(r => r.data)
+
 export const getEntryMovements = (entryId) =>
   api.get(`/api/forward/entry/${entryId}/movements`).then(r => r.data)
 

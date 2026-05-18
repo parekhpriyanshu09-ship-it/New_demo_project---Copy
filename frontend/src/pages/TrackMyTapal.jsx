@@ -395,100 +395,100 @@ export default function TrackMyTapal() {
                       <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-[#00C896] to-[#0D3D56] rounded-[14px] blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
                         <div className="relative bg-white rounded-xl shadow-sm border border-slate-200/80 flex items-center h-14">
-                           <div className="w-14 flex items-center justify-center shrink-0">
-                             <Search className="text-slate-400" size={20} />
-                           </div>
-                           <input
-                             value={smartQuery}
-                             onChange={(e) => setSmartQuery(e.target.value)}
-                             className="flex-1 bg-transparent border-none outline-none text-slate-800 text-base font-medium placeholder:text-slate-400 h-full"
-                             placeholder={placeholders[placeholderIdx]}
-                           />
-                           
-                           {/* Filter Button */}
-                           <button 
-                             type="button"
-                             onClick={() => setShowAdvanced(!showAdvanced)}
-                             className={`w-14 h-full flex items-center justify-center border-l border-slate-100 transition-colors ${showAdvanced ? 'bg-slate-50 text-[#00C896]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                             title="Show search options"
-                           >
-                             <SlidersHorizontal size={20} />
-                           </button>
+                          <div className="w-14 flex items-center justify-center shrink-0">
+                            <Search className="text-slate-400" size={20} />
+                          </div>
+                          <input
+                            value={smartQuery}
+                            onChange={(e) => setSmartQuery(e.target.value)}
+                            className="flex-1 bg-transparent border-none outline-none text-slate-800 text-base font-medium placeholder:text-slate-400 h-full"
+                            placeholder={placeholders[placeholderIdx]}
+                          />
 
-                           <div className="pr-1.5 pl-1 flex items-center gap-2 shrink-0">
-                             <button type="submit" disabled={isSearching || (!smartQuery.trim() && !Object.values(advancedForm).some(v=>v))} className="bg-[#0D3D56] text-white w-11 h-11 rounded-lg flex items-center justify-center shadow-md hover:bg-[#092a3b] transition-all disabled:opacity-50">
-                                {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-                             </button>
-                           </div>
+                          {/* Filter Button */}
+                          <button
+                            type="button"
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            className={`w-14 h-full flex items-center justify-center border-l border-slate-100 transition-colors ${showAdvanced ? 'bg-slate-50 text-[#00C896]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            title="Show search options"
+                          >
+                            <SlidersHorizontal size={20} />
+                          </button>
+
+                          <div className="pr-1.5 pl-1 flex items-center gap-2 shrink-0">
+                            <button type="submit" disabled={isSearching || (!smartQuery.trim() && !Object.values(advancedForm).some(v => v))} className="bg-[#0D3D56] text-white w-11 h-11 rounded-lg flex items-center justify-center shadow-md hover:bg-[#092a3b] transition-all disabled:opacity-50">
+                              {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                            </button>
+                          </div>
                         </div>
                       </div>
 
                       {/* GMAIL STYLE POPUP */}
                       {showAdvanced && (
                         <div ref={advancedRef} className="absolute top-[60px] left-0 right-0 bg-white rounded-xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/80 p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                           <div className="grid grid-cols-2 gap-x-5 gap-y-4 max-h-[200px] overflow-y-auto pr-3 custom-scrollbar">
-                              
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Sender</label>
-                                <input value={advancedForm.senderName} onChange={e=>setAdvancedForm({...advancedForm, senderName: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
-                              </div>
+                          <div className="grid grid-cols-2 gap-x-5 gap-y-4 max-h-[200px] overflow-y-auto pr-3 custom-scrollbar">
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Department</label>
-                                <input value={advancedForm.receiverDepartment} onChange={e=>setAdvancedForm({...advancedForm, receiverDepartment: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
-                              </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Sender</label>
+                              <input value={advancedForm.senderName} onChange={e => setAdvancedForm({ ...advancedForm, senderName: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" placeholder="e.g. John Doe" />
+                            </div>
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Subject / Words</label>
-                                <input value={advancedForm.keyword} onChange={e=>setAdvancedForm({...advancedForm, keyword: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
-                              </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Department</label>
+                              <input value={advancedForm.receiverDepartment} onChange={e => setAdvancedForm({ ...advancedForm, receiverDepartment: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
+                            </div>
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Location</label>
-                                <input value={advancedForm.senderLocation} onChange={e=>setAdvancedForm({...advancedForm, senderLocation: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
-                              </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Subject / Words</label>
+                              <input value={advancedForm.keyword} onChange={e => setAdvancedForm({ ...advancedForm, keyword: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
+                            </div>
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Patrak ID</label>
-                                <input value={advancedForm.patrakId} onChange={e=>setAdvancedForm({...advancedForm, patrakId: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
-                              </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Location</label>
+                              <input value={advancedForm.senderLocation} onChange={e => setAdvancedForm({ ...advancedForm, senderLocation: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
+                            </div>
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Status</label>
-                                <select value={advancedForm.status} onChange={e=>setAdvancedForm({...advancedForm, status: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-white">
-                                  <option value=""></option>
-                                  <option value="Pending">Pending</option>
-                                  <option value="Received">Received</option>
-                                  <option value="Forwarded">Forwarded</option>
-                                  <option value="Closed">Closed</option>
-                                </select>
-                              </div>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Patrak ID</label>
+                              <input value={advancedForm.patrakId} onChange={e => setAdvancedForm({ ...advancedForm, patrakId: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors" />
+                            </div>
 
-                              <div>
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Priority</label>
-                                <select value={advancedForm.priority} onChange={e=>setAdvancedForm({...advancedForm, priority: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-white">
-                                  <option value=""></option>
-                                  <option value="NORMAL">Normal</option>
-                                  <option value="MEDIUM">Medium</option>
-                                  <option value="HIGH">High</option>
-                                </select>
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Status</label>
+                              <select value={advancedForm.status} onChange={e => setAdvancedForm({ ...advancedForm, status: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="Pending">Pending</option>
+                                <option value="Received">Received</option>
+                                <option value="Forwarded">Forwarded</option>
+                                <option value="Closed">Closed</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Priority</label>
+                              <select value={advancedForm.priority} onChange={e => setAdvancedForm({ ...advancedForm, priority: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-white">
+                                <option value=""></option>
+                                <option value="NORMAL">Normal</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                              </select>
+                            </div>
+
+                            <div className="col-span-2">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date Within</label>
+                              <div className="flex gap-4 items-center">
+                                <input type="date" value={advancedForm.fromDate} onChange={e => setAdvancedForm({ ...advancedForm, fromDate: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
+                                <span className="text-slate-400 font-medium shrink-0">to</span>
+                                <input type="date" value={advancedForm.toDate} onChange={e => setAdvancedForm({ ...advancedForm, toDate: e.target.value })} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
                               </div>
-                              
-                              <div className="col-span-2">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date Within</label>
-                                <div className="flex gap-4 items-center">
-                                  <input type="date" value={advancedForm.fromDate} onChange={e=>setAdvancedForm({...advancedForm, fromDate: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
-                                  <span className="text-slate-400 font-medium shrink-0">to</span>
-                                  <input type="date" value={advancedForm.toDate} onChange={e=>setAdvancedForm({...advancedForm, toDate: e.target.value})} className="w-full border-b border-slate-200 hover:border-slate-300 py-1.5 text-[13px] outline-none focus:border-[#00C896] transition-colors bg-transparent" />
-                                </div>
-                              </div>
-                           </div>
-                           
-                           <div className="flex justify-end mt-6">
-                             <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2.5 rounded-lg font-bold text-[13px] hover:bg-[#092a3b] transition-colors flex items-center gap-2">
-                               Search
-                             </button>
-                           </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end mt-6">
+                            <button type="submit" className="bg-[#0D3D56] text-white px-6 py-2.5 rounded-lg font-bold text-[13px] hover:bg-[#092a3b] transition-colors flex items-center gap-2">
+                              Search
+                            </button>
+                          </div>
                         </div>
                       )}
 
