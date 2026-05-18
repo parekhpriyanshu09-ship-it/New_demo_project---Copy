@@ -38,14 +38,14 @@ export function DistrictUnitBarLineChart() {
     : 0;
 
   return (
-    <div className="glass-strong flex h-full min-h-[360px] flex-col rounded-2xl border-[#00AE8C]/20 p-5 text-[#112D48] dark:text-white">
-      <div className="mb-4 flex flex-col gap-3 border-b border-[#00AE8C]/15 pb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="glass-strong flex h-full min-h-[360px] flex-col rounded-2xl border-[#00c896]/20 p-5 text-[#063d33] dark:text-white">
+      <div className="mb-4 flex flex-col gap-3 border-b border-[#00c896]/15 pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <MapPinned className="h-4 w-4 text-[#00AE8C]" />
+            <MapPinned className="h-4 w-4 text-[#00c896]" />
             <h3 className="text-lg font-extrabold tracking-tight">District Unit Wise Analysis</h3>
           </div>
-          <p className="text-sm font-semibold text-[#112D48]/55 dark:text-white/55">
+          <p className="text-sm font-semibold text-[#063d33]/55 dark:text-white/55">
             Received volume, pending tapal, and disposal rate by unit
           </p>
         </div>
@@ -60,10 +60,10 @@ export function DistrictUnitBarLineChart() {
       <div className="relative flex-1 min-h-[250px]">
         {loading ? (
           <div className="flex h-full min-h-[250px] items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-[#00AE8C]" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#00c896]" />
           </div>
         ) : data.length === 0 ? (
-          <div className="flex h-full min-h-[250px] items-center justify-center text-sm font-semibold text-[#112D48]/55 dark:text-white/55">
+          <div className="flex h-full min-h-[250px] items-center justify-center text-sm font-semibold text-[#063d33]/55 dark:text-white/55">
             No district unit data available
           </div>
         ) : (
@@ -92,9 +92,9 @@ export function DistrictUnitBarLineChart() {
                 tick={{ fontSize: 12, fill: "#5f7182", fontWeight: 700 }}
               />
               <Tooltip
-                cursor={{ fill: "rgba(0, 174, 140, 0.08)" }}
+                cursor={{ fill: "rgba(0, 200, 150, 0.08)" }}
                 contentStyle={{
-                  border: "1px solid rgba(0, 174, 140, 0.18)",
+                  border: "1px solid rgba(0, 200, 150, 0.18)",
                   borderRadius: 12,
                   boxShadow: "0 18px 36px -24px rgba(17,45,72,0.45)",
                 }}
@@ -115,16 +115,16 @@ export function DistrictUnitBarLineChart() {
                   return value === "received" ? "Received" : "Pending";
                 }}
               />
-              <Bar yAxisId="count" dataKey="received" fill="#00AE8C" radius={[8, 8, 0, 0]} maxBarSize={34} />
-              <Bar yAxisId="count" dataKey="pending" fill="#112D48" radius={[8, 8, 0, 0]} maxBarSize={34} />
+              <Bar yAxisId="count" dataKey="received" fill="#00c896" radius={[8, 8, 0, 0]} maxBarSize={34} />
+              <Bar yAxisId="count" dataKey="pending" fill="#063d33" radius={[8, 8, 0, 0]} maxBarSize={34} />
               <Line
                 yAxisId="rate"
                 type="monotone"
                 dataKey="disposalRate"
-                stroke="#0D7EBD"
+                stroke="#a9f5e4"
                 strokeWidth={3}
-                dot={{ r: 4, fill: "#ffffff", stroke: "#0D7EBD", strokeWidth: 2 }}
-                activeDot={{ r: 6, fill: "#00AE8C", stroke: "#ffffff", strokeWidth: 2 }}
+                dot={{ r: 4, fill: "#063d33", stroke: "#a9f5e4", strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: "#00c896", stroke: "#ffffff", strokeWidth: 2 }}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -136,12 +136,12 @@ export function DistrictUnitBarLineChart() {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-xl border border-[#00AE8C]/15 bg-[#00AE8C]/8 px-3 py-2">
-      <div className="flex items-center justify-center gap-1 text-base font-black text-[#112D48] dark:text-white">
-        {label === "Rate" && <TrendingUp className="h-3.5 w-3.5 text-[#00AE8C]" />}
+    <div className="rounded-xl border border-[#00c896]/15 bg-[#00c896]/[0.08] px-3 py-2">
+      <div className="flex items-center justify-center gap-1 text-base font-black text-[#063d33] dark:text-white">
+        {label === "Rate" && <TrendingUp className="h-3.5 w-3.5 text-[#00c896]" />}
         {value}
       </div>
-      <div className="text-[10px] font-black uppercase tracking-wider text-[#112D48]/50 dark:text-white/50">
+      <div className="text-[10px] font-black uppercase tracking-wider text-[#063d33]/50 dark:text-white/50">
         {label}
       </div>
     </div>

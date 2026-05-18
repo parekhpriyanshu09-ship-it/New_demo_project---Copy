@@ -26,11 +26,11 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 const chartConfig = {
   inward: {
     label: "Inward",
-    color: "#00AE8C",
+    color: "#00c896",
   },
   outward: {
     label: "Outward",
-    color: "#112D48",
+    color: "#063d33",
   },
 };
 
@@ -78,21 +78,21 @@ export function AnalyticsCard({ selectedDate }) {
       label: "This Week",
       value: statsLoading ? "—" : totalWeek.toLocaleString("en-IN"),
       icon: CalendarDays,
-      color: "#00AE8C",
+      color: "#00c896",
       hoverClass: "animate-hover-calendar",
     },
     {
       label: "This Month",
       value: statsLoading ? "—" : (stats?.total_entries ?? "—").toLocaleString("en-IN"),
       icon: Folders,
-      color: "#112D48",
+      color: "#087a63",
       hoverClass: "animate-hover-folder",
     },
     {
       label: "Daily Avg",
       value: chartLoading ? "—" : dailyAvg.toLocaleString("en-IN"),
       icon: Activity,
-      color: "#00AE8C",
+      color: "#3ee7bd",
       hoverClass: "animate-hover-activity",
     },
   ];

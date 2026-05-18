@@ -9,7 +9,13 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatraksChange }) {
+export function CalendarCard({
+  selectedDate,
+  onDateSelect,
+  onSelectedDateHasPatraksChange,
+  onSelectedDateEntriesChange,
+  showInlineDetails = true,
+}) {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -104,6 +110,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
 
   const activeEntry = currentSelectedEntries[Math.min(entryIndex, currentSelectedEntries.length - 1)];
   const showSelectedPatrakDetails = Boolean(selectedDate && currentSelectedEntries.length > 0);
+  const shouldShowInlineDetails = showInlineDetails && showSelectedPatrakDetails;
 
   useEffect(() => {
     onSelectedDateHasPatraksChange?.(showSelectedPatrakDetails);
@@ -142,8 +149,16 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
     });
   }, [selectedDate]);
 
+  useEffect(() => {
+    onSelectedDateEntriesChange?.({
+      entries: currentSelectedEntries,
+      loading: entriesLoading,
+      formattedDate: formattedSelectedDate,
+    });
+  }, [currentSelectedEntries, entriesLoading, formattedSelectedDate, onSelectedDateEntriesChange]);
+
   return (
-    <div className={`glass-strong rounded-2xl p-5 flex flex-col h-full gap-4 ${showSelectedPatrakDetails ? "justify-between" : "justify-start"}`}>
+    <div className={`glass-strong rounded-2xl p-5 flex flex-col h-full gap-4 ${shouldShowInlineDetails ? "justify-between" : "justify-start"}`}>
       {/* 1. Header Bar matching reference layout */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-brand-800/40">
         <div className="flex items-center gap-3">
@@ -231,7 +246,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
                 >
                   {c.d}
                   {hasData && (
-                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full ${c.isSelected ? "bg-white" : "bg-brand-500"}`} />
+                    <span className={`absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full shadow-[0_0_0_2px_rgba(0,200,150,0.18)] ${c.isSelected ? "bg-white" : "bg-[#00c896]"}`} />
                   )}
                 </span>
               </div>
@@ -240,7 +255,7 @@ export function CalendarCard({ selectedDate, onDateSelect, onSelectedDateHasPatr
         </div>
       </div>
 
-      {showSelectedPatrakDetails && (
+      {shouldShowInlineDetails && (
         <>
           {/* Separator Line */}
           <div className="h-[1px] w-full bg-slate-100 dark:bg-brand-800/40" />
