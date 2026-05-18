@@ -22,15 +22,16 @@ import {
   ChartTooltipContent,
 } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { dashboardTheme } from "../../theme/dashboardTheme";
 
 const chartConfig = {
   inward: {
     label: "Inward",
-    color: "#00c896",
+    color: dashboardTheme.series[2],
   },
   outward: {
     label: "Outward",
-    color: "#063d33",
+    color: dashboardTheme.series[0],
   },
 };
 
@@ -78,21 +79,21 @@ export function AnalyticsCard({ selectedDate }) {
       label: "This Week",
       value: statsLoading ? "—" : totalWeek.toLocaleString("en-IN"),
       icon: CalendarDays,
-      color: "#00c896",
+      color: dashboardTheme.series[2],
       hoverClass: "animate-hover-calendar",
     },
     {
       label: "This Month",
       value: statsLoading ? "—" : (stats?.total_entries ?? "—").toLocaleString("en-IN"),
       icon: Folders,
-      color: "#087a63",
+      color: dashboardTheme.series[1],
       hoverClass: "animate-hover-folder",
     },
     {
       label: "Daily Avg",
       value: chartLoading ? "—" : dailyAvg.toLocaleString("en-IN"),
       icon: Activity,
-      color: "#3ee7bd",
+      color: dashboardTheme.series[5],
       hoverClass: "animate-hover-activity",
     },
   ];

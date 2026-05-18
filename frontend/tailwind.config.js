@@ -40,12 +40,12 @@ export default {
         ring: 'var(--ring)',
         /* Brand colors */
         brand: {
-          dark: '#112D48',
-          accent: '#00AE8C',
-          light: '#e8f0f7',
-          lighter: '#f0f5f9',
-          'dark-hover': '#0B2035',
-          'accent-hover': '#008F74',
+          dark: 'var(--brand-dark)',
+          accent: 'var(--brand-accent)',
+          light: 'var(--brand-light)',
+          lighter: 'var(--brand-lighter)',
+          'dark-hover': 'var(--brand-dark-hover)',
+          'accent-hover': 'var(--brand-accent-hover)',
         },
         /* Legacy direct colors for other pages */
         success: '#10b981',

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Clock, User, Building, RefreshCw, Layers } from "lucide-react";
 import { useCalendarData } from "../../hooks/useDashboard";
 import { mockDashboardEntries } from "../../data/dashboardMockData";
+import { dashboardTheme } from "../../theme/dashboardTheme";
 
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTHS = [
@@ -246,7 +247,13 @@ export function CalendarCard({
                 >
                   {c.d}
                   {hasData && (
-                    <span className={`absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full shadow-[0_0_0_2px_rgba(0,200,150,0.18)] ${c.isSelected ? "bg-white" : "bg-[#00c896]"}`} />
+                    <span
+                      className="absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full"
+                      style={{
+                        backgroundColor: c.isSelected ? dashboardTheme.text : dashboardTheme.accentPrimary,
+                        boxShadow: `0 0 0 2px color-mix(in srgb, ${dashboardTheme.accentPrimary} 18%, transparent)`,
+                      }}
+                    />
                   )}
                 </span>
               </div>

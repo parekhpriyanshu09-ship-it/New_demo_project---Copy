@@ -4,6 +4,7 @@ import { CalendarCard } from "../components/dashboard/CalendarCard";
 import { AnalyticsCard } from "../components/dashboard/AnalyticsCard";
 import { DonutCard } from "../components/dashboard/DonutCard";
 import { DistrictUnitBarLineChart } from "../components/dashboard/DistrictUnitBarLineChart";
+import { dashboardCssVariables } from "../theme/dashboardTheme";
 
 const dashboardTabs = [
   { id: "hod", label: "HOD wise tapal analysis" },
@@ -39,18 +40,11 @@ export default function Dashboard() {
     <Layout>
       <style>{`
         .dashboard-blue-scope {
-          --text-color: #FFFFFF;
-          --primary-deep: #063d33;
-          --secondary-blue: #087a63;
-          --accent-primary: #00c896;
-          --accent-light: #18d6a8;
-          --hover-light: #3ee7bd;
-          --soft-highlight: #a9f5e4;
-          --dashboard-header-gradient: linear-gradient(135deg, #063d33 0%, #087a63 30%, #00c896 62%, #3ee7bd 100%);
+          ${dashboardCssVariables}
         }
 
         .dashboard-tab-shell {
-          color: var(--text-color);
+          color: var(--dashboard-text);
         }
 
         .dashboard-tabs {
@@ -68,12 +62,12 @@ export default function Dashboard() {
           flex: 1 1 0;
           min-height: 64px;
           padding: 16px 20px;
-          color: var(--text-color);
+          color: var(--dashboard-text);
           font-size: 1.05rem;
           font-weight: 800;
           text-align: center;
-          background: var(--primary-deep);
-          border: 1px solid rgba(0, 200, 150, 0.55);
+          background: var(--dashboard-tabs-background);
+          border: 1px solid color-mix(in srgb, var(--dashboard-cards-border-glow) 55%, transparent);
           border-bottom: 0;
           border-radius: 14px 14px 0 0;
           box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -81,28 +75,28 @@ export default function Dashboard() {
         }
 
         .dashboard-tab:last-child {
-          border-right: 1px solid rgba(0, 200, 150, 0.55);
+          border-right: 1px solid color-mix(in srgb, var(--dashboard-cards-border-glow) 55%, transparent);
         }
 
         .dashboard-tab:hover {
-          background: var(--accent-light);
+          background: var(--dashboard-tabs-hover);
         }
 
         .dashboard-tab-active {
-          background: var(--accent-primary);
+          background: var(--dashboard-tabs-active);
           min-height: 76px;
           z-index: 2;
-          border-color: rgba(169, 245, 228, 0.9);
-          box-shadow: inset 0 4px 0 var(--soft-highlight), 0 -1px 0 var(--soft-highlight), 0 18px 34px -28px rgba(13, 61, 86, 0.95);
+          border-color: color-mix(in srgb, var(--dashboard-soft-highlight) 90%, transparent);
+          box-shadow: inset 0 4px 0 var(--dashboard-soft-highlight), 0 -1px 0 var(--dashboard-soft-highlight), 0 18px 34px -28px color-mix(in srgb, var(--dashboard-primary-deep) 95%, transparent);
         }
 
         .dashboard-panel {
           min-height: calc(100dvh - 176px);
           padding: 28px;
           background: var(--dashboard-header-gradient);
-          border: 1px solid rgba(0, 200, 150, 0.85);
+          border: 1px solid color-mix(in srgb, var(--dashboard-cards-border-glow) 85%, transparent);
           border-radius: 18px;
-          box-shadow: 0 22px 54px -34px rgba(13, 61, 86, 0.95);
+          box-shadow: 0 22px 54px -34px color-mix(in srgb, var(--dashboard-primary-deep) 95%, transparent);
         }
 
         .dashboard-content-fill {
@@ -129,14 +123,14 @@ export default function Dashboard() {
 
         .dashboard-blue-scope .glass-strong,
         .dashboard-blue-scope [class*="glass-strong"] {
-          background: rgba(6, 61, 51, 0.88) !important;
-          border-color: rgba(0, 200, 150, 0.7) !important;
-          color: var(--text-color) !important;
-          box-shadow: 0 0 0 1px rgba(0, 200, 150, 0.2), 0 18px 44px -28px rgba(0, 200, 150, 0.8) !important;
+          background: color-mix(in srgb, var(--dashboard-cards-background) 88%, transparent) !important;
+          border-color: color-mix(in srgb, var(--dashboard-cards-border-glow) 70%, transparent) !important;
+          color: var(--dashboard-text) !important;
+          box-shadow: 0 0 0 1px color-mix(in srgb, var(--dashboard-cards-border-glow) 20%, transparent), 0 18px 44px -28px color-mix(in srgb, var(--dashboard-cards-border-glow) 80%, transparent) !important;
         }
 
         .dashboard-blue-scope .glass-strong:hover {
-          border-color: var(--hover-light) !important;
+          border-color: var(--dashboard-cards-hover) !important;
         }
 
         .dashboard-blue-scope h3,
@@ -145,7 +139,7 @@ export default function Dashboard() {
         .dashboard-blue-scope .text-slate-700,
         .dashboard-blue-scope .text-slate-800,
         .dashboard-blue-scope .text-slate-900 {
-          color: var(--text-color) !important;
+          color: var(--dashboard-text) !important;
         }
 
         .dashboard-blue-scope .text-muted-foreground,
@@ -157,21 +151,21 @@ export default function Dashboard() {
 
         .dashboard-blue-scope button:not(.dashboard-tab) {
           color: var(--text-color);
-          background-color: var(--accent-primary);
-          border-color: rgba(169, 245, 228, 0.42);
+          background-color: var(--dashboard-buttons-background);
+          border-color: color-mix(in srgb, var(--dashboard-soft-highlight) 42%, transparent);
         }
 
         .dashboard-blue-scope button:not(.dashboard-tab):hover {
-          background-color: var(--hover-light);
+          background-color: var(--dashboard-buttons-hover);
         }
 
         .dashboard-blue-scope [data-chart] {
-          --color-inward: #063d33 !important;
-          --color-outward: #a9f5e4 !important;
+          --color-inward: var(--dashboard-series-1) !important;
+          --color-outward: var(--dashboard-series-6) !important;
         }
 
         .dashboard-blue-scope .recharts-cartesian-grid line {
-          stroke: rgba(169, 245, 228, 0.28);
+          stroke: color-mix(in srgb, var(--dashboard-soft-highlight) 28%, transparent);
         }
 
         .dashboard-blue-scope .recharts-text,
@@ -181,30 +175,54 @@ export default function Dashboard() {
         }
 
         .dashboard-blue-scope .recharts-line-curve {
-          stroke: #a9f5e4 !important;
+          stroke: var(--dashboard-series-6) !important;
         }
 
         .dashboard-blue-scope .recharts-dot {
-          stroke: #a9f5e4 !important;
-          fill: #00c896 !important;
+          stroke: var(--dashboard-series-6) !important;
+          fill: var(--dashboard-series-3) !important;
         }
 
         .dashboard-blue-scope .recharts-bar-rectangle path,
         .dashboard-blue-scope .recharts-rectangle {
-          stroke: rgba(169, 245, 228, 0.22);
+          stroke: color-mix(in srgb, var(--dashboard-soft-highlight) 22%, transparent);
         }
 
         .dashboard-selected-card {
-          background: rgba(6, 61, 51, 0.9);
-          border: 1px solid rgba(0, 200, 150, 0.75);
-          color: var(--text-color);
-          box-shadow: 0 0 0 1px rgba(0, 200, 150, 0.18), 0 18px 44px -28px rgba(6, 61, 51, 0.9);
+          background: color-mix(in srgb, var(--dashboard-cards-background) 90%, transparent);
+          border: 1px solid color-mix(in srgb, var(--dashboard-cards-border-glow) 75%, transparent);
+          color: var(--dashboard-text);
+          box-shadow: 0 0 0 1px color-mix(in srgb, var(--dashboard-cards-border-glow) 18%, transparent), 0 18px 44px -28px color-mix(in srgb, var(--dashboard-primary-deep) 90%, transparent);
         }
 
         .dashboard-detail-item {
-          border: 1px solid rgba(169, 245, 228, 0.22);
-          background: linear-gradient(135deg, rgba(0, 200, 150, 0.18), rgba(6, 61, 51, 0.68));
+          border: 1px solid color-mix(in srgb, var(--dashboard-soft-highlight) 22%, transparent);
+          background: linear-gradient(135deg, color-mix(in srgb, var(--dashboard-accent-primary) 18%, transparent), color-mix(in srgb, var(--dashboard-primary-deep) 68%, transparent));
           box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .dashboard-detail-summary {
+          border: 1px solid color-mix(in srgb, var(--dashboard-soft-highlight) 25%, transparent);
+          background: color-mix(in srgb, var(--dashboard-accent-primary) 15%, transparent);
+        }
+
+        .dashboard-count-badge {
+          background: var(--dashboard-accent-primary);
+          color: var(--dashboard-primary-deep);
+        }
+
+        .dashboard-soft-text {
+          color: var(--dashboard-soft-highlight);
+        }
+
+        .dashboard-loading-box {
+          border: 1px solid color-mix(in srgb, var(--dashboard-soft-highlight) 20%, transparent);
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-empty-box {
+          border: 1px dashed color-mix(in srgb, var(--dashboard-soft-highlight) 35%, transparent);
+          background: rgba(255, 255, 255, 0.08);
         }
 
         @media (max-width: 768px) {
@@ -217,13 +235,13 @@ export default function Dashboard() {
 
           .dashboard-tab {
             min-height: 58px;
-            border-right: 1px solid rgba(0, 200, 150, 0.55);
-            border-bottom: 1px solid rgba(169, 245, 228, 0.28);
+            border-right: 1px solid color-mix(in srgb, var(--dashboard-cards-border-glow) 55%, transparent);
+            border-bottom: 1px solid color-mix(in srgb, var(--dashboard-soft-highlight) 28%, transparent);
             border-radius: 0;
           }
 
           .dashboard-tab:last-child {
-            border-bottom: 1px solid rgba(169, 245, 228, 0.28);
+            border-bottom: 1px solid color-mix(in srgb, var(--dashboard-soft-highlight) 28%, transparent);
           }
 
           .dashboard-tab:first-child {
@@ -307,10 +325,10 @@ export default function Dashboard() {
                       </h3>
                     </div>
 
-                    <div className="mt-5 rounded-xl border border-[#a9f5e4]/25 bg-[#00c896]/15 p-4">
+                    <div className="dashboard-detail-summary mt-5 rounded-xl p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-semibold text-white/75">Tapal details</p>
-                        <span className="rounded-full bg-[#00c896] px-3 py-1 text-xs font-black text-[#063d33]">
+                        <span className="dashboard-count-badge rounded-full px-3 py-1 text-xs font-black">
                           {selectedPatrakDetails.entries.length} found
                         </span>
                       </div>
@@ -321,7 +339,7 @@ export default function Dashboard() {
 
                     <div className="mt-5 flex-1 space-y-3 overflow-y-auto pr-1">
                       {selectedPatrakDetails.loading ? (
-                        <div className="rounded-2xl border border-[#a9f5e4]/20 bg-white/10 p-4 text-sm font-semibold text-white/70">
+                        <div className="dashboard-loading-box rounded-2xl p-4 text-sm font-semibold text-white/70">
                           Loading selected date details...
                         </div>
                       ) : selectedDateHasPatraks && selectedPatrakDetails.entries.length > 0 ? (
@@ -329,7 +347,7 @@ export default function Dashboard() {
                           <div key={entry.id || entry.unique_id} className="dashboard-detail-item rounded-2xl p-4">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="truncate text-xs font-black uppercase tracking-widest text-[#a9f5e4]">
+                                <p className="dashboard-soft-text truncate text-xs font-black uppercase tracking-widest">
                                   {entry.unique_id}
                                 </p>
                                 <h4 className="mt-1 line-clamp-2 text-sm font-black leading-snug text-white">
@@ -357,7 +375,7 @@ export default function Dashboard() {
                           </div>
                         ))
                       ) : (
-                        <div className="rounded-2xl border border-dashed border-[#a9f5e4]/35 bg-white/[0.08] p-5 text-sm font-semibold leading-relaxed text-white/72">
+                        <div className="dashboard-empty-box rounded-2xl p-5 text-sm font-semibold leading-relaxed text-white/72">
                           Pick a calendar date with a green dot to view its tapal details here.
                         </div>
                       )}
