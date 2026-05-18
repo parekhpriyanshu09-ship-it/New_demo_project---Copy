@@ -11,14 +11,14 @@ const Timeline = ({ timeline }) => {
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold text-slate-800 mb-5 flex items-center gap-2 px-1">
-        <MapPin size={14} className="text-red-500" />
+      <h3 className="text-lg font-semibold text-brand-dark dark:text-white mb-5 flex items-center gap-2 px-1">
+        <MapPin size={14} className="text-brand-accent" />
         Movement History
       </h3>
       
       <div className="relative pl-1.5">
         {/* Vertical Line */}
-        <div className="absolute left-[11px] top-2 bottom-6 w-[2px] bg-slate-200/60 rounded-full"></div>
+        <div className="absolute left-[11px] top-2 bottom-6 w-[2px] bg-gradient-to-b from-brand-dark to-brand-accent rounded-full"></div>
 
         <div className="space-y-0 relative">
           {activeTimeline.map((step, index) => {
@@ -47,42 +47,42 @@ const Timeline = ({ timeline }) => {
                 <div className="absolute left-[-1.5px] top-[14px] z-10 flex items-center justify-center">
                   <div className={`w-[14px] h-[14px] rounded-full border-2 ring-4 ring-white transition-all flex items-center justify-center ${
                     isCompleted 
-                      ? 'bg-red-500 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]' 
-                      : 'bg-white border-slate-300'
+                      ? 'bg-brand-accent border-brand-accent shadow-[0_0_8px_rgba(0,104,150,0.4)]' 
+                      : 'bg-white border-brand-dark'
                   }`}>
                     {isCompleted && <Check size={8} strokeWidth={4} className="text-white" />}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className={`ml-6 flex-1 bg-white hover:bg-slate-50/80 rounded-xl p-3 border transition-colors ${isLast ? 'border-red-100 shadow-sm shadow-red-50' : 'border-slate-100 shadow-sm'}`}>
+                <div className={`ml-6 flex-1 bg-white dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-slate-800/80 rounded-xl p-3 border transition-colors ${isLast ? 'border-brand-accent/30 shadow-sm shadow-brand-accent/20' : 'border-brand-light shadow-sm'}`}>
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <h4 className="text-base font-bold text-slate-800 leading-tight">
+                    <h4 className="text-base font-bold text-brand-dark dark:text-white leading-tight">
                       {step.department}
                     </h4>
                     <span className={`shrink-0 px-2 py-0.5 rounded text-sm font-black uppercase tracking-wider ${
-                      isCompleted ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                      isCompleted ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                     }`}>
                       {step.status}
                     </span>
                   </div>
                   
                   {isCompleted && (
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium mt-1.5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-dark/60 dark:text-white/60 font-medium mt-1.5">
                       {dateStr && (
                         <div className="flex items-center gap-1">
-                          <CalendarIcon className="w-3 h-3 text-slate-400" />
+                          <CalendarIcon className="w-3 h-3 text-brand-dark/40 dark:text-white/40" />
                           {dateStr}
                         </div>
                       )}
                       {timeStr && (
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-400" />
+                          <Clock className="w-3 h-3 text-brand-dark/40 dark:text-white/40" />
                           {timeStr}
                         </div>
                       )}
                       <div className="flex items-center gap-1">
-                        <User className="w-3 h-3 text-slate-400" />
+                        <User className="w-3 h-3 text-brand-dark/40 dark:text-white/40" />
                         {step.user || 'System'}
                       </div>
                     </div>

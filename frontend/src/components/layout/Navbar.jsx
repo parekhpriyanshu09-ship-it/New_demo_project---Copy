@@ -32,7 +32,7 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
   return (
     <header
       className="
-        bg-white/70 dark:bg-neutral-900/80 backdrop-blur-md border-b border-slate-200/60 dark:border-white/10 px-6 py-3 flex items-center justify-between gap-4
+        bg-gradient-to-r from-blue-50 to-white/70 dark:bg-gradient-to-r dark:from-brand-dark dark:to-blue-950/80 backdrop-blur-md border-b border-brand-light dark:border-brand-accent/20 px-6 py-3 flex items-center justify-between gap-4
         sticky top-0 z-40
         transition-all duration-300
         w-full
@@ -43,13 +43,13 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
         {/* Hamburger Menu Button */}
         <button
           onClick={onMenuClick}
-          className="h-9 w-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 flex items-center justify-center hover:scale-105 active:scale-95 transition shrink-0 border border-slate-200/50 dark:border-white/10"
+          className="h-9 w-9 rounded-full bg-brand-light hover:bg-brand-accent/20 dark:bg-brand-accent/10 dark:hover:bg-brand-accent/20 flex items-center justify-center hover:scale-105 active:scale-95 transition shrink-0 border border-brand-accent/30 dark:border-brand-accent/40"
         >
-          <Menu className="h-4.5 w-4.5 text-slate-800 dark:text-white" />
+          <Menu className="h-4.5 w-4.5 text-brand-dark dark:text-brand-accent" />
         </button>
 
         {/* Greeting Text */}
-        <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap truncate">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-brand-dark dark:text-white whitespace-nowrap truncate">
           Welcome back, admin!
         </h1>
       </div>
@@ -60,28 +60,28 @@ export default function Navbar({ sidebarCollapsed, onMenuClick }) {
       </div>
 
       {/* Right side: Notification + Date & Time */}
-      <div className="flex items-center gap-2 sm:gap-3 bg-slate-100/60 dark:bg-neutral-950/40 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-slate-200/50 dark:border-neutral-800/40 shadow-xs shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 bg-brand-lighter/60 dark:bg-brand-dark/40 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-brand-accent/20 dark:border-brand-accent/40 shadow-xs shrink-0">
         {/* Notification Circle Icon Button */}
-        <button className="relative h-8 w-8 rounded-full bg-white dark:bg-neutral-800 flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition cursor-pointer">
-          <Bell className="h-4 w-4 text-slate-700 dark:text-neutral-300 stroke-[2.25]" />
+        <button className="relative h-8 w-8 rounded-full bg-white dark:bg-brand-dark/80 flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition cursor-pointer">
+          <Bell className="h-4 w-4 text-brand-dark dark:text-brand-accent stroke-[2.25]" />
           {/* Circular Red Notification Dot */}
-          <span className="absolute top-[7px] right-[7px] h-2 w-2 rounded-full bg-red-500 border border-white dark:border-neutral-800" />
+          <span className="absolute top-[7px] right-[7px] h-2 w-2 rounded-full bg-red-500 border border-white dark:border-brand-dark" />
         </button>
 
         {/* Thin vertical separator line */}
-        <div className="h-6 border-l border-slate-200/80 dark:border-neutral-800/80" />
+        <div className="h-6 border-l border-brand-accent/30 dark:border-brand-accent/40" />
 
         {/* Calendar Rounded-Square Icon Button */}
-        <div className="h-8 w-8 rounded-lg bg-white dark:bg-neutral-800 flex items-center justify-center shadow-xs">
-          <Calendar className="h-4 w-4 text-[#5f62f1] dark:text-[#818cf8] stroke-[2.25]" />
+        <div className="h-8 w-8 rounded-lg bg-white dark:bg-brand-dark/80 flex items-center justify-center shadow-xs">
+          <Calendar className="h-4 w-4 text-brand-accent dark:text-brand-accent stroke-[2.25]" />
         </div>
 
         {/* Stacked Date & Time Text Column */}
         <div className="hidden sm:flex flex-col text-left pr-1">
-          <span className="font-extrabold text-sm text-slate-800 dark:text-neutral-200 tracking-tight leading-none whitespace-nowrap">
+          <span className="font-extrabold text-sm text-brand-dark dark:text-white tracking-tight leading-none whitespace-nowrap">
             {dateStr}
           </span>
-          <span className="text-xs text-slate-400 dark:text-neutral-400 font-bold tracking-tight mt-0.5 leading-none whitespace-nowrap">
+          <span className="text-xs text-brand-dark/60 dark:text-brand-accent/80 font-bold tracking-tight mt-0.5 leading-none whitespace-nowrap">
             {dayName}, {timeStr}
           </span>
         </div>

@@ -38,6 +38,15 @@ export default {
         border: 'var(--border)',
         input: 'var(--input)',
         ring: 'var(--ring)',
+        /* Brand colors */
+        brand: {
+          dark: '#112D48',
+          accent: '#00AE8C',
+          light: '#e8f0f7',
+          lighter: '#f0f5f9',
+          'dark-hover': '#0B2035',
+          'accent-hover': '#008F74',
+        },
         /* Legacy direct colors for other pages */
         success: '#10b981',
         warning: '#f59e0b',

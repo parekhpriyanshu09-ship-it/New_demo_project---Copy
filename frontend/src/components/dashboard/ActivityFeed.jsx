@@ -25,17 +25,17 @@ export default function ActivityFeed({ activities = [] }) {
       className="card-premium overflow-hidden bg-white"
     >
       {/* Compact Header */}
-      <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+      <div className="px-6 py-4 border-b border-brand-light flex items-center justify-between bg-brand-light/50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shadow-lg shadow-red-100">
+          <div className="w-8 h-8 rounded-lg bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-accent/20">
             <Activity size={16} className="text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900 tracking-tight font-heading">Activity Intelligence</h3>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Real-time Operations</p>
+            <h3 className="text-sm font-black text-brand-dark tracking-tight font-heading">Activity Intelligence</h3>
+            <p className="text-xs text-brand-dark/50 font-bold uppercase tracking-widest">Real-time Operations</p>
           </div>
         </div>
-        <button className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors">
+        <button className="p-2 hover:bg-brand-accent/10 rounded-lg text-brand-accent transition-colors">
           <ArrowRight size={16} />
         </button>
       </div>
@@ -43,12 +43,12 @@ export default function ActivityFeed({ activities = [] }) {
       {/* Compact Scrollable List */}
       <div className="max-h-[380px] overflow-y-auto custom-scrollbar">
         {!activities || activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+          <div className="flex flex-col items-center justify-center py-12 text-brand-dark/30">
             <Activity size={32} className="opacity-20 mb-2" />
             <p className="text-xs font-bold uppercase tracking-widest">No Recent Activity</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-brand-light">
             {activities.map((activity, index) => {
               const statusColor = STATUS_COLORS[index % STATUS_COLORS.length]
 
@@ -67,24 +67,24 @@ export default function ActivityFeed({ activities = [] }) {
 
                   {/* Subject & Dept */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-red-600 transition-colors">
+                    <h4 className="text-sm font-bold text-brand-dark truncate group-hover:text-brand-accent transition-colors">
                       {activity.entry_subject || 'Scan Operation'}
                     </h4>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-tight">
+                      <span className="text-xs font-black text-brand-dark/40 uppercase tracking-tight">
                         {activity.department || 'N/A'}
                       </span>
-                      <span className="w-1 h-1 rounded-full bg-slate-200" />
-                      <span className="text-xs font-bold text-slate-500">
+                      <span className="w-1 h-1 rounded-full bg-brand-light" />
+                      <span className="text-xs font-bold text-brand-dark/50">
                         {activity.received_by || 'Staff'}
                       </span>
                     </div>
                   </div>
 
                   {/* Time Badge */}
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-100 rounded-lg shadow-sm flex-shrink-0">
-                    <Clock size={10} className="text-slate-400" />
-                    <span className="text-xs font-black text-slate-600 uppercase">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-brand-accent/30 rounded-lg shadow-sm flex-shrink-0">
+                    <Clock size={10} className="text-brand-dark/40" />
+                    <span className="text-xs font-black text-brand-dark/60 uppercase">
                       {timeAgo(activity.received_at)}
                     </span>
                   </div>
@@ -96,8 +96,8 @@ export default function ActivityFeed({ activities = [] }) {
       </div>
 
       {/* Minimal Footer */}
-      <div className="px-6 py-3 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Audit Log v4.2</span>
+      <div className="px-6 py-3 bg-brand-light/50 border-t border-brand-light flex items-center justify-between">
+        <span className="text-xs font-bold text-brand-dark/40 uppercase tracking-[0.2em]">Audit Log v4.2</span>
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Secure</span>

@@ -149,25 +149,25 @@ export default function GlobalSearch() {
       >
         <div className="relative group w-full">
           {!isSearchFocused && (
-            <div className="absolute -inset-[1px] rounded-[18px] bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-600 dark:to-indigo-600 opacity-20 blur-[2px] pointer-events-none" />
+            <div className="absolute -inset-[1px] rounded-[18px] bg-gradient-to-r from-brand-light to-brand-lighter dark:from-brand-dark dark:to-brand-accent opacity-30 blur-[2px] pointer-events-none" />
           )}
 
-          <form onSubmit={handleSearch} className="relative flex items-center bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md focus-within:shadow-lg focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/15 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/20 transition-all duration-300">
+          <form onSubmit={handleSearch} className="relative flex items-center bg-white/60 dark:bg-brand-dark/60 backdrop-blur-md rounded-2xl border border-brand-accent/30 dark:border-brand-accent/40 shadow-sm hover:border-brand-accent/50 dark:hover:border-brand-accent/60 hover:shadow-md focus-within:shadow-lg focus-within:border-brand-accent focus-within:ring-4 focus-within:ring-brand-accent/15 dark:focus-within:border-brand-accent dark:focus-within:ring-brand-accent/20 transition-all duration-300">
             <div className="absolute inset-0 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] pointer-events-none" />
 
-            <Search className={`absolute left-3.5 h-[18px] w-[18px] z-10 pointer-events-none transition-colors duration-200 ${isSearchFocused ? 'text-blue-500 dark:text-blue-400' : 'text-slate-500 dark:text-neutral-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'}`} />
+            <Search className={`absolute left-3.5 h-[18px] w-[18px] z-10 pointer-events-none transition-colors duration-200 ${isSearchFocused ? 'text-brand-accent dark:text-brand-accent' : 'text-brand-dark/60 dark:text-white/60 group-hover:text-brand-accent dark:group-hover:text-brand-accent'}`} />
 
             <input
               ref={searchInputRef}
               placeholder="Search patraks, reports, dates..."
-              className="w-full bg-transparent pl-10 pr-12 py-2 text-sm font-semibold text-slate-800 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 placeholder:font-medium outline-none rounded-2xl relative z-10"
+              className="w-full bg-transparent pl-10 pr-12 py-2 text-sm font-semibold text-brand-dark dark:text-white placeholder:text-brand-dark/50 dark:placeholder:text-white/50 placeholder:font-medium outline-none rounded-2xl relative z-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={handleSearchFocus}
             />
 
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none z-10">
-              <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-xs font-bold transition-colors ${isSearchFocused ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
+              <span className={`flex items-center justify-center h-[22px] px-2 rounded-md border text-xs font-bold transition-colors ${isSearchFocused ? 'bg-brand-light dark:bg-brand-dark/60 border-brand-accent dark:border-brand-accent text-brand-accent dark:text-brand-accent' : 'bg-brand-light dark:bg-brand-dark/60 border-brand-accent/30 dark:border-brand-accent/40 text-brand-dark/60 dark:text-white/60'} shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]`}>
                 /
               </span>
             </div>
@@ -183,7 +183,7 @@ export default function GlobalSearch() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="fixed w-[420px] md:w-[520px] bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-neutral-800 rounded-2xl p-1.5 shadow-2xl z-[9999] overflow-y-auto no-scrollbar"
+              className="fixed w-[420px] md:w-[520px] bg-white dark:bg-brand-dark/90 border border-brand-accent/30 dark:border-brand-accent/40 rounded-2xl p-1.5 shadow-2xl z-[9999] overflow-y-auto no-scrollbar"
               style={{
                 left: popupPosition.left,
                 top: popupPosition.top,
@@ -192,9 +192,9 @@ export default function GlobalSearch() {
             >
               {isSearching ? (
                 <div className="flex items-center justify-center gap-1 py-8">
-                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} />
-                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} />
-                  <motion.span className="w-2 h-2 rounded-full bg-slate-400" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-brand-accent" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-brand-accent" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-brand-accent" animate={{ y: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} />
                 </div>
               ) : (
                 <>

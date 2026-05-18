@@ -45,28 +45,28 @@ const DEPT_CONFIG = [
 function CardItem({ s, loading }) {
   return (
     <div
-      className="relative bg-white dark:bg-[#121214] border border-slate-200/60 dark:border-neutral-800/80 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_rgba(0,0,0,0.06),0_4px_12px_-4px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_12px_24px_-10px_rgba(0,0,0,0.4)] hover:border-slate-300 dark:hover:border-neutral-700 group cursor-pointer overflow-hidden select-none"
+      className="relative overflow-hidden rounded-2xl border border-[#00AE8C]/35 bg-gradient-to-br from-[#00AE8C] to-[#112D48] p-4 text-white shadow-[0_16px_34px_-24px_rgba(17,45,72,0.8)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_38px_-22px_rgba(17,45,72,0.9)] group cursor-pointer select-none"
     >
       {/* Subtly animated ambient backlight on card hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-500/[0.02] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.16] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
 
       {/* Header Block: Icon on left, stacked title & status on right aligned to center */}
       <div className="flex items-center gap-3 relative z-10">
         {/* Animated Icon Wrapper */}
-        <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 flex items-center justify-center shrink-0 text-slate-700 dark:text-neutral-300 group-hover:scale-110 group-hover:bg-slate-100 dark:group-hover:bg-neutral-800 transition-all duration-300">
+        <div className="h-9 w-9 rounded-xl bg-white/90 border border-white/30 flex items-center justify-center shrink-0 text-[#112D48] group-hover:scale-110 group-hover:bg-white transition-all duration-300">
           <s.icon className="h-4 w-4 group-hover:rotate-[6deg] transition-transform duration-300" />
         </div>
         
         {/* Vertical Stack: Department Title on top, Workload Status Badge directly below */}
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           {/* Full department name (no truncate, wraps onto second line beautifully if space is narrow) */}
-          <span className="text-base font-bold text-slate-800 dark:text-neutral-200 leading-tight transition-colors duration-200 group-hover:text-slate-900 dark:group-hover:text-white">
+          <span className="text-base font-bold text-white leading-tight transition-colors duration-200">
             {s.title}
           </span>
           
           {/* Contextual Workload Status Pill Badge - shown only if action is needed to keep optimal states beautifully clean */}
           {s.status === 'Action Needed' && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full border bg-white dark:bg-neutral-900 border-yellow-200 text-yellow-600 dark:border-yellow-900/30 dark:text-yellow-400 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-950/20 select-none shrink-0 self-start transition-all duration-300">
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full border bg-white/95 border-white/50 text-[#112D48] select-none shrink-0 self-start transition-all duration-300">
               {s.status}
             </span>
           )}
@@ -74,20 +74,20 @@ function CardItem({ s, loading }) {
       </div>
 
       {/* Remaining Block Label */}
-      <div className="text-sm text-slate-400 dark:text-neutral-500 font-semibold mt-4 relative z-10">
+      <div className="text-sm text-white/72 font-semibold mt-4 relative z-10">
         Remaining
       </div>
       
       {/* Dynamic Count Loader/Value */}
       <div className="flex items-baseline mt-1 relative z-10">
         {loading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-brand-accent" />
         ) : (
           <>
-            <span className="text-2xl font-bold text-slate-800 dark:text-neutral-100 tracking-tight leading-none transition-all duration-300 group-hover:scale-[1.02] group-hover:text-slate-900 dark:group-hover:text-white">
+            <span className="text-2xl font-bold text-white tracking-tight leading-none transition-all duration-300 group-hover:scale-[1.02]">
               {s.value.toLocaleString("en-IN")}
             </span>
-            <span className="text-sm font-semibold text-slate-400 dark:text-neutral-500 ml-1.5 leading-none transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
+            <span className="text-sm font-semibold text-white/72 ml-1.5 leading-none transition-colors duration-300">
               {s.unit}
             </span>
           </>
@@ -95,19 +95,19 @@ function CardItem({ s, loading }) {
       </div>
 
       {/* Sleek Minimalist Progress Bar with hover-activated color gradients */}
-      <div className="h-[6px] w-full bg-slate-100/80 dark:bg-neutral-800/60 rounded-full overflow-hidden mt-4 relative z-10">
+      <div className="h-[6px] w-full bg-white/25 rounded-full overflow-hidden mt-4 relative z-10">
         <div 
           className={`h-full rounded-full transition-all duration-500 ease-out ${
             s.status === 'Action Needed' 
-              ? 'bg-gradient-to-r from-amber-400 to-orange-500' 
-              : 'bg-slate-800 dark:bg-neutral-300 group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-indigo-500'
+              ? 'bg-gradient-to-r from-amber-300 to-white' 
+              : 'bg-white group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#BFF5EA]'
           }`} 
           style={{ width: `${s.percent}%` }} 
         />
       </div>
 
       {/* Metric Sub-Details labels in perfectly arranged, solid format */}
-      <div className="flex items-center justify-between mt-2.5 text-sm font-semibold text-slate-400 dark:text-neutral-500 relative z-10 transition-colors duration-300 group-hover:text-slate-500 dark:group-hover:text-neutral-400">
+      <div className="flex items-center justify-between mt-2.5 text-sm font-semibold text-white/72 relative z-10 transition-colors duration-300">
         <span>{s.percent}% left</span>
         <span>{Math.max(s.maxCap - s.value, 0)} used of {s.maxCap} {s.unit}</span>
       </div>

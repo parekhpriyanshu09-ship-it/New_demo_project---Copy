@@ -4,28 +4,28 @@ import { useReceivingModes } from "../../hooks/useDashboard";
 
 const SEGMENT_STYLES = {
   "Physical": {
-    bgClass: "bg-[#e0e7ff] dark:bg-indigo-950/30",
-    textClass: "text-[#312e81] dark:text-indigo-200",
+    bgClass: "bg-[#CFF7EF] dark:bg-brand-950/30",
+    textClass: "text-[#112D48] dark:text-brand-200",
     icon: Inbox,
-    iconColor: "#4f46e5"
+    iconColor: "#00AE8C"
   },
   "Mails": {
-    bgClass: "bg-[#c7d2fe] dark:bg-indigo-900/40",
-    textClass: "text-[#1e1b4b] dark:text-indigo-100",
+    bgClass: "bg-[#86E6D4] dark:bg-brand-900/40",
+    textClass: "text-[#112D48] dark:text-brand-100",
     icon: Mail,
-    iconColor: "#6366f1"
+    iconColor: "#0D7EBD"
   },
   "Fax": {
-    bgClass: "bg-[#6366f1] dark:bg-indigo-600",
+    bgClass: "bg-[#112D48] dark:bg-brand-600",
     textClass: "text-white",
     icon: Printer,
-    iconColor: "#818cf8"
+    iconColor: "#112D48"
   }
 };
 
 const FALLBACK_STYLE = {
-  bgClass: "bg-slate-100 dark:bg-neutral-800/40",
-  textClass: "text-slate-600 dark:text-slate-400",
+  bgClass: "bg-slate-100 dark:bg-brand-800/40",
+  textClass: "text-brand-dark/60 dark:text-brand-dark/40",
   icon: HelpCircle,
   iconColor: "#64748b"
 };
@@ -46,8 +46,8 @@ export function DonutCard() {
     <div className="glass-strong rounded-2xl p-6 flex flex-col h-full justify-between w-full min-h-[220px] text-foreground">
       {/* Header Panel matching design */}
       <div className="flex items-center justify-between mb-5 w-full">
-        <h3 className="font-semibold text-lg text-slate-900 dark:text-neutral-100 tracking-tight">Patrak Receiving Overview</h3>
-        <span className="text-xs text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider bg-indigo-50/50 dark:bg-indigo-900/20 px-2.5 py-0.5 rounded-md">
+        <h3 className="font-semibold text-lg text-brand-dark dark:text-brand-100 tracking-tight">Patrak Receiving Overview</h3>
+        <span className="text-xs text-brand-600 dark:text-brand-400 font-black uppercase tracking-wider bg-brand-50/50 dark:bg-brand-900/20 px-2.5 py-0.5 rounded-md">
           Channels Breakdown
         </span>
       </div>
@@ -83,7 +83,7 @@ export function DonutCard() {
                     >
                       {m.label}
                     </span>
-                    <span className="text-xs font-black text-slate-300 dark:text-neutral-700/80 mt-1 leading-none">
+                    <span className="text-xs font-black text-slate-300 dark:text-brand-700/80 mt-1 leading-none">
                       |
                     </span>
                   </div>
@@ -92,14 +92,14 @@ export function DonutCard() {
             </div>
 
             {/* 2. Horizontal Segmented Progress Bar */}
-            <div className="flex w-full h-[46px] bg-slate-100 dark:bg-neutral-800/40 rounded-xl overflow-hidden shadow-inner flex-row border border-slate-200/20 dark:border-neutral-800/20">
+            <div className="flex w-full h-[46px] bg-slate-100 dark:bg-brand-800/40 rounded-xl overflow-hidden shadow-inner flex-row border border-slate-200/20 dark:border-brand-800/20">
               {data.map((m) => {
                 const styles = SEGMENT_STYLES[m.label] || FALLBACK_STYLE;
                 const pct = total > 0 ? Math.round((m.value / total) * 100) : 0;
                 return (
                   <div
                     key={m.label}
-                    className={`h-full flex items-center justify-center transition-all duration-300 border-r border-white/40 dark:border-neutral-900/30 last:border-r-0 ${styles.bgClass}`}
+                    className={`h-full flex items-center justify-center transition-all duration-300 border-r border-white/40 dark:border-brand-900/30 last:border-r-0 ${styles.bgClass}`}
                     style={{ width: `${pct}%` }}
                   >
                     {pct > 5 && (
@@ -124,22 +124,22 @@ export function DonutCard() {
                 <div
                   key={m.label}
                   className={`flex items-center justify-between w-full py-3.5 ${
-                    index === 0 ? "border-t border-slate-100/80 dark:border-neutral-800/40" : ""
-                  } border-b border-slate-100/80 dark:border-neutral-800/40 hover:bg-slate-50/20 dark:hover:bg-neutral-900/10 transition-colors duration-200 px-1`}
+                    index === 0 ? "border-t border-slate-100/80 dark:border-brand-800/40" : ""
+                  } border-b border-slate-100/80 dark:border-brand-800/40 hover:bg-slate-50/20 dark:hover:bg-brand-900/10 transition-colors duration-200 px-1`}
                 >
                   {/* Left: Icon and Name */}
                   <div className="flex items-center min-w-0">
                     <div className="flex items-center justify-center w-5 h-5 shrink-0">
                       <IconComponent className="h-4.5 w-4.5" style={{ color: styles.iconColor }} />
                     </div>
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-neutral-200 ml-3 truncate">
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-brand-200 ml-3 truncate">
                       {m.label}
                     </span>
                   </div>
 
                   {/* Right: Absolute Count and Percentage */}
                   <div className="flex items-center gap-6 shrink-0">
-                    <span className="text-xs font-black text-slate-800 dark:text-neutral-100 tabular-nums">
+                    <span className="text-xs font-black text-brand-dark dark:text-brand-100 tabular-nums">
                       {m.value} {m.value === 1 ? "entry" : "entries"}
                     </span>
                     <span className="text-xs font-bold text-muted-foreground/90 min-w-[45px] text-right tabular-nums">

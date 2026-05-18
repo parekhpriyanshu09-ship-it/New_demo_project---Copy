@@ -17,9 +17,9 @@ export default function DepartmentChart({ data = [], title = "Operational Volume
           <div className="space-y-1">
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 size={16} className="text-red-500" />
-              <h3 className="text-xl font-black text-slate-900 tracking-tight font-heading">{title}</h3>
+              <h3 className="text-xl font-black text-brand-dark tracking-tight font-heading">{title}</h3>
             </div>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+            <p className="text-sm text-brand-dark/50 font-medium leading-relaxed">
               Real-time distribution of letter flow across all departments.
             </p>
           </div>
@@ -28,7 +28,7 @@ export default function DepartmentChart({ data = [], title = "Operational Volume
               <TrendingUp size={10} strokeWidth={3} />
               <span className="text-xs font-black uppercase tracking-widest">+8.4%</span>
             </div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Efficiency</span>
+            <span className="text-xs font-bold text-brand-dark/40 uppercase tracking-widest">Efficiency</span>
           </div>
         </div>
       </div>
@@ -84,14 +84,14 @@ export default function DepartmentChart({ data = [], title = "Operational Volume
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Active Units</span>
+            <span className="text-xs font-black text-brand-dark/40 uppercase tracking-widest">Active Units</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Stable Sync</span>
+            <span className="text-xs font-black text-brand-dark/40 uppercase tracking-widest">Stable Sync</span>
           </div>
         </div>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Node: SCRB_SRV_01</p>
+        <p className="text-xs font-bold text-brand-dark/40 uppercase tracking-widest">Node: SCRB_SRV_01</p>
       </div>
     </motion.div>
   )

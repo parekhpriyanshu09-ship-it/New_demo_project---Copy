@@ -29,10 +29,10 @@ export function Sidebar() {
 
       {/* Search */}
       <div className="relative group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-blue-500 transition-colors" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-brand-accent transition-colors" />
         <input
           placeholder="Search by Patrak ID, Title…"
-          className="w-full glass rounded-2xl pl-9 pr-3 py-2.5 text-sm outline-none border-[1.5px] border-blue-200/80 dark:border-indigo-500/30 shadow-sm placeholder:text-muted-foreground hover:border-blue-300 focus:border-blue-400 focus:ring-2 focus:ring-ring/40 transition-all"
+          className="w-full glass rounded-2xl pl-9 pr-3 py-2.5 text-sm outline-none border-[1.5px] border-blue-200/80 dark:border-brand-500/30 shadow-sm placeholder:text-muted-foreground hover:border-blue-300 focus:border-blue-400 focus:ring-2 focus:ring-ring/40 transition-all"
         />
       </div>
 
@@ -61,3 +61,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

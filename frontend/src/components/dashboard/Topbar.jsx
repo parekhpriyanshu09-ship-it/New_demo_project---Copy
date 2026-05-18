@@ -10,19 +10,19 @@ export function Topbar() {
   return (
     <header className="bg-[var(--background)]/60 border-b border-border/50 px-5 py-3 flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-5 w-full sm:w-auto">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-bold text-brand-dark dark:text-brand-100">
           Welcome back, admin!
         </h1>
         {/* Compact Horizontal Quick Controls Capsule */}
-        <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-neutral-900/40 p-1 rounded-full border border-slate-100/60 dark:border-neutral-800/40 shadow-sm shrink-0">
-          <button className="h-7 w-7 rounded-full bg-white dark:bg-neutral-800 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition">
-            <Moon className="h-3.5 w-3.5 text-slate-700 dark:text-neutral-300" />
+        <div className="flex items-center gap-2 bg-brand-light/50 dark:bg-brand-dark/40 p-1 rounded-full border border-brand-accent/30 dark:border-brand-accent/40 shadow-sm shrink-0">
+          <button className="h-7 w-7 rounded-full bg-white dark:bg-brand-dark/80 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition">
+            <Moon className="h-3.5 w-3.5 text-brand-dark dark:text-brand-accent" />
           </button>
-          <button className="relative h-7 w-7 rounded-full bg-white dark:bg-neutral-800 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition">
-            <Bell className="h-3.5 w-3.5 text-slate-700 dark:text-neutral-300" />
-            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-[oklch(0.7_0.2_25)]" />
+          <button className="relative h-7 w-7 rounded-full bg-white dark:bg-brand-dark/80 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition">
+            <Bell className="h-3.5 w-3.5 text-brand-dark dark:text-brand-accent" />
+            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-red-500" />
           </button>
-          <div className="flex items-center gap-2 px-2.5 border-l border-slate-200 dark:border-neutral-800/80 text-sm font-semibold text-slate-600 dark:text-neutral-400">
+          <div className="flex items-center gap-2 px-2.5 border-l border-brand-accent/30 dark:border-brand-accent/40 text-sm font-semibold text-brand-dark/60 dark:text-brand-accent">
             <Calendar className="h-3.5 w-3.5 text-primary" />
             <span>{date}</span>
             <span className="text-muted-foreground hidden md:inline">({day}, {time})</span>

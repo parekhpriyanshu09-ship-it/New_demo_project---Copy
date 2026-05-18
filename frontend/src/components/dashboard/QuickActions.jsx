@@ -54,10 +54,10 @@ export function QuickActions() {
           <div className="absolute left-0 top-0 bottom-0 flex items-center pr-10 z-10 bg-gradient-to-r from-background via-background/80 to-transparent pointer-events-none">
             <button
               onClick={() => scroll("left")}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-md hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-brand-dark border border-brand-accent/30 dark:border-brand-accent/40 shadow-md hover:bg-brand-light dark:hover:bg-brand-dark/80 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
               title="Scroll Left"
             >
-              <ChevronLeft className="h-4.5 w-4.5 text-slate-800 dark:text-neutral-200" />
+              <ChevronLeft className="h-4.5 w-4.5 text-brand-dark dark:text-brand-accent" />
             </button>
           </div>
         )}
@@ -67,10 +67,10 @@ export function QuickActions() {
           <div className="absolute right-0 top-0 bottom-0 flex items-center pl-10 z-10 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none">
             <button
               onClick={() => scroll("right")}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-md hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-brand-dark border border-brand-accent/30 dark:border-brand-accent/40 shadow-md hover:bg-brand-light dark:hover:bg-brand-dark/80 cursor-pointer pointer-events-auto hover:scale-105 active:scale-95 transition-all duration-200"
               title="Scroll Right"
             >
-              <ChevronRight className="h-4.5 w-4.5 text-slate-800 dark:text-neutral-200" />
+              <ChevronRight className="h-4.5 w-4.5 text-brand-dark dark:text-brand-accent" />
             </button>
           </div>
         )}
@@ -86,7 +86,7 @@ export function QuickActions() {
             <button
               key={a.id}
               onClick={() => navigate(a.path)}
-              className="snap-start shrink-0 rounded-xl px-5 py-2 text-sm sm:text-base font-bold tracking-tight transition-all duration-200 border border-slate-200/80 dark:border-neutral-800 cursor-pointer flex items-center gap-2 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 active:scale-95"
+              className="snap-start shrink-0 rounded-xl px-5 py-2 text-sm sm:text-base font-bold tracking-tight transition-all duration-200 border border-brand-accent/30 dark:border-brand-accent/40 cursor-pointer flex items-center gap-2 bg-white dark:bg-brand-dark/80 text-brand-dark dark:text-white shadow-sm hover:bg-brand-light dark:hover:bg-brand-dark hover:border-brand-accent dark:hover:border-brand-accent/60 active:scale-95"
             >
               <a.icon className="h-4 w-4 shrink-0" />
               <span>{a.label}</span>

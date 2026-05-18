@@ -26,11 +26,11 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 const chartConfig = {
   inward: {
     label: "Inward",
-    color: "oklch(0.65 0.18 245)", // Beautiful electric blue
+    color: "#00AE8C",
   },
   outward: {
     label: "Outward",
-    color: "oklch(0.65 0.18 15)",  // Beautiful vibrant red/rose
+    color: "#112D48",
   },
 };
 
@@ -78,21 +78,21 @@ export function AnalyticsCard({ selectedDate }) {
       label: "This Week",
       value: statsLoading ? "—" : totalWeek.toLocaleString("en-IN"),
       icon: CalendarDays,
-      color: "oklch(0.7 0.15 235)",
+      color: "#00AE8C",
       hoverClass: "animate-hover-calendar",
     },
     {
       label: "This Month",
       value: statsLoading ? "—" : (stats?.total_entries ?? "—").toLocaleString("en-IN"),
       icon: Folders,
-      color: "oklch(0.7 0.15 295)",
+      color: "#112D48",
       hoverClass: "animate-hover-folder",
     },
     {
       label: "Daily Avg",
       value: chartLoading ? "—" : dailyAvg.toLocaleString("en-IN"),
       icon: Activity,
-      color: "oklch(0.65 0.15 170)",
+      color: "#00AE8C",
       hoverClass: "animate-hover-activity",
     },
   ];
@@ -102,38 +102,38 @@ export function AnalyticsCard({ selectedDate }) {
       {/* Card Header controls */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
         <div>
-          <CardTitle className="text-lg font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
+          <CardTitle className="text-lg font-semibold tracking-tight text-brand-dark dark:text-white">
             Patrak Received Analysis
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground mt-0.5">
             Inward vs Outward stacked volume
             {selectedDate && (
-              <span className="ml-1 text-indigo-500 dark:text-indigo-400 font-semibold">
+              <span className="ml-1 text-brand-accent dark:text-brand-accent font-semibold">
                 · ending {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
               </span>
             )}
           </CardDescription>
         </div>
-        <div className="flex items-center text-xs font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 text-slate-800 dark:text-neutral-100 2xl:hidden">
+        <div className="flex items-center text-xs font-semibold rounded-lg border border-brand-accent/30 dark:border-brand-accent/40 bg-white dark:bg-brand-dark/80 px-2.5 py-1 text-brand-dark dark:text-brand-accent 2xl:hidden">
           7 days
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="hidden 2xl:flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-border bg-white dark:bg-neutral-900 px-2.5 py-1 focus:outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors text-slate-800 dark:text-neutral-100">
+            <button className="hidden 2xl:flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-brand-accent/30 dark:border-brand-accent/40 bg-white dark:bg-brand-dark/80 px-2.5 py-1 focus:outline-none cursor-pointer hover:bg-brand-light dark:hover:bg-brand-dark/60 transition-colors text-brand-dark dark:text-brand-accent">
               <span>{days} days</span>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[85px] w-[85px] bg-white dark:bg-neutral-900 border border-border ring-0 shadow-md p-1">
+          <DropdownMenuContent align="end" className="min-w-[85px] w-[85px] bg-white dark:bg-brand-dark/90 border border-brand-accent/30 dark:border-brand-accent/40 ring-0 shadow-md p-1">
             <DropdownMenuItem
               onClick={() => setDays(7)}
-              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 7 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-brand-light dark:focus:bg-brand-dark/60 ${days === 7 ? "font-bold text-brand-accent dark:text-brand-accent" : "text-muted-foreground"}`}
             >
               7 days
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setDays(14)}
-              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-slate-100 dark:focus:bg-neutral-800 ${days === 14 ? "font-bold text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}
+              className={`text-xs cursor-pointer rounded-md px-2 py-1 focus:bg-brand-light dark:focus:bg-brand-dark/60 ${days === 14 ? "font-bold text-brand-accent dark:text-brand-accent" : "text-muted-foreground"}`}
             >
               14 days
             </DropdownMenuItem>
@@ -143,21 +143,21 @@ export function AnalyticsCard({ selectedDate }) {
 
       <CardContent className="p-0 flex-1 flex flex-col justify-between">
         {/* Unified horizontal metrics capsule bar */}
-        <div className="flex items-center justify-between border border-slate-200/50 dark:border-neutral-800/40 bg-slate-50/30 dark:bg-neutral-900/15 rounded-xl p-0.5 mb-3">
+        <div className="flex items-center justify-between border border-brand-accent/20 dark:border-brand-accent/30 bg-brand-light/30 dark:bg-brand-dark/15 rounded-xl p-0.5 mb-3">
           {summaryCards.map((s, index) => (
             <React.Fragment key={s.label}>
               {/* Item Section */}
-              <div className="group flex flex-1 items-center gap-2 px-2.5 py-2 hover:bg-slate-100/30 dark:hover:bg-neutral-900/30 rounded-lg transition-all duration-300 cursor-pointer">
+              <div className="group flex flex-1 items-center gap-2 px-2.5 py-2 hover:bg-brand-accent/10 dark:hover:bg-brand-accent/10 rounded-lg transition-all duration-300 cursor-pointer">
                 {/* Left ItemMedia: Standalone naked animated icon */}
                 <div className="flex items-center justify-center shrink-0 w-7 h-7 transition-transform duration-300 group-hover:scale-105">
                   <s.icon className={`h-4 w-4 transition-all duration-300 ${s.hoverClass}`} style={{ color: s.color }} />
                 </div>
                 {/* Right ItemContent: Dynamic values & labels */}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground truncate leading-none">
+                  <span className="text-sm font-bold uppercase tracking-wider text-brand-dark/60 dark:text-white/60 truncate leading-none">
                     {s.label}
                   </span>
-                  <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-neutral-100 mt-0.5 leading-none">
+                  <span className="text-base font-extrabold tracking-tight text-brand-dark dark:text-white mt-0.5 leading-none">
                     {s.value}
                   </span>
                 </div>
@@ -165,7 +165,7 @@ export function AnalyticsCard({ selectedDate }) {
 
               {/* Centered Vertical Divider Line */}
               {index < summaryCards.length - 1 && (
-                <div className="h-7 w-[1px] bg-slate-200/80 dark:bg-neutral-800/80 shrink-0 self-center" />
+                <div className="h-7 w-[1px] bg-brand-accent/30 dark:bg-brand-accent/30 shrink-0 self-center" />
               )}
             </React.Fragment>
           ))}

@@ -143,12 +143,12 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
         }}
         className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-sm'} transition-all duration-200 select-none ${nested ? (mobile ? 'ml-6' : compact ? 'mx-auto justify-center' : 'ml-6') : compact ? 'mx-auto justify-center h-10 w-10 px-0' : ''
           } ${active
-            ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
-            : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
+            ? 'border border-brand-accent/30 bg-gradient-to-r from-brand-dark/20 to-brand-accent/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(0,104,150,0.16)]'
+            : 'text-slate-600 dark:text-neutral-400 hover:bg-brand-accent/20 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(0,104,150,0.12)] rounded-xl font-semibold'
           }`}
       >
         <span className={`${mobile ? 'h-6 w-6' : 'h-[18px] w-[18px]'} shrink-0 flex items-center justify-center`}>
-          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${active ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400 dark:text-neutral-500'
+          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${active ? 'text-brand-accent dark:text-brand-accent' : 'text-slate-400 dark:text-neutral-500'
             }`} />
         </span>
 
@@ -177,11 +177,11 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
           onClick={() => toggleGroup(item.label)}
           className={`group relative flex items-center ${mobile ? 'gap-3 px-3 py-2.5 text-sm' : 'gap-2.5 px-3 py-2 text-sm'} transition-all duration-200 select-none text-left ${compact ? 'mx-auto h-10 w-10 justify-center px-0' : ''
             } ${groupActive
-              ? 'border border-blue-400/30 bg-gradient-to-r from-blue-600/20 to-cyan-500/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(37,99,235,0.16)]'
-              : 'text-slate-600 dark:text-neutral-400 hover:bg-blue-500/10 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] rounded-xl font-semibold'
+              ? 'border border-brand-accent/30 bg-gradient-to-r from-brand-dark/20 to-brand-accent/10 rounded-xl text-slate-900 dark:text-white font-bold shadow-[0_0_24px_rgba(0,104,150,0.16)]'
+              : 'text-slate-600 dark:text-neutral-400 hover:bg-brand-accent/20 hover:text-slate-900 dark:hover:text-slate-100 hover:shadow-[0_0_18px_rgba(0,104,150,0.12)] rounded-xl font-semibold'
             }`}
         >
-          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${groupActive ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400 dark:text-neutral-500'
+          <Icon className={`${mobile ? 'h-4 w-4' : 'h-[18px] w-[18px]'} shrink-0 transition-transform group-hover:scale-105 ${groupActive ? 'text-brand-accent dark:text-brand-accent' : 'text-slate-400 dark:text-neutral-500'
             }`} />
           {!compact && (
             <>
@@ -190,7 +190,7 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
             </>
           )}
           {compact && (
-            <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-blue-400/20 bg-slate-950/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-blue-950/30 transition-opacity group-hover:opacity-100">
+            <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-brand-accent/20 bg-brand-dark/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-brand-dark/30 transition-opacity group-hover:opacity-100">
               {item.label}
             </span>
           )}
@@ -219,10 +219,10 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
         <button
           onClick={handleCollapsedSearchClick}
           title="Search System"
-          className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300 hover:shadow-[0_0_18px_rgba(59,130,246,0.12)] transition-all duration-200 mx-auto"
+          className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-brand-accent/30 dark:border-brand-accent/40 bg-brand-light dark:bg-brand-dark/80 text-brand-dark dark:text-brand-accent hover:bg-brand-accent/20 hover:text-brand-accent dark:hover:text-white hover:shadow-[0_0_18px_rgba(0,104,150,0.12)] transition-all duration-200 mx-auto"
         >
           <Search className="h-4 w-4" />
-          <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-blue-400/20 bg-slate-950/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-blue-950/30 transition-opacity group-hover:opacity-100">
+          <span className="pointer-events-none absolute left-full top-1/2 z-[70] ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg border border-brand-accent/20 bg-brand-dark/95 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 shadow-xl shadow-brand-dark/30 transition-opacity group-hover:opacity-100">
             Search System
           </span>
         </button>
@@ -235,14 +235,14 @@ export default function Sidebar({ isCollapsed, onToggle, mobileOpen, onMobileClo
         >
           {/* Floating Label */}
           <div className="px-2 mb-2 flex items-center gap-1.5 opacity-90">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse" />
+            <div className="h-1.5 w-1.5 rounded-full bg-brand-accent shadow-[0_0_8px_rgba(0,104,150,0.6)] animate-pulse" />
             <span className="text-xs font-bold text-slate-500 dark:text-neutral-400 tracking-[0.15em] uppercase">Global Search</span>
           </div>
 
           <div className="relative group">
             {/* Animated glowing highlight background when not focused */}
             {!isSearchFocused && (
-              <div className="absolute -inset-[1px] rounded-[18px] bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-600 dark:to-indigo-600 opacity-30 blur-[2px] animate-pulse pointer-events-none" />
+              <div className="absolute -inset-[1px] rounded-[18px] bg-gradient-to-r from-brand-light to-brand-light dark:from-brand-dark dark:to-brand-accent opacity-30 blur-[2px] animate-pulse pointer-events-none" />
             )}
 
             <form onSubmit={handleSearch} className="relative flex items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md rounded-2xl border-[1.5px] border-blue-200/80 dark:border-indigo-500/30 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-[1px] focus-within:shadow-lg focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/15 dark:focus-within:border-blue-500 dark:focus-within:ring-blue-500/20 transition-all duration-300">
